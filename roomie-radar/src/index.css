@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+/* Enable dark mode */
+:root {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+/* Custom styles can go here */
