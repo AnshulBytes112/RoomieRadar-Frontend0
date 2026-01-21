@@ -15,7 +15,7 @@ type RoomListing = {
   bathrooms: number;
   images: string[];
   tags: string[];
-  type: "Private" | "Shared" | "Studio";
+  type: "Private" | "Shared" | "Studio" | "Hostel";
   ownerId?: string;
   description?: string;
   amenities?: string[];
@@ -147,6 +147,20 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
     }
   };
 
+  // NEW: Handle Book Now button click
+  const handleBookNow = () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    if (!room) {
+      alert("Room data not available");
+      return;
+    }
+    // Navigate to the BookNow page with the room ID
+    navigate(`/book-now/${room.id}`);
+  };
+
   // Fixed formatPrice function to handle both string and number types
   const formatPrice = (price: string | number | undefined): string => {
     if (!price && price !== 0) return "0";
@@ -155,18 +169,31 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
     const priceStr = String(price);
     
     // Remove currency symbols and '/month' text if present
-    return priceStr.replace(/₹/g, '').replace(/\/month/g, '').replace(/,/g, '').trim();
+    return priceStr.replace(/₹/g, '').replace(/\/month/g, '').replace(/,/g, '').replace(/\/year/g,'').trim();
   };
 
   // Helper function to format price for display
-  const displayPrice = (price: string | number | undefined): string => {
-    if (!price && price !== 0) return "Not specified";
-    
-    const numPrice = typeof price === 'number' ? price : parseInt(String(price).replace(/[^\d]/g, ''), 10);
-    if (isNaN(numPrice)) return "Not specified";
-    
-    return `₹${numPrice.toLocaleString()}/month`;
-  };
+const displayPrice = (
+  price: string | number | undefined,
+  roomType: RoomListing["type"] | undefined
+): string => {
+  if (!price && price !== 0) return "Not specified";
+
+  const numPrice =
+    typeof price === "number"
+      ? price
+      : parseInt(String(price).replace(/[^\d]/g, ""), 10);
+
+  if (isNaN(numPrice)) return "Not specified";
+
+  let formattedPrice = `₹${numPrice.toLocaleString()}`;
+
+  if (roomType === "Hostel") {
+    return `${formattedPrice}/year`;
+  } else {
+    return `${formattedPrice}/month`;
+  }
+};
 
   // Helper function to format deposit/maintenance for display
   const displayAmount = (amount: string | number | undefined): string => {
@@ -252,8 +279,19 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
             </div>
             
             <div className="text-right">
-              <div className="text-3xl font-bold text-indigo-600">{displayPrice(room.price)}</div>
-              <div className="text-gray-600">{room.area || 'N/A'} • {room.bedrooms || 0} BHK • {room.type || 'N/A'}</div>
+              <div className="text-3xl font-bold text-indigo-600">
+                {displayPrice(room.price, room.type)}
+              </div>
+              <div className="text-gray-600">
+                {room.area || 'N/A'} • {room.bedrooms || 0} BHK • {room.type || 'N/A'}
+              </div>
+              {/* NEW: Book Now button in header */}
+              <button
+                onClick={handleBookNow}
+                className="mt-3 px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition font-medium shadow-lg"
+              >
+                Book Now
+              </button>
             </div>
           </div>
         </div>
@@ -281,6 +319,15 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
                   <span className="px-3 py-1 rounded-full text-sm font-semibold bg-white/90 text-gray-800 border border-gray-200">
                     {room.type || 'N/A'}
                   </span>
+                </div>
+                {/* NEW: Book Now overlay button on image */}
+                <div className="absolute bottom-4 right-4">
+                  <button
+                    onClick={handleBookNow}
+                    className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition font-medium shadow-lg backdrop-blur-sm"
+                  >
+                    Book Now
+                  </button>
                 </div>
               </div>
               
@@ -514,8 +561,8 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Pricing Details</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Monthly Rent</span>
-                    <span className="font-semibold text-gray-900">{displayPrice(room.price)}</span>
+                    <span className="text-gray-600">Rent</span>
+                    <span className="font-semibold text-gray-900">{displayPrice(room.price,room.type)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Security Deposit</span>
@@ -579,11 +626,18 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
               {/* Action Buttons */}
               <div className="bg-white rounded-2xl shadow-lg p-6">
                 <div className="space-y-3">
+                  {/* NEW: Primary Book Now Button */}
+                  <button 
+                    onClick={handleBookNow}
+                    className="w-full py-4 px-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition font-medium text-lg shadow-lg"
+                  >
+                    🏠 Book This Room
+                  </button>
                   <button 
                     onClick={handleContactOwner}
                     className="w-full py-3 px-4 bg-gradient-to-r from-indigo-500 to-pink-500 text-white rounded-lg hover:from-indigo-600 hover:to-pink-600 transition font-medium"
                   >
-                    Contact Owner
+                    Contact Student
                   </button>
                   <button 
                     onClick={handleScheduleVisit}

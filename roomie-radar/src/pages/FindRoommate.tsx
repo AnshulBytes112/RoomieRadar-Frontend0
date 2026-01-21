@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { getAllRoommates, sendConnectionRequest } from "../api";
+import { getAllRoommates, sendConnectionRequest, searchRoommates, createRoommateProfile } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 
 interface RoommateProfile {
@@ -41,75 +41,77 @@ const FindRoommate = () => {
     const fetchRoommates = async () => {
       try {
         setLoading(true);
-        const fetchedRoommates = await getAllRoommates();
-        setRoommateProfiles(fetchedRoommates);
+        const fetched = await getAllRoommates();
+const filtered = fetched.filter((profile: RoommateProfile) => profile.id !== user?.id);
+setRoommateProfiles(filtered);
+
         setError(null);
       } catch (err) {
         console.error('Error fetching roommates:', err);
         setError('Failed to fetch roommate profiles. Please try again later.');
         // Fallback to sample data for development
-        setRoommateProfiles([
-          {
-            id: 1,
-            name: "Sarah Chen",
-            age: 24,
-            occupation: "Graduate Student",
-            lifestyle: ["Quiet", "Clean", "Studious"],
-            budget: "₹15,000 - ₹25,000",
-            location: "Koramangala, Bangalore",
-            bio: "Computer Science graduate student looking for a quiet, clean roommate who respects study time. I prefer a peaceful environment and enjoy reading, coding, and occasional yoga.",
-            interests: ["Technology", "Reading", "Yoga", "Cooking"],
-            compatibility: 95,
-            avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-            isOnline: true,
-            lastActive: "2 minutes ago"
-          },
-          {
-            id: 2,
-            name: "Mike Rodriguez",
-            age: 28,
-            occupation: "Software Engineer",
-            lifestyle: ["Social", "Active", "Clean"],
-            budget: "₹20,000 - ₹35,000",
-            location: "Indiranagar, Bangalore",
-            bio: "Software engineer who enjoys cooking, hiking, and social gatherings. Looking for someone with similar interests who values cleanliness and good communication.",
-            interests: ["Cooking", "Hiking", "Music", "Travel"],
-            compatibility: 88,
-            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-            isOnline: false,
-            lastActive: "1 hour ago"
-          },
-          {
-            id: 3,
-            name: "Priya Sharma",
-            age: 26,
-            occupation: "UX Designer",
-            lifestyle: ["Creative", "Organized", "Pet-friendly"],
-            budget: "₹18,000 - ₹30,000",
-            location: "Whitefield, Bangalore",
-            bio: "Creative professional who loves art, design, and animals. I'm organized and looking for a roommate who appreciates creativity and doesn't mind my cat.",
-            interests: ["Art", "Design", "Animals", "Photography"],
-            compatibility: 92,
-            avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-            isOnline: true,
-            lastActive: "5 minutes ago"
-          },
-          {
-            id: 4,
-            name: "Alex Thompson",
-            age: 25,
-            occupation: "Marketing Executive",
-            lifestyle: ["Extroverted", "Fitness-oriented", "Social"],
-            budget: "₹22,000 - ₹40,000",
-            location: "MG Road, Bangalore",
-            bio: "Marketing professional who loves fitness, networking, and trying new restaurants. Looking for someone with similar interests who enjoys an active social life.",
-            interests: ["Fitness", "Networking", "Food", "Travel"],
-            compatibility: 85,
-            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-            isOnline: false,
-            lastActive: "3 hours ago"
-          }
-        ]);
+        // setRoommateProfiles([
+        //   {
+        //     id: 1,
+        //     name: "Sarah Chen",
+        //     age: 24,
+        //     occupation: "Graduate Student",
+        //     lifestyle: ["Quiet", "Clean", "Studious"],
+        //     budget: "₹15,000 - ₹25,000",
+        //     location: "Koramangala, Bangalore",
+        //     bio: "Computer Science graduate student looking for a quiet, clean roommate who respects study time. I prefer a peaceful environment and enjoy reading, coding, and occasional yoga.",
+        //     interests: ["Technology", "Reading", "Yoga", "Cooking"],
+        //     compatibility: 95,
+        //     avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+        //     isOnline: true,
+        //     lastActive: "2 minutes ago"
+        //   },
+        //   {
+        //     id: 2,
+        //     name: "Mike Rodriguez",
+        //     age: 28,
+        //     occupation: "Software Engineer",
+        //     lifestyle: ["Social", "Active", "Clean"],
+        //     budget: "₹20,000 - ₹35,000",
+        //     location: "Indiranagar, Bangalore",
+        //     bio: "Software engineer who enjoys cooking, hiking, and social gatherings. Looking for someone with similar interests who values cleanliness and good communication.",
+        //     interests: ["Cooking", "Hiking", "Music", "Travel"],
+        //     compatibility: 88,
+        //     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+        //     isOnline: false,
+        //     lastActive: "1 hour ago"
+        //   },
+        //   {
+        //     id: 3,
+        //     name: "Priya Sharma",
+        //     age: 26,
+        //     occupation: "UX Designer",
+        //     lifestyle: ["Creative", "Organized", "Pet-friendly"],
+        //     budget: "₹18,000 - ₹30,000",
+        //     location: "Whitefield, Bangalore",
+        //     bio: "Creative professional who loves art, design, and animals. I'm organized and looking for a roommate who appreciates creativity and doesn't mind my cat.",
+        //     interests: ["Art", "Design", "Animals", "Photography"],
+        //     compatibility: 92,
+        //     avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+        //     isOnline: true,
+        //     lastActive: "5 minutes ago"
+        //   },
+        //   {
+        //     id: 4,
+        //     name: "Alex Thompson",
+        //     age: 25,
+        //     occupation: "Marketing Executive",
+        //     lifestyle: ["Extroverted", "Fitness-oriented", "Social"],
+        //     budget: "₹22,000 - ₹40,000",
+        //     location: "MG Road, Bangalore",
+        //     bio: "Marketing professional who loves fitness, networking, and trying new restaurants. Looking for someone with similar interests who enjoys an active social life.",
+        //     interests: ["Fitness", "Networking", "Food", "Travel"],
+        //     compatibility: 85,
+        //     avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+        //     isOnline: false,
+        //     lastActive: "3 hours ago"
+        //   }
+        // ]);
       } finally {
         setLoading(false);
       }
@@ -172,19 +174,56 @@ const FindRoommate = () => {
     }
   };
 
-  const handleFindRoommates = () => {
+  const handleFindRoommates = async () => {
     if (!user) {
       navigate('/login');
-    } else {
-      alert("Searching for compatible roommates... This feature will be implemented soon!");
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const filters = {
+        ageRange: activeFilters.ageRange !== "any" ? activeFilters.ageRange : undefined,
+        lifestyle: activeFilters.lifestyle !== "any" ? activeFilters.lifestyle : undefined,
+        budget: activeFilters.budget !== "any" ? activeFilters.budget : undefined,
+        location: activeFilters.location !== "any" ? activeFilters.location : undefined,
+        occupation: searchQuery || undefined
+      };
+      const fetchedRoommates = await searchRoommates(filters);
+      setRoommateProfiles(fetchedRoommates);
+      setError(null);
+    } catch (err) {
+      console.error('Error searching roommates:', err);
+      setError('Failed to search for roommates. Please try again later.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCreateProfile = () => {
+  const handleCreateProfile = async () => {
     if (!user) {
       navigate('/login');
-    } else {
-      alert("Create your roommate profile... This feature will be implemented soon!");
+      return;
+    }
+    
+    try {
+      const profileData = {
+        name: user.name || "New User",
+        age: 25,
+        occupation: "Not specified",
+        lifestyle: ["Not specified"],
+        budget: "Not specified",
+        location: "Not specified",
+        bio: "New user looking for a roommate.",
+        interests: ["Not specified"],
+        avatar:  "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=150&h=150&fit=crop&crop=face"
+      };
+      await createRoommateProfile(profileData);
+      alert("Your roommate profile has been created successfully!");
+      navigate('/profile'); // Navigate to profile page after creation
+    } catch (err) {
+      console.error('Error creating profile:', err);
+      alert('Failed to create profile. Please try again.');
     }
   };
 
@@ -394,7 +433,7 @@ const FindRoommate = () => {
                         <div className="flex items-center gap-4">
                           <div className="relative">
                             <img
-                              src={profile.avatar}
+                              src={profile.avatar || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"}
                               alt={profile.name}
                               className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg"
                             />
@@ -525,7 +564,7 @@ const FindRoommate = () => {
                 Browse Rooms
               </button>
               <button
-                onClick={handleCreateProfile}
+onClick={() => navigate('/create-profile')}
                 className="px-8 py-3 border-2 border-white text-white rounded-xl hover:bg-white hover:text-blue-600 transition-all duration-300 font-medium"
               >
                 Create Profile

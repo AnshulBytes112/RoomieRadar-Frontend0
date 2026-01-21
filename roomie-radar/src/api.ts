@@ -13,7 +13,7 @@ function getAuthToken() {
   }
 }
 
-async function authFetch(input: RequestInfo | URL, init?: RequestInit) {
+export async function authFetch(input: RequestInfo | URL, init?: RequestInit) {
   const token = getAuthToken();
 
   const mergedHeaders: HeadersInit = {
@@ -35,11 +35,34 @@ async function authFetch(input: RequestInfo | URL, init?: RequestInit) {
   if (response.status === 401) {
     try {
       localStorage.removeItem('userToken');
-    } catch {}
+    } catch { }
   }
 
   return response;
 }
+
+export const forgotPassword = async (email: string) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to send reset email');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    throw error;
+  }
+};
 
 // ===== ROOM MANAGEMENT =====
 export async function fetchRoomDetails(roomId: number) {
@@ -53,8 +76,7 @@ export async function searchRooms(filters: {
   roomType?: string;
   bedrooms?: number;
   bathrooms?: number;
-}) 
-{
+}) {
   // GET /api/rooms/search?location=...&budget=...&type=...
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([key, value]) => {
@@ -69,7 +91,7 @@ export async function getAllRooms() {
 }
 
 export async function createRoomListing(roomData: {
-title: string;
+  title: string;
   location: string;
   price: number; // Backend expects int, not string
   area: string;
@@ -77,19 +99,20 @@ title: string;
   bathrooms: number;
   images: string[];
   tags: string[];
-  type: "Private" | "Shared" | "Studio" | "Hostel"; // Enum values
+  type: "Private" | "Shared" | "Studio" | "Hostel";
   description?: string;
   amenities?: string[];
-  availaibleFrom?: string; // Note: Backend has typo "availaibleFrom"
+  availaibleFrom?: string;
   deposit?: string;
   maintenance?: string;
   parking?: boolean;
   petFriendly?: boolean;
   furnished?: boolean;
-  // Removed contactNumber and contactEmail, only students can post
+  contactNumber?: string;
+  contactEmail?: string;
 }) {
   // POST /api/rooms
-return authFetch('/api/rooms', {
+  return authFetch('/api/rooms', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(roomData)
@@ -104,7 +127,7 @@ export interface Room {
   id: number;
   title: string;
   location: string;
-  price: number; // Backend stores as int
+  price: number;
   area: string;
   bedrooms: number;
   bathrooms: number;
@@ -113,12 +136,14 @@ export interface Room {
   type: "Private" | "Shared" | "Studio" | "Hostel";
   description?: string;
   amenities?: string[];
-  availaibleFrom?: string; // Note: Backend has typo
+  availaibleFrom?: string;
   deposit?: string;
   maintenance?: string;
   parking?: boolean;
   petFriendly?: boolean;
   furnished?: boolean;
+  contactNumber?: string;
+  contactEmail?: string;
   postedBy?: {
     id: number;
     name: string;
@@ -138,9 +163,24 @@ export async function updateRoomListing(roomId: number, roomData: any) {
 
 export async function deleteRoomListing(roomId: number) {
   // DELETE /api/rooms/{id}
-  return authFetch(`/api/rooms/${roomId}`, {
+  const res = await authFetch(`/api/rooms/${roomId}`, {
     method: 'DELETE'
-  }).then(res => res.json());
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to delete room: ${res.status}`);
+  }
+
+  return true; // Success
+}
+
+export async function fetchUserListings() {
+  // GET /api/rooms/my-listings
+  const response = await authFetch('/api/rooms/my-listings');
+  if (!response.ok) {
+    throw new Error('Failed to fetch user listings');
+  }
+  return response.json();
 }
 
 // ===== ROOMMATE MANAGEMENT =====
@@ -165,6 +205,10 @@ export async function getAllRoommates() {
   // GET /api/roommates
   return authFetch('/api/roommates').then(res => res.json());
 }
+export async function getUserProfile() {
+  // GET /api/roommates/me
+  return authFetch('/api/roommates/me').then(res => res.json());
+}
 
 export async function createRoommateProfile(profileData: {
   name: string;
@@ -177,13 +221,27 @@ export async function createRoommateProfile(profileData: {
   interests: string[];
   avatar?: string;
 }) {
-  // POST /api/roommates
-  return authFetch('/api/roommates', {
+  const response = await authFetch('/api/roommates', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(profileData)
-  }).then(res => res.json());
+    body: JSON.stringify(profileData),
+  });
+
+  if (!response.ok) {
+    let errorMessage = 'Failed to create profile';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorMessage;
+    } catch {
+      const text = await response.text();
+      errorMessage = text || errorMessage;
+    }
+    throw new Error(errorMessage);
+  }
+
+  return response.json();
 }
+
 
 export async function updateRoommateProfile(profileId: number, profileData: any) {
   // PUT /api/roommates/{id}
@@ -206,22 +264,22 @@ export async function userLogin(credentials: { username: string; password: strin
   // POST /api/auth/login
   console.log('Logging in with credentials:', credentials);
   console.log('Sending request to:', `${API_BASE_URL}/api/auth/login`);
-  
+
   const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(credentials)
   });
-  
+
   console.log('Login response status:', response.status);
   const result = await response.json();
   console.log('Login response data:', result);
-  
+
   return result;
 }
 
 export async function userRegister(userData: {
-  
+
   name: string;
   email: string;
   username: string;
@@ -231,19 +289,19 @@ export async function userRegister(userData: {
   // POST /api/auth/register
   console.log('Registering user with data:', userData);
   console.log('Sending request to:', `${API_BASE_URL}/api/auth/register`);
-  
+
   const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(userData)
   });
-  
+
   console.log('Registration response status:', response.status);
   console.log('Registration response headers:', response.headers);
-  
+
   const result = await response.json();
   console.log('Registration response data:', result);
-  
+
   return result;
 }
 
@@ -299,8 +357,8 @@ export async function checkIfFavorited(roomId: number) {
 // ===== BOOKINGS & RESERVATIONS =====
 export async function bookRoom(roomId: number, bookingData: {
   checkInDate: string;
-  checkOutDate?: string;
   message?: string;
+  phone?: string;
 }) {
   // POST /api/bookings
   return authFetch('/api/bookings', {
@@ -390,7 +448,7 @@ export async function uploadImage(imageFile: File) {
   // POST /api/upload/image
   const formData = new FormData();
   formData.append('image', imageFile);
-  
+
   return authFetch('/api/upload/image', {
     method: 'POST',
     body: formData

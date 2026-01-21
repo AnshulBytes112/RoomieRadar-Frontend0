@@ -13,12 +13,16 @@ import BookNow from "./pages/BookNow"
 import AdminDashboard from "./pages/AdminDashboard"
 import Unauthorized from "./pages/Unauthorized"
 import AddListingModal, { type NewListingInput } from "./components/AddListingModal"
-
+import ForgotPassword from './pages/ForgotPassword';
+import CreateProfile from "./pages/CreateProfile"
+import MyBookings from "./pages/MyBookings"
+import MyListings from "./pages/MyListings"
+import Profile from "./pages/Profile"
 function App() {
   const location = useLocation();
   const hideNavbarRoutes = ['/login', '/register', '/unauthorized'];
   const showNavbar = !hideNavbarRoutes.includes(location.pathname);
-  
+
   return (
     <AuthProvider>
       <div className="min-h-screen bg-gray-100">
@@ -29,53 +33,62 @@ function App() {
             <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
             <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
             <Route path="/unauthorized" element={<PageWrapper><Unauthorized /></PageWrapper>} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/create-profile" element={<CreateProfile />} />
+            <Route path="/my-bookings" element={<MyBookings />} />
+            <Route path="/profile" element={
+              <ProtectedRoute requiredRoles={['student', 'admin']}>
+                <PageWrapper><Profile /></PageWrapper>
+              </ProtectedRoute>
+            } />
+            <Route path="/my-listings" element={<ProtectedRoute requiredRoles={['student', 'admin']}><PageWrapper><MyListings /></PageWrapper></ProtectedRoute>} />
             <Route path="/add-listing" element={<ProtectedRoute requiredRoles={['student', 'admin']}><PageWrapper><AddListingModal isOpen={false} onClose={function (): void {
               throw new Error("Function not implemented.")
-            } } onSubmit={function (listing: NewListingInput): Promise<void> {
+            }} onSubmit={function (listing: NewListingInput): Promise<void> {
               throw new Error("Function not implemented.")
-            } } /></PageWrapper></ProtectedRoute>} />
+            }} /></PageWrapper></ProtectedRoute>} />
             {/* Protected Routes */}
-            <Route 
-              path="/find-room" 
+            <Route
+              path="/find-room"
               element={
                 <ProtectedRoute requiredRoles={['student', 'admin']}>
                   <PageWrapper><FindRoom /></PageWrapper>
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/room/:id" 
+            <Route
+              path="/room/:id"
               element={
                 // <ProtectedRoute requiredRoles={['student', 'admin']}>
-                  <PageWrapper><RoomDetails /></PageWrapper>
+                <PageWrapper><RoomDetails /></PageWrapper>
                 // </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/find-roommate" 
+            <Route
+              path="/find-roommate"
               element={
                 <ProtectedRoute requiredRoles={['student', 'admin']}>
                   <PageWrapper><FindRoommate /></PageWrapper>
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/booknow" 
+            <Route
+              path="/book-now/:roomId"
               element={
                 <ProtectedRoute requiredRoles={['student', 'admin']}>
                   <BookNow />
                 </ProtectedRoute>
-              } 
+              }
             />
-            
+
             {/* Admin Only Routes */}
-            <Route 
-              path="/admin" 
+            <Route
+              path="/admin"
               element={
                 <ProtectedRoute requiredRoles={['admin']}>
                   <PageWrapper><AdminDashboard /></PageWrapper>
                 </ProtectedRoute>
-              } 
+              }
             />
           </Routes>
         </AnimatePresence>

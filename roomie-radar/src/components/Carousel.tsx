@@ -61,14 +61,13 @@ const Carousel = () => {
     <div className="relative h-screen overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
-    key={currentSlide}
-    custom={currentSlide}
-    initial={{ x: 300, opacity: 0 }}        // start off-screen right
-    animate={{ x: 0, opacity: 1 }}          // slide into place
-    exit={{ x: -300, opacity: 0 }}          // slide out to left
-    transition={{ duration: 0.6, ease: "easeInOut" }}
-    className="absolute inset-0"
-  > 
+          key={currentSlide}
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          transition={{ duration: 0.6, ease: "easeInOut" }}
+          className="absolute inset-0"
+        >
           {/* Background Image */}
           <div className="absolute inset-0">
             <img

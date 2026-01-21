@@ -1,7 +1,7 @@
+
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-// Updated type to match backend requirements
 export type NewListingInput = {
   title: string;
   location: string;
@@ -12,24 +12,28 @@ export type NewListingInput = {
   images: string[];
   tags: string[];
   type: "Private" | "Shared" | "Studio" | "Hostel";
-  // Optional fields that backend supports
   description?: string;
   amenities?: string[];
-  availableFrom?: string; // Will be mapped to availaibleFrom in API call
+  availableFrom?: string;
   deposit?: string;
   maintenance?: string;
   parking?: boolean;
   petFriendly?: boolean;
   furnished?: boolean;
+  contactNumber?: string;
+  contactEmail?: string;
+  id?: number; // Added for edit mode
 };
 
 type AddListingModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (listing: NewListingInput) => Promise<void>;
+  initialData?: NewListingInput | null; // Added prop
+  isEditing?: boolean; // Added prop
 };
 
-const AddListingModal = ({ isOpen, onClose, onSubmit }: AddListingModalProps) => {
+const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = false }: AddListingModalProps) => {
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [price, setPrice] = useState<string>("");
@@ -41,8 +45,6 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }: AddListingModalProps) =>
   const [tags, setTags] = useState("");
   const [type, setType] = useState<"Private" | "Shared" | "Studio" | "Hostel">("Private");
   const [isLoading, setIsLoading] = useState(false);
-
-  // Additional fields for backend
   const [description, setDescription] = useState("");
   const [amenities, setAmenities] = useState("");
   const [availableFrom, setAvailableFrom] = useState("");
@@ -51,6 +53,41 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }: AddListingModalProps) =>
   const [parking, setParking] = useState<boolean>(false);
   const [petFriendly, setPetFriendly] = useState<boolean>(false);
   const [furnished, setFurnished] = useState<boolean>(false);
+  const [contactNumber, setContactNumber] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+
+  useEffect(() => {
+    if (isOpen) {
+      if (initialData && isEditing) {
+        // Populate form
+        setTitle(initialData.title || "");
+        setLocation(initialData.location || "");
+        setPrice(initialData.price?.toString() || "");
+        setArea(initialData.area || "");
+        setBedrooms(initialData.bedrooms?.toString() || "1");
+        setBathrooms(initialData.bathrooms?.toString() || "1");
+
+        // Handle Images
+        setUploadedImages(initialData.images || []);
+        setImageUrls(""); // Clear URL input as images are in uploaded list now for display
+
+        setTags(initialData.tags?.join(", ") || "");
+        setType(initialData.type || "Private");
+        setDescription(initialData.description || "");
+        setAmenities(initialData.amenities?.join(", ") || "");
+        setAvailableFrom(initialData.availableFrom || "");
+        setDeposit(initialData.deposit || "");
+        setMaintenance(initialData.maintenance || "");
+        setParking(initialData.parking || false);
+        setPetFriendly(initialData.petFriendly || false);
+        setFurnished(initialData.furnished || false);
+        setContactNumber(initialData.contactNumber || "");
+        setContactEmail(initialData.contactEmail || "");
+      } else {
+        resetForm();
+      }
+    }
+  }, [isOpen, initialData, isEditing]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -102,6 +139,19 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }: AddListingModalProps) =>
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+
+    // Validation for contact fields
+    if (contactNumber.trim() && !/^\+?\d{10,15}$/.test(contactNumber.trim())) {
+      alert("Please enter a valid phone number (10-15 digits, optional '+' prefix)");
+      setIsLoading(false);
+      return;
+    }
+    if (contactEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail.trim())) {
+      alert("Please enter a valid email address");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const priceNum = parseInt(price, 10) || 0;
       const imagesFromUrls = imageUrls.split(",").map((s) => s.trim()).filter(Boolean);
@@ -109,7 +159,6 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }: AddListingModalProps) =>
       const amenitiesList = amenities.split(",").map((s) => s.trim()).filter(Boolean);
       const allImages = [...uploadedImages, ...imagesFromUrls];
 
-      // Build the listing data object - Fixed conditional logic
       const listingData: NewListingInput = {
         title,
         location,
@@ -124,42 +173,48 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }: AddListingModalProps) =>
         parking,
         petFriendly,
         furnished,
-        // Always include deposit and maintenance as strings
-        deposit: deposit.trim() || "",
-        maintenance: maintenance.trim() || "",
+        deposit: deposit.trim() || undefined,
+        maintenance: maintenance.trim() || undefined,
+        contactNumber: contactNumber.trim() || undefined,
+        contactEmail: contactEmail.trim() || undefined,
       };
 
-      // Add optional string fields - only if they have actual content
-      if (area.trim()) {
-        listingData.area = area.trim();
-      }
+      if (area.trim()) listingData.area = area.trim();
+      if (description.trim()) listingData.description = description.trim();
+      if (amenitiesList.length > 0) listingData.amenities = amenitiesList;
+      if (availableFrom) listingData.availableFrom = availableFrom;
 
-      if (description.trim()) {
-        listingData.description = description.trim();
-      }
-
-      if (amenitiesList.length > 0) {
-        listingData.amenities = amenitiesList;
-      }
-
-      if (availableFrom) {
-        listingData.availableFrom = availableFrom;
-      }
-
-      console.log("=== FORM DATA DEBUG ===");
-      console.log("Raw deposit value:", `"${deposit}"`);
-      console.log("Raw maintenance value:", `"${maintenance}"`);
-      console.log("Processed deposit:", `"${listingData.deposit}"`);
-      console.log("Processed maintenance:", `"${listingData.maintenance}"`);
-      console.log("Full listing data:", JSON.stringify(listingData, null, 2));
+      console.log("=== FORM SUBMISSION DEBUG ===");
+      console.log("Raw form data:", {
+        title,
+        location,
+        price,
+        bedrooms,
+        bathrooms,
+        area,
+        description,
+        amenities,
+        availableFrom,
+        deposit,
+        maintenance,
+        parking,
+        petFriendly,
+        furnished,
+        contactNumber,
+        contactEmail,
+        images: allImages,
+        tags: tagList,
+        type,
+      });
+      console.log("Processed listing data:", JSON.stringify(listingData, null, 2));
       await onSubmit(listingData);
-      
-      // Reset form
+      console.log("Listing submitted successfully");
+
       resetForm();
       onClose();
     } catch (error) {
       console.error("Submission error:", error);
-      alert("Failed to create listing. Please try again.");
+      alert(`Failed to create listing: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
@@ -184,6 +239,8 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }: AddListingModalProps) =>
     setParking(false);
     setPetFriendly(false);
     setFurnished(false);
+    setContactNumber("");
+    setContactEmail("");
   };
 
   return (
@@ -207,7 +264,7 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }: AddListingModalProps) =>
               exit={{ y: 20, opacity: 0 }}
             >
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">Add New Listing</h3>
+                <h3 className="text-2xl font-bold text-gray-900">{isEditing ? "Edit Listing" : "Add New Listing"}</h3>
                 <button
                   onClick={onClose}
                   className="text-gray-500 hover:text-gray-800 text-2xl"
@@ -218,7 +275,6 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }: AddListingModalProps) =>
               </div>
 
               <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Basic Information */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Title <span className="text-red-500">*</span>
@@ -318,7 +374,6 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }: AddListingModalProps) =>
                   </select>
                 </div>
 
-                {/* Pricing Details */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Security Deposit (₹)
@@ -357,7 +412,6 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }: AddListingModalProps) =>
                   />
                 </div>
 
-                {/* Description */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Description
@@ -371,7 +425,6 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }: AddListingModalProps) =>
                   />
                 </div>
 
-                {/* Amenities Checkboxes */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-3">
                     Property Features
@@ -407,7 +460,6 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }: AddListingModalProps) =>
                   </div>
                 </div>
 
-                {/* Images */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Property Images
@@ -475,6 +527,32 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }: AddListingModalProps) =>
                   />
                 </div>
 
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Contact Number (Optional)
+                  </label>
+                  <input
+                    type="tel"
+                    value={contactNumber}
+                    onChange={(e) => setContactNumber(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    placeholder="+91 123 456 7890"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Contact Email (Optional)
+                  </label>
+                  <input
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    placeholder="example@domain.com"
+                  />
+                </div>
+
                 <div className="md:col-span-2 flex justify-end gap-4 pt-6 border-t border-gray-200">
                   <button
                     type="button"
@@ -489,11 +567,10 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }: AddListingModalProps) =>
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className={`px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-semibold hover:from-indigo-600 hover:to-pink-600 transition-all duration-200 ${
-                      isLoading ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
+                    className={`px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-semibold hover:from-indigo-600 hover:to-pink-600 transition-all duration-200 ${isLoading ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
                   >
-                    {isLoading ? "Creating..." : "Create Listing"}
+                    {isLoading ? (isEditing ? "Saving..." : "Creating...") : (isEditing ? "Save Changes" : "Create Listing")}
                   </button>
                 </div>
               </form>

@@ -5,7 +5,7 @@ import type { NewListingInput } from "../components/AddListingModal.tsx";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, MapPin, DollarSign, Home, Heart, Eye } from "lucide-react";
+import { Search, MapPin, DollarSign, Home, Heart, Eye, Users, Wifi, Car } from "lucide-react";
 import { getAllRooms, searchRooms, addToFavorites, createRoomListing } from "../api";
 
 // Updated interface to match backend Room entity exactly
@@ -28,6 +28,9 @@ interface Room {
   parking?: boolean;
   petFriendly?: boolean;
   furnished?: boolean;
+  contactNumber?: string;
+  contactEmail?: string;
+
   postedBy?: {
     id: number;
     name: string;
@@ -182,6 +185,8 @@ const FindRoom = () => {
         ...(listing.parking !== undefined && { parking: listing.parking }),
         ...(listing.petFriendly !== undefined && { petFriendly: listing.petFriendly }),
         ...(listing.furnished !== undefined && { furnished: listing.furnished }),
+        ...(listing.contactNumber && { contactNumber: listing.contactNumber }),
+        ...(listing.contactEmail && { contactEmail: listing.contactEmail }),
       };
       
       console.log("Sending room payload to API:", roomPayload);
@@ -207,14 +212,24 @@ const FindRoom = () => {
   };
 
   return (
-    <div className="min-h-screen pt-24 bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-end">
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="bg-gradient-to-r from-pink-500 to-indigo-500 text-white px-6 py-3 rounded-xl font-bold shadow hover:from-pink-600 hover:to-indigo-600 transition-all duration-200"
-        >
-          List a New Room
-        </button>
+    <div className="min-h-screen bg-gray-50 pt-16">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Find Your Perfect Space</h1>
+              <p className="text-gray-600 mt-1">Real rooms from real people</p>
+            </div>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+            >
+              <Home className="w-4 h-4" />
+              List Your Room
+            </button>
+          </div>
+        </div>
       </div>
       
       <AddListingModal
@@ -224,130 +239,97 @@ const FindRoom = () => {
       />
       
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
-          <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-6">
-            Find Your Perfect Room
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Discover amazing rooms and apartments that match your lifestyle and budget. 
-            From cozy studios to luxury apartments, find your next home today.
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 mb-12 border border-white/20"
-        >
-          <div className="flex items-center gap-3 mb-6">
-            <Search className="w-6 h-6 text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-800">Search Filters</h2>
+        {/* Search Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+          <div className="flex items-center gap-2 mb-6">
+            <Search className="w-5 h-5 text-gray-600" />
+            <h2 className="text-lg font-semibold text-gray-900">What are you looking for?</h2>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                <MapPin className="w-4 h-4" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <MapPin className="w-4 h-4 inline mr-1" />
                 Location
               </label>
               <input
                 type="text"
-                placeholder="City or neighborhood"
+                placeholder="Enter area or city"
                 value={searchFilters.location}
                 onChange={(e) => setSearchFilters({ ...searchFilters, location: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-<span className="w-4 h-4 inline-block">₹</span>
-                Budget
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <DollarSign className="w-4 h-4 inline mr-1" />
+                Monthly Budget
               </label>
               <select 
                 value={searchFilters.budget}
                 onChange={(e) => setSearchFilters({ ...searchFilters, budget: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Any budget</option>
-                <option value="5000-10000">₹5000 - ₹10000</option>
-                <option value="10000-15000">₹10001 - ₹15000</option>
-                <option value="15000-20000">₹15001 - ₹20000</option>
-                <option value="20000+">₹20001+</option>
+                <option value="5000-10000">₹5,000 - ₹10,000</option>
+                <option value="10000-15000">₹10,000 - ₹15,000</option>
+                <option value="15000-25000">₹15,000 - ₹25,000</option>
+                <option value="25000+">₹25,000+</option>
               </select>
             </div>
             
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                <Home className="w-4 h-4" />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Home className="w-4 h-4 inline mr-1" />
                 Room Type
               </label>
               <select 
                 value={searchFilters.roomType}
                 onChange={(e) => setSearchFilters({ ...searchFilters, roomType: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Any type</option>
-                <option value="Private">Private room</option>
-                <option value="Shared">Shared room</option>
-                <option value="Studio">Studio</option>
-                <option value="Hostel">Hostel</option>
+                <option value="Private">Private Room</option>
+                <option value="Shared">Shared Room</option>
+                <option value="Studio">Studio Apartment</option>
+                <option value="Hostel">Hostel/Paying Guest</option>
               </select>
             </div>
             
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Bedrooms</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Bedrooms</label>
               <select 
                 value={searchFilters.bedrooms}
                 onChange={(e) => setSearchFilters({ ...searchFilters, bedrooms: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Any</option>
-                <option value="0">Studio</option>
-                <option value="1">1 bedroom</option>
-                <option value="2">2 bedrooms</option>
-                <option value="3+">3+ bedrooms</option>
-              </select>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Bathrooms</label>
-              <select 
-                value={searchFilters.bathrooms}
-                onChange={(e) => setSearchFilters({ ...searchFilters, bathrooms: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              >
-                <option value="">Any</option>
-                <option value="1">1 bathroom</option>
-                <option value="2">2 bathrooms</option>
-                <option value="3+">3+ bathrooms</option>
+                <option value="1">1 Bedroom</option>
+                <option value="2">2 Bedrooms</option>
+                <option value="3">3 Bedrooms</option>
+                <option value="4+">4+ Bedrooms</option>
               </select>
             </div>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-4 mt-6">
+          <div className="flex gap-3">
             <button 
               onClick={handleSearch}
               disabled={loading}
-              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2.5 rounded-lg font-medium transition-colors duration-200"
             >
-              {loading ? "Searching..." : "Search Rooms"}
+              {loading ? "Searching..." : "Search"}
             </button>
             <button 
               onClick={handleClearFilters}
               disabled={loading}
-              className="px-6 py-4 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:border-gray-400 hover:bg-gray-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="border border-gray-300 hover:bg-gray-50 disabled:bg-gray-100 text-gray-700 px-6 py-2.5 rounded-lg font-medium transition-colors duration-200"
             >
-              Clear Filters
+              Clear
             </button>
           </div>
-        </motion.div>
+        </div>
 
         {loading && (
           <div className="text-center py-16">
@@ -401,111 +383,146 @@ const FindRoom = () => {
         )}
 
         {!loading && !error && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="space-y-8"
-          >
-            <div className="flex justify-between items-center">
-              <h3 className="text-2xl font-bold text-gray-800">
-                {rooms.length} Room{rooms.length !== 1 ? "s" : ""} Found
-              </h3>
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">
+                {rooms.length} {rooms.length === 1 ? 'Room' : 'Rooms'} Available
+              </h2>
+              <div className="text-sm text-gray-600">
+                Showing all available spaces in your area
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {rooms.map((room, index) => (
-                <motion.div
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {rooms.map((room) => (
+                <div
                   key={room.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-105 group"
+                  className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-200"
                 >
-                  <div className="relative h-64 overflow-hidden">
+                  {/* Image Section */}
+                  <div className="relative h-48 bg-gray-100">
                     <img
-                      src={room.images[0] || "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500"}
+                      src={room.images[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500"}
                       alt={room.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      className="w-full h-full object-cover"
                     />
-                    <div className="absolute top-4 right-4 flex gap-2">
-                      <button
-                        onClick={() => handleAddToFavorites(room.id)}
-                        className="p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-colors"
-                      >
-                        <Heart className="w-5 h-5 text-gray-600 hover:text-red-500" />
-                      </button>
-                    </div>
-                    <div className="absolute top-4 left-4">
-                      <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                    <div className="absolute top-3 left-3">
+                      <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">
                         {room.type}
                       </span>
                     </div>
+                    <button
+                      onClick={() => handleAddToFavorites(room.id)}
+                      className="absolute top-3 right-3 p-1.5 bg-white/90 rounded-full hover:bg-white transition-colors"
+                    >
+                      <Heart className="w-4 h-4 text-gray-600 hover:text-red-500" />
+                    </button>
                   </div>
 
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-3">
-                      <h4 className="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
+                  {/* Content Section */}
+                  <div className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-semibold text-gray-900 text-base leading-tight">
                         {room.title}
-                      </h4>
-                      <div className="text-right">
-                        {/* Updated to handle number price from backend */}
-                        <div className="text-2xl font-bold text-blue-600">₹{room.price}</div>
-                        <div className="text-sm text-gray-500">
-  {room.type === "Hostel" ? "per year" : "per month"}
-</div>
-
+                      </h3>
+                      <div className="text-right ml-2">
+                        <div className="text-lg font-bold text-gray-900">₹{room.price.toLocaleString()}</div>
+                        <div className="text-xs text-gray-500">
+                          {room.type === "Hostel" ? "per year" : "per month"}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 text-gray-600 mb-4">
-                      <MapPin className="w-4 h-4" />
-                      <span className="text-sm">{room.location}</span>
+                    <div className="flex items-center gap-1 text-gray-600 text-sm mb-3">
+                      <MapPin className="w-3 h-3" />
+                      <span className="truncate">{room.location}</span>
                     </div>
 
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                      <span>{room.bedrooms} bed{room.bedrooms !== 1 ? "s" : ""}</span>
-                      <span>•</span>
-                      <span>{room.bathrooms} bath{room.bathrooms !== 1 ? "s" : ""}</span>
-                      <span>•</span>
+                    {/* Room Details */}
+                    <div className="flex items-center gap-3 text-xs text-gray-600 mb-3">
+                      <span className="flex items-center gap-1">
+                        <Home className="w-3 h-3" />
+                        {room.bedrooms} bed{room.bedrooms !== 1 ? "s" : ""}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Users className="w-3 h-3" />
+                        {room.bathrooms} bath{room.bathrooms !== 1 ? "s" : ""}
+                      </span>
                       <span>{room.area}</span>
                     </div>
 
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {room.tags.slice(0, 3).map((tag, tagIndex) => (
-                        <span
-                          key={tagIndex}
-                          className="bg-gray-100 text-gray-700 px-2 py-1 rounded-lg text-xs font-medium"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                    {/* Amenities Preview */}
+                    {room.amenities && room.amenities.length > 0 && (
+                      <div className="flex items-center gap-2 mb-3">
+                        {room.amenities.slice(0, 3).map((amenity, index) => (
+                          <span key={index} className="text-xs text-gray-500">
+                            {amenity === "WiFi" && <Wifi className="w-3 h-3 inline" />}
+                            {amenity === "Parking" && <Car className="w-3 h-3 inline" />}
+                            {amenity}
+                          </span>
+                        ))}
+                        {room.amenities.length > 3 && (
+                          <span className="text-xs text-gray-400">+{room.amenities.length - 3} more</span>
+                        )}
+                      </div>
+                    )}
 
-                    <div className="flex gap-3">
+                    {/* Tags */}
+                    {room.tags && room.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {room.tags.slice(0, 2).map((tag, index) => (
+                          <span
+                            key={index}
+                            className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Posted By */}
+                    {room.postedBy && (
+                      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100">
+                        <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
+                        <div className="text-xs text-gray-600">
+                          <div className="font-medium">{room.postedBy.name}</div>
+                          <div className="text-gray-400">Listed by owner</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
                       <button
                         onClick={() => handleViewDetails(room.id)}
-                        className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center justify-center gap-2"
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-1"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-3 h-3" />
                         View Details
+                      </button>
+                      <button
+                        onClick={() => handleAddToFavorites(room.id)}
+                        className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                      >
+                        <Heart className="w-4 h-4 text-gray-600" />
                       </button>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
 
             {rooms.length === 0 && (
               <div className="text-center py-16">
                 <div className="text-gray-400 mb-4">
-                  <Home className="w-16 h-16 mx-auto" />
+                  <Home className="w-12 h-12 mx-auto" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">No rooms found</h3>
-                <p className="text-gray-500">Try adjusting your search filters to find more results.</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No rooms found</h3>
+                <p className="text-gray-600 text-sm">Try adjusting your search filters or browse all available rooms.</p>
               </div>
             )}
-          </motion.div>
+          </div>
         )}
       </div>
     </div>
