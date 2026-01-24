@@ -1,7 +1,21 @@
-import { useAuth } from "../contexts/AuthContext";
+import Footer from "@/components/Footer"
 import { Link, useNavigate } from "react-router-dom"
-import Carousel from "../components/Carousel"
-import { fetchRoomDetails, searchRoommates, addToFavorites } from "../api"
+import { fetchRoomDetails, addToFavorites } from "../api"
+import { useAuth } from "../contexts/AuthContext"
+import { Badge, Button, ScrollStack, ScrollStackItem, CardDescription, CardTitle } from "@/components/ui"
+import { motion } from "framer-motion"
+import {
+  MapPin,
+  Search,
+  ShieldCheck,
+  Users,
+  Zap,
+  Heart,
+  ArrowRight,
+  BedDouble,
+  Bath,
+  Maximize
+} from "lucide-react"
 
 const Home = () => {
   const { user } = useAuth();
@@ -23,14 +37,6 @@ const Home = () => {
     }
   };
 
-  const handleBookRoom = () => {
-    if (!user) {
-      navigate('/login');
-    } else {
-      navigate('/booknow');
-    }
-  };
-
   const handleAddToFavorites = async (roomId: number) => {
     if (!user) {
       navigate('/login');
@@ -46,21 +52,6 @@ const Home = () => {
     }
   };
 
-  const handleTryAPI = async (apiCall: () => Promise<any>) => {
-    if (!user) {
-      navigate('/login');
-    } else {
-      try {
-        const result = await apiCall();
-        alert("API called successfully! See console.");
-        console.log(result);
-      } catch (err) {
-        console.error('API call failed:', err);
-        alert('API call failed. Please try again.');
-      }
-    }
-  };
-
   const featuredRooms = [
     {
       id: 1,
@@ -70,7 +61,7 @@ const Home = () => {
       area: "1200 sq ft",
       bedrooms: 2,
       bathrooms: 2,
-      image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
+      image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80"
     },
     {
       id: 2,
@@ -80,7 +71,7 @@ const Home = () => {
       area: "800 sq ft",
       bedrooms: 1,
       bathrooms: 1,
-      image: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
+      image: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80"
     },
     {
       id: 3,
@@ -90,7 +81,7 @@ const Home = () => {
       area: "1800 sq ft",
       bedrooms: 3,
       bathrooms: 3,
-      image: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
+      image: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80"
     },
     {
       id: 4,
@@ -105,230 +96,278 @@ const Home = () => {
   ]
 
   return (
-  <div className="min-h-screen transition-colors duration-300 bg-[#0c0c1d] text-white">
-      {/* Carousel Section */}
-      <div className="mb-16">
-        <Carousel />
-      </div>
+    <div className="min-h-screen bg-[#0c0c1d] text-white overflow-hidden font-sans">
 
-      {/* Rooms in Bangalore Section */}
-      <div className="max-w-7xl mx-auto px-6 mb-20 ">
-        {/* Section Header */}
-        <div className="text-center mb-12">
-<h2 className="text-5xl md:text-4xl lg:text-6xl font-black mb-4 bg-gradient-to-r from-white via-yellow-200 to-orange-200 bg-clip-text text-transparent drop-shadow-2xl">
-            Rooms in Bangalore
-</h2>
-          <p className="text-xl text-white-600 max-w-2xl mx-auto transition-colors duration-300">
-            Discover the perfect accommodation in India's tech capital. From cozy studios to luxury apartments, find your ideal home.
-          </p>
-          <button
-            className="mt-6 px-6 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold shadow hover:from-indigo-600 hover:to-purple-600 transition-all duration-200"
-            onClick={handleGetStarted}
-          >
-            Get Started
-          </button>
+      {/* Hero Section */}
+      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
+        {/* Background Gradients & Elements */}
+        <div className="absolute top-0 left-0 w-full h-full">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0c0c1d]/60 to-[#0c0c1d] z-10" />
+          <img
+            src="https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+            alt="Hero Background"
+            className="w-full h-full object-cover opacity-40 scale-105 animate-slow-zoom"
+          />
+          <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-purple-600/30 rounded-full blur-[120px] mix-blend-screen animate-blob" />
+          <div className="absolute top-[20%] -right-[10%] w-[600px] h-[600px] bg-blue-600/30 rounded-full blur-[120px] mix-blend-screen animate-blob animation-delay-2000" />
         </div>
 
-        {/* Room Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 mb-12">
-          {featuredRooms.map((room) => (
-            <div key={room.id} className="bg-black rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group border border-gray-700 text-white">
-              <div className="flex flex-col lg:flex-row h-full">
-                {/* Room Image */}
-                <div className="lg:w-2/5 h-64 lg:h-auto overflow-hidden">
-                  <img 
-                    src={room.image} 
-                    alt={room.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                
-                {/* Room Details */}
-                <div className="lg:w-3/5 p-6 flex flex-col justify-between text-white">
-                  <div>
-                    <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors duration-300">
-                      {room.title}
-                    </h3>
-                    <p className="text-white mb-4 flex items-center transition-colors duration-300">
-                      <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
+        {/* Hero Content */}
+        <div className="relative z-20 container mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <Badge variant="outline" className="mb-6 px-4 py-2 text-sm border-blue-500/50 text-blue-200 backdrop-blur-md bg-blue-900/20 rounded-full uppercase tracking-widest font-semibold">
+              #1 Room Finding App in Bangalore
+            </Badge>
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-8 leading-tight tracking-tight">
+              Find Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">Perfect Space</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto mb-10 leading-relaxed font-light">
+              Join thousands of happy roommates in Bangalore. We connect you with verified listings and compatible flatmates seamlessly.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button
+                size="lg"
+                onClick={handleGetStarted}
+                className="h-14 px-8 text-lg rounded-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-lg shadow-blue-900/50 transition-all duration-300 hover:scale-105"
+              >
+                Detailed Search <Search className="ml-2 h-5 w-5" />
+              </Button>
+              <Button
+                size="lg"
+                variant="ghost"
+                className="h-14 px-8 text-lg rounded-full text-white border border-white/20 hover:bg-white/10 hover:text-white backdrop-blur-sm transition-all duration-300"
+              >
+                List a Room <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Featured Listings (Grid Layout) */}
+      <section className="py-24 relative bg-[#0c0c1d]">
+        <div className="container mx-auto px-6">
+          <div className="flex justify-between items-end mb-16">
+            <div>
+              <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-white to-gray-400 mb-4">
+                Featured Rooms
+              </h2>
+              <p className="text-gray-400 text-lg">Curated listings just for you</p>
+            </div>
+            <Link to="/find-room" className="hidden md:flex items-center text-blue-400 hover:text-blue-300 font-semibold transition-colors">
+              View All <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {featuredRooms.map((room) => (
+              <motion.div
+                key={room.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="bg-[#181836]/50 border border-white/10 rounded-xl overflow-hidden group hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-900/20 backdrop-blur-sm h-full flex flex-col">
+                  <div className="relative h-64 overflow-hidden">
+                    <img
+                      src={room.image}
+                      alt={room.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-sm font-semibold text-white border border-white/10">
+                      {room.price}
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToFavorites(room.id);
+                      }}
+                      className="absolute top-4 left-4 p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition-colors"
+                    >
+                      <Heart className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <div className="p-5 flex-grow">
+                    <CardTitle className="text-xl font-bold text-white mb-2 line-clamp-1">{room.title}</CardTitle>
+                    <CardDescription className="flex items-center text-gray-400 mb-4">
+                      <MapPin className="h-4 w-4 mr-1 text-blue-400" />
                       {room.location}
-                    </p>
-                    
-                    {/* Room Specifications */}
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                      <div className="flex items-center space-x-2">
-                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                        <span className="text-white">{room.bedrooms} BHK</span>
+                    </CardDescription>
+                    <div className="grid grid-cols-3 gap-2 text-sm text-gray-300">
+                      <div className="flex items-center gap-1 bg-white/5 py-1 px-2 rounded">
+                        <BedDouble className="h-4 w-4 text-blue-400" />
+                        <span>{room.bedrooms}</span>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
-                        <span className="text-white">{room.area}</span>
+                      <div className="flex items-center gap-1 bg-white/5 py-1 px-2 rounded">
+                        <Bath className="h-4 w-4 text-blue-400" />
+                        <span>{room.bathrooms}</span>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-                        </svg>
-                        <span className="text-white">{room.bathrooms} Bath</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                        </svg>
-                        <span className="text-white">{room.price}</span>
+                      <div className="flex items-center gap-1 bg-white/5 py-1 px-2 rounded">
+                        <Maximize className="h-4 w-4 text-blue-400" />
+                        <span>{room.area}</span>
                       </div>
                     </div>
                   </div>
-                  
-                  {/* View Details & Book Room Buttons */}
-                  <div className="mt-4 flex flex-col gap-2">
-                    <button
-                      className="w-full py-2 px-4 rounded-lg border border-blue-700 bg-blue-900 text-white font-medium text-sm hover:bg-blue-800 hover:border-blue-400 transition-all duration-200"
-                      onClick={() => handleViewDetails(room.id)}
-                    >
+                  <div className="p-5 pt-0">
+                    <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border-none" onClick={() => handleViewDetails(room.id)}>
                       View Details
-                    </button>
-                    <button
-                      className="w-full py-2 px-4 rounded-lg border border-green-700 bg-green-900 text-white font-medium text-sm hover:bg-green-800 hover:border-green-400 transition-all duration-200"
-                      onClick={handleBookRoom}
-                    >
-                      Book Room
-                    </button>
-                    <button
-                      className="w-full py-2 px-4 rounded-lg border border-purple-700 bg-purple-900 text-white font-medium text-sm hover:bg-purple-800 hover:border-purple-400 transition-all duration-200"
-                      onClick={() => handleAddToFavorites(room.id)}
-                    >
-                      Add to Favorites
-                    </button>
+                    </Button>
                   </div>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* View More Button */}
-        <div className="text-center">
-          <Link 
-            to="/find-room"
-            className="inline-flex items-center space-x-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-2xl text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
-          >
-            <span>View More Rooms</span>
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </Link>
-        </div>
-      </div>
-
-      {/* Welcome Section */}
-      <div className="max-w-7xl mx-auto px-6 mb-20 ">
-        <div className="text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white-800 mb-6 transition-colors duration-300">
-            Welcome to RoomieRadar
-          </h2>
-          <p className="text-xl text-white-600 max-w-3xl mx-auto mb-12 transition-colors duration-300">
-            Your trusted platform for finding the perfect accommodation and roommates in Bangalore. 
-            Whether you're a student, professional, or newcomer to the city, we've got you covered.
-          </p>
-        </div>
-
-        {/* Feature Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          <div className="bg-[#181836] p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-center group hover:-translate-y-2 border border-gray-700 text-white">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-blue-200 transition-colors duration-300">
-              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-4 transition-colors duration-300">Find Your Perfect Room</h3>
-            <p className="text-gray-300 transition-colors duration-300">
-              Browse through thousands of verified listings with detailed information, photos, and virtual tours.
-            </p>
-            <button
-              className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300"
-              onClick={() => handleTryAPI(() => fetchRoomDetails(featuredRooms[0].id))}
-            >Try Room API</button>
+              </motion.div>
+            ))}
           </div>
 
-          <div className="bg-[#181836] p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-center group hover:-translate-y-2 border border-gray-700 text-white">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-green-200 transition-colors duration-300">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-4 transition-colors duration-300">Connect with Roommates</h3>
-            <p className="text-gray-300 transition-colors duration-300">
-              Find compatible roommates based on lifestyle, preferences, and compatibility scores.
-            </p>
-            <button
-              className="mt-4 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300"
-              onClick={() => handleTryAPI(() => searchRoommates())}
-            >Try Roommate API</button>
-          </div>
-
-          <div className="bg-[#181836] p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-center group hover:-translate-y-2 border border-gray-700 text-white">
-            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-purple-200 transition-colors duration-300">
-              <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold text-white mb-4 transition-colors duration-300">Verified & Secure</h3>
-            <p className="text-gray-300 transition-colors duration-300">
-              All listings are verified and secure. Your safety and satisfaction are our top priorities.
-            </p>
-            <button
-              className="mt-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300"
-              onClick={() => handleTryAPI(() => addToFavorites(featuredRooms[0].id))}
-            >Try Favorites API</button>
+          <div className="mt-8 text-center md:hidden">
+            <Link to="/find-room" className="inline-flex items-center text-blue-400 hover:text-blue-300 font-semibold transition-colors">
+              View All Rooms <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
           </div>
         </div>
+      </section>
 
-        {/* Additional Features */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="text-center">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 transition-colors duration-300">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h4 className="font-semibold text-white transition-colors duration-300">24/7 Support</h4>
+      {/* Why Choose Us with ScrollStack (Features) */}
+      <section className="bg-[#0F0F24] relative pb-[32rem]">
+        <div className="container mx-auto px-6 pt-24">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <Badge variant="secondary" className="mb-4 bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 border-purple-500/20">Why RoomieRadar?</Badge>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">More Than Just Listings</h2>
+            <p className="text-gray-400 text-lg">We create connections that last. Swipe to see what makes us special.</p>
           </div>
 
-          <div className="text-center">
-            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 transition-colors duration-300">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h4 className="font-semibold text-white transition-colors duration-300">Instant Booking</h4>
-          </div>
+          <div className="w-full max-w-6xl mx-auto">
+            <ScrollStack useWindowScroll={true} itemStackDistance={80} itemDistance={100} stackPosition="25%">
+              {/* Card 1: Verified via Background Checks */}
+              <ScrollStackItem itemClassName="bg-[#1e1b4b] bg-gradient-to-br from-blue-900 to-slate-900 border-blue-500/20 overflow-hidden">
+                <div className="flex flex-col md:flex-row h-full">
+                  <div className="w-full md:w-1/2 p-8 flex flex-col justify-center text-left">
+                    <div className="w-16 h-16 bg-blue-500/20 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/10">
+                      <ShieldCheck className="w-8 h-8 text-blue-400" />
+                    </div>
+                    <h3 className="text-3xl font-bold text-white mb-4">100% Verified Listings</h3>
+                    <p className="text-lg text-gray-300 mb-6 leading-relaxed">
+                      We take safety seriously. Every host and room on our platform undergoes a strict manual verification process.
+                    </p>
+                    <ul className="space-y-3 text-gray-400">
+                      <li className="flex items-center"><div className="w-2 h-2 bg-blue-400 rounded-full mr-3" /> Identity verification checks</li>
+                      <li className="flex items-center"><div className="w-2 h-2 bg-blue-400 rounded-full mr-3" /> Property ownership validation</li>
+                      <li className="flex items-center"><div className="w-2 h-2 bg-blue-400 rounded-full mr-3" /> Scam-free guarantee</li>
+                    </ul>
+                  </div>
+                  <div className="w-full md:w-1/2 relative h-64 md:h-auto overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#1e1b4b] to-transparent z-10" />
+                    <img
+                      src="https://images.unsplash.com/photo-1573164713988-8665fc963095?ixlib=rb-4.0.3&auto=format&fit=crop&w=1469&q=80"
+                      alt="Security Check"
+                      className="w-full h-full object-cover opacity-80"
+                    />
+                  </div>
+                </div>
+              </ScrollStackItem>
 
-          <div className="text-center">
-            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 transition-colors duration-300">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            </div>
-            <h4 className="font-semibold text-white transition-colors duration-300">Favorites</h4>
-          </div>
+              {/* Card 2: AI Compatibility */}
+              <ScrollStackItem itemClassName="bg-[#2e1065] bg-gradient-to-br from-purple-900 to-fuchsia-900 border-purple-500/20 overflow-hidden">
+                <div className="flex flex-col md:flex-row h-full">
+                  <div className="w-full md:w-1/2 p-8 flex flex-col justify-center text-left">
+                    <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-purple-500/10">
+                      <Users className="w-8 h-8 text-purple-400" />
+                    </div>
+                    <h3 className="text-3xl font-bold text-white mb-4">Compatible Roommates</h3>
+                    <p className="text-lg text-gray-300 mb-6 leading-relaxed">
+                      Living with someone is personal. Our AI matches you based on lifestyle, habits, and personality traits.
+                    </p>
+                    <ul className="space-y-3 text-gray-400">
+                      <li className="flex items-center"><div className="w-2 h-2 bg-purple-400 rounded-full mr-3" /> Lifestyle & habit matching</li>
+                      <li className="flex items-center"><div className="w-2 h-2 bg-purple-400 rounded-full mr-3" /> Chat before you book</li>
+                      <li className="flex items-center"><div className="w-2 h-2 bg-purple-400 rounded-full mr-3" /> Community events & meetups</li>
+                    </ul>
+                  </div>
+                  <div className="w-full md:w-1/2 relative h-64 md:h-auto overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#2e1065] to-transparent z-10" />
+                    <img
+                      src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?ixlib=rb-4.0.3&auto=format&fit=crop&w=1632&q=80"
+                      alt="Friends hanging out"
+                      className="w-full h-full object-cover opacity-80"
+                    />
+                  </div>
+                </div>
+              </ScrollStackItem>
 
-          <div className="text-center">
-            <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 transition-colors duration-300">
-              <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <h4 className="font-semibold text-white transition-colors duration-300">Fast Search</h4>
+              {/* Card 3: Instant Booking */}
+              <ScrollStackItem itemClassName="bg-[#431407] bg-gradient-to-br from-orange-900 to-red-900 border-orange-500/20 overflow-hidden">
+                <div className="flex flex-col md:flex-row h-full">
+                  <div className="w-full md:w-1/2 p-8 flex flex-col justify-center text-left">
+                    <div className="w-16 h-16 bg-orange-500/20 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-orange-500/10">
+                      <Zap className="w-8 h-8 text-orange-400" />
+                    </div>
+                    <h3 className="text-3xl font-bold text-white mb-4">Instant Booking</h3>
+                    <p className="text-lg text-gray-300 mb-6 leading-relaxed">
+                      Found the one? Secure it instantly using our safe payment gateway. No waiting for approvals.
+                    </p>
+                    <ul className="space-y-3 text-gray-400">
+                      <li className="flex items-center"><div className="w-2 h-2 bg-orange-400 rounded-full mr-3" /> Secure payment hold</li>
+                      <li className="flex items-center"><div className="w-2 h-2 bg-orange-400 rounded-full mr-3" /> 24-hour refund policy</li>
+                      <li className="flex items-center"><div className="w-2 h-2 bg-orange-400 rounded-full mr-3" /> Digital lease signing</li>
+                    </ul>
+                  </div>
+                  <div className="w-full md:w-1/2 relative h-64 md:h-auto overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#431407] to-transparent z-10" />
+                    <img
+                      src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1073&q=80"
+                      alt="Digital Booking"
+                      className="w-full h-full object-cover opacity-80"
+                    />
+                  </div>
+                </div>
+              </ScrollStackItem>
+            </ScrollStack>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-20 border-t border-white/5 bg-[#0c0c1d] relative z-10">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+              <div className="text-4xl md:text-5xl font-black text-white mb-2">50k+</div>
+              <div className="text-gray-500 font-medium tracking-wide">Active Users</div>
+            </div>
+            <div>
+              <div className="text-4xl md:text-5xl font-black text-white mb-2">10k+</div>
+              <div className="text-gray-500 font-medium tracking-wide">Rooms Listed</div>
+            </div>
+            <div>
+              <div className="text-4xl md:text-5xl font-black text-white mb-2">100+</div>
+              <div className="text-gray-500 font-medium tracking-wide">Cities</div>
+            </div>
+            <div>
+              <div className="text-4xl md:text-5xl font-black text-white mb-2">4.8/5</div>
+              <div className="text-gray-500 font-medium tracking-wide">App Rating</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action */}
+      <section className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/40 to-purple-900/40 z-0" />
+        <div className="container mx-auto px-6 relative z-10 text-center">
+          <h2 className="text-4xl md:text-6xl font-bold text-white mb-8">Ready to find your new home?</h2>
+          <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">Join the fastest growing roommate community in India today.</p>
+          <Button size="lg" onClick={handleGetStarted} className="h-16 px-10 rounded-full text-lg bg-white text-blue-900 hover:bg-blue-50 hover:text-blue-950 shadow-xl transition-all hover:scale-105 font-bold">
+            Get Started Now
+          </Button>
+        </div>
+      </section>
+
+      <Footer />
+
     </div>
   )
 }

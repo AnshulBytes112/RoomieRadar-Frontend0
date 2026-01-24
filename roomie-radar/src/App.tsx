@@ -18,6 +18,8 @@ import CreateProfile from "./pages/CreateProfile"
 import MyBookings from "./pages/MyBookings"
 import MyListings from "./pages/MyListings"
 import Profile from "./pages/Profile"
+import Messages from "./pages/Messages"
+import Connections from "./pages/Connections"
 function App() {
   const location = useLocation();
   const hideNavbarRoutes = ['/login', '/register', '/unauthorized'];
@@ -25,7 +27,7 @@ function App() {
 
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-[#0c0c1d]">
         {showNavbar && <Navbar />}
         <AnimatePresence mode="wait">
           <Routes>
@@ -34,11 +36,21 @@ function App() {
             <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
             <Route path="/unauthorized" element={<PageWrapper><Unauthorized /></PageWrapper>} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/create-profile" element={<CreateProfile />} />
-            <Route path="/my-bookings" element={<MyBookings />} />
+            <Route path="/create-profile" element={<ProtectedRoute requiredRoles={['student', 'admin']}><PageWrapper><CreateProfile /></PageWrapper></ProtectedRoute>} />
+            <Route path="/my-bookings" element={<ProtectedRoute requiredRoles={['student', 'admin']}><PageWrapper><MyBookings /></PageWrapper></ProtectedRoute>} />
             <Route path="/profile" element={
               <ProtectedRoute requiredRoles={['student', 'admin']}>
                 <PageWrapper><Profile /></PageWrapper>
+              </ProtectedRoute>
+            } />
+            <Route path="/messages" element={
+              <ProtectedRoute requiredRoles={['student', 'admin']}>
+                <PageWrapper><Messages /></PageWrapper>
+              </ProtectedRoute>
+            } />
+            <Route path="/connections" element={
+              <ProtectedRoute requiredRoles={['student', 'admin']}>
+                <PageWrapper><Connections /></PageWrapper>
               </ProtectedRoute>
             } />
             <Route path="/my-listings" element={<ProtectedRoute requiredRoles={['student', 'admin']}><PageWrapper><MyListings /></PageWrapper></ProtectedRoute>} />

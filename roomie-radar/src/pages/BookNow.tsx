@@ -95,7 +95,7 @@ const BookNow: React.FC = () => {
 
     setIsSubmitting(true);
     setSubmitStatus('idle');
-    
+
     try {
       // Call the booking API
       await bookRoom(room.id, {
@@ -103,10 +103,10 @@ const BookNow: React.FC = () => {
         message: data.message,
         phone: data.phone || user?.phone || ''
       });
-      
+
       setSubmitStatus('success');
       reset();
-      
+
       // Redirect to bookings page after 2 seconds
       setTimeout(() => {
         navigate('/my-bookings');
@@ -147,7 +147,7 @@ const BookNow: React.FC = () => {
   if (error || !room) {
     return (
       <div className="min-h-screen pt-20 flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center max-w-md mx-auto p-8"
@@ -171,63 +171,70 @@ const BookNow: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen pt-20 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Room Details Header */}
+    <div className="min-h-screen pt-24 bg-[#0c0c1d] pb-20 relative overflow-hidden">
+      {/* Background blobs for depth */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
+        <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob" />
+        <div className="absolute top-[40%] -right-[10%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob animation-delay-2000" />
+      </div>
+
+      <div className="max-w-4xl mx-auto px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="bg-white/80 backdrop-blur-lg p-8 rounded-3xl shadow-xl border border-white/20 mb-8"
+          className="mb-16"
         >
-          <div className="flex items-start justify-between mb-6">
-            <div className="flex-1">
-              <h1 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-3">
-                Book: {room.title}
-              </h1>
-              <p className="text-gray-600 mb-4 leading-relaxed">
-                {room.description || 'A wonderful room waiting for you!'}
-              </p>
-              <div className="flex items-center gap-4 text-sm text-gray-500">
-                <span className="flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  </svg>
-                  {room.location}
-                </span>
-                <span>{room.area}</span>
-                <span>{room.bedrooms} BHK</span>
-                <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                  {room.type}
-                </span>
-              </div>
-            </div>
-            {room.images && room.images.length > 0 && (
-              <div className="ml-6">
-                <img
-                  src={room.images[0]}
-                  alt={room.title}
-                  className="w-32 h-32 rounded-2xl object-cover shadow-lg"
-                />
-              </div>
-            )}
-          </div>
-          
-          <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-            <span className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              {formatPrice(room.price)}
-                {room.type === "Hostel" ? "/year" : "/month"}
-
-            </span>
-            <button
-              onClick={handleGoBack}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-            >
+          <button
+            onClick={handleGoBack}
+            className="flex items-center gap-3 text-gray-500 hover:text-white mb-8 transition-colors group font-black uppercase tracking-widest text-[10px]"
+          >
+            <div className="w-8 h-8 glass-card rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-all border-none">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              View Details
-            </button>
+            </div>
+            Back to Space
+          </button>
+          <h1 className="text-5xl md:text-6xl font-black text-white tracking-tight uppercase leading-none">
+            Finalize <span className="text-gradient">Booking</span>
+          </h1>
+        </motion.div>
+
+        {/* Room Preview Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="glass-card p-10 rounded-[3rem] border-white/5 mb-10 group overflow-hidden relative shadow-2xl"
+        >
+          <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-500 opacity-20" />
+
+          <div className="flex flex-col md:flex-row items-center gap-10">
+            {room.images && room.images.length > 0 && (
+              <div className="w-full md:w-56 h-56 flex-shrink-0">
+                <img
+                  src={room.images[0]}
+                  alt={room.title}
+                  className="w-full h-full rounded-[2.5rem] object-cover border-2 border-white/5 shadow-2xl group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+            )}
+            <div className="flex-1 space-y-4">
+              <h2 className="text-3xl font-black text-white tracking-tight uppercase group-hover:text-blue-400 transition-colors">
+                {room.title}
+              </h2>
+              <div className="flex flex-wrap gap-3">
+                <span className="px-4 py-2 glass-card rounded-full text-[10px] font-black uppercase tracking-widest text-pink-400 border-none">{room.location}</span>
+                <span className="px-4 py-2 glass-card rounded-full text-[10px] font-black uppercase tracking-widest text-blue-400 border-none">{room.bedrooms} BHK</span>
+                <span className="px-4 py-2 glass-card rounded-full text-[10px] font-black uppercase tracking-widest text-purple-400 border-none">{room.type}</span>
+              </div>
+              <div className="text-4xl font-black text-white tracking-tighter pt-2">
+                {formatPrice(room.price)}
+                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-3">
+                  / {room.type === "Hostel" ? "Year" : "Month"}
+                </span>
+              </div>
+            </div>
           </div>
         </motion.div>
 
@@ -236,223 +243,115 @@ const BookNow: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="bg-white/80 backdrop-blur-lg p-8 rounded-3xl shadow-xl border border-white/20"
+          className="glass-card p-12 rounded-[3.5rem] border-white/5 shadow-2xl"
         >
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-3">Complete Your Booking</h2>
-            <p className="text-gray-600">
-              Fill in your details below to send a booking request. The room owner will review and respond to you.
-            </p>
-          </div>
-          
           {submitStatus === 'success' && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-800 p-6 rounded-2xl mb-6"
+              className="mb-10 bg-green-500/10 border border-green-500/20 p-8 rounded-[2.5rem] text-center"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-semibold">Booking request sent successfully!</p>
-                  <p className="text-sm text-green-700">The room owner will contact you soon. Redirecting to your bookings...</p>
-                </div>
+              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-green-500/20">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
               </div>
+              <h3 className="text-2xl font-black text-white mb-2 uppercase">Request Transmitted</h3>
+              <p className="text-gray-400 font-medium tracking-wide">The room owner is now alerted. Redirecting to your secure dashboard...</p>
             </motion.div>
           )}
-          
+
           {submitStatus === 'error' && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 text-red-800 p-6 rounded-2xl mb-6"
+              className="mb-10 bg-red-500/10 border border-red-500/20 p-8 rounded-[2.5rem] text-center"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-semibold">Error sending booking request</p>
-                  <p className="text-sm text-red-700">Please check your connection and try again.</p>
-                </div>
+              <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 9v2m0 4h.01" />
+                </svg>
               </div>
+              <p className="text-red-400 font-black uppercase tracking-widest text-xs">Signal Failed</p>
+              <p className="text-gray-400 mt-2">Could not establish booking link. Re-attempt required.</p>
             </motion.div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Full Name *
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  className="w-full p-4 rounded-xl bg-white/50 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
-                  placeholder="Enter your full name"
-                  {...register('name', {
-                    required: 'Name is required',
-                    minLength: {
-                      value: 2,
-                      message: 'Name must be at least 2 characters'
-                    }
-                  })}
-                  aria-invalid={errors.name ? 'true' : 'false'}
-                />
-                {errors.name && (
-                  <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01" />
-                    </svg>
-                    {errors.name.message}
-                  </p>
-                )}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-10" noValidate>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Identity Confirmation</label>
+                <div className="relative group/input">
+                  <input
+                    type="text"
+                    className="w-full p-5 rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all outline-none text-white font-bold"
+                    placeholder="Candidate Full Name"
+                    {...register('name', { required: 'Name is required' })}
+                  />
+                </div>
+                {errors.name && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest ml-1">{errors.name.message}</p>}
               </div>
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email Address *
-                </label>
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Contact Protocol (Email)</label>
                 <input
-                  id="email"
                   type="email"
-                  className="w-full p-4 rounded-xl bg-white/50 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
-                  placeholder="Enter your email"
-                  {...register('email', {
-                    required: 'Email is required',
-                    pattern: {
-                      value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                      message: 'Invalid email address'
-                    }
-                  })}
-                  aria-invalid={errors.email ? 'true' : 'false'}
+                  className="w-full p-5 rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all outline-none text-white font-bold"
+                  placeholder="name@domain.com"
+                  {...register('email', { required: 'Email is required' })}
                 />
-                {errors.email && (
-                  <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01" />
-                    </svg>
-                    {errors.email.message}
-                  </p>
-                )}
+                {errors.email && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest ml-1">{errors.email.message}</p>}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Phone Number
-                </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Comms Frequency (Phone)</label>
                 <input
-                  id="phone"
                   type="tel"
-                  className="w-full p-4 rounded-xl bg-white/50 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
-                  placeholder="Enter your phone number (optional)"
-                  {...register('phone', {
-                    pattern: {
-                      value: /^[\+]?[1-9][\d]{0,15}$/,
-                      message: 'Invalid phone number'
-                    }
-                  })}
+                  className="w-full p-5 rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all outline-none text-white font-bold"
+                  placeholder="+91 XXXXX XXXXX"
+                  {...register('phone')}
                 />
-                {errors.phone && (
-                  <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01" />
-                    </svg>
-                    {errors.phone.message}
-                  </p>
-                )}
               </div>
 
-              <div>
-                <label htmlFor="checkInDate" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Preferred Check-in Date *
-                </label>
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Activation Date</label>
                 <input
-                  id="checkInDate"
                   type="date"
-                  className="w-full p-4 rounded-xl bg-white/50 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  {...register('checkInDate', {
-                    required: 'Check-in date is required',
-                    validate: value => {
-                      const selectedDate = new Date(value);
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      return selectedDate >= today || 'Check-in date cannot be in the past';
-                    }
-                  })}
-                  aria-invalid={errors.checkInDate ? 'true' : 'false'}
+                  className="w-full p-5 rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-orange-500/50 focus:border-transparent transition-all outline-none text-white font-bold"
+                  {...register('checkInDate', { required: 'Check-in date is required' })}
                 />
-                {errors.checkInDate && (
-                  <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01" />
-                    </svg>
-                    {errors.checkInDate.message}
-                  </p>
-                )}
+                {errors.checkInDate && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest ml-1">{errors.checkInDate.message}</p>}
               </div>
             </div>
 
-            <div>
-              <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">
-                Message to Room Owner
-              </label>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Direct Signal Message</label>
               <textarea
-                id="message"
                 rows={4}
-                className="w-full p-4 rounded-xl bg-white/50 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400 resize-none"
-                placeholder="Tell the room owner why you're interested, any questions you have, or special requirements..."
-                {...register('message', {
-                  maxLength: {
-                    value: 500,
-                    message: 'Message cannot exceed 500 characters'
-                  }
-                })}
+                className="w-full p-6 rounded-3xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all outline-none text-white font-medium resize-none leading-relaxed"
+                placeholder="Declare your intent and any special requirements for this elite space..."
+                {...register('message', { maxLength: { value: 500, message: 'Message cannot exceed 500 characters' } })}
               />
-              {errors.message && (
-                <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01" />
-                  </svg>
-                  {errors.message.message}
-                </p>
-              )}
+              {errors.message && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest ml-1">{errors.message.message}</p>}
             </div>
 
-            <div className="flex gap-4 pt-4">
-              <motion.button
+            <div className="flex gap-6 pt-6">
+              <button
                 type="button"
                 onClick={handleGoBack}
-                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 px-6 rounded-xl transition-all duration-300 focus:ring-2 focus:ring-gray-500"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                className="flex-1 h-20 glass-card bg-white/5 border-white/10 text-gray-400 hover:text-white rounded-[2rem] font-black uppercase tracking-[0.3em] text-[10px] transition-all"
               >
-                Back to Room
-              </motion.button>
-              <motion.button
+                Abort Protocol
+              </button>
+              <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                className="flex-[2] h-20 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white rounded-[2rem] font-black uppercase tracking-[0.3em] text-[10px] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-purple-900/40 disabled:opacity-50"
               >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2 justify-center">
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Sending Request...
-                  </span>
-                ) : (
-                  'Send Booking Request'
-                )}
-              </motion.button>
+                {isSubmitting ? 'Transmitting...' : 'Initiate Secure Booking'}
+              </button>
             </div>
           </form>
         </motion.div>

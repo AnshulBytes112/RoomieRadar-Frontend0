@@ -5,7 +5,7 @@ import type { NewListingInput } from "../components/AddListingModal.tsx";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, MapPin, DollarSign, Home, Heart, Eye, Users, Wifi, Car } from "lucide-react";
+import { Search, MapPin, DollarSign, Home, Heart, Eye, Users, BedDouble, Bath, Maximize } from "lucide-react";
 import { getAllRooms, searchRooms, addToFavorites, createRoomListing } from "../api";
 
 // Updated interface to match backend Room entity exactly
@@ -163,7 +163,7 @@ const FindRoom = () => {
 
     try {
       console.log("Creating new room with data:", listing);
-      
+
       // Convert NewListingInput to match backend Room entity exactly
       const roomPayload = {
         title: listing.title,
@@ -188,17 +188,17 @@ const FindRoom = () => {
         ...(listing.contactNumber && { contactNumber: listing.contactNumber }),
         ...(listing.contactEmail && { contactEmail: listing.contactEmail }),
       };
-      
+
       console.log("Sending room payload to API:", roomPayload);
       const newRoom = await createRoomListing(roomPayload);
       console.log("Room created successfully:", newRoom);
-      
+
       // Add new room to the top of the list
       setRooms((prevRooms) => [newRoom, ...prevRooms]);
       setShowAddModal(false);
     } catch (err: any) {
       console.error("Failed to create room:", err);
-      
+
       // Better error handling
       let errorMessage = "Failed to create room. Please try again.";
       if (err?.response?.data?.message) {
@@ -206,174 +206,176 @@ const FindRoom = () => {
       } else if (err?.message) {
         errorMessage = err.message;
       }
-      
+
       setError(errorMessage);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Find Your Perfect Space</h1>
-              <p className="text-gray-600 mt-1">Real rooms from real people</p>
-            </div>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
-            >
-              <Home className="w-4 h-4" />
-              List Your Room
-            </button>
-          </div>
-        </div>
+    <div className="min-h-screen bg-[#0c0c1d] pt-24 relative overflow-hidden">
+      {/* Background blobs for depth */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+        <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob" />
+        <div className="absolute top-[40%] -right-[10%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob animation-delay-2000" />
       </div>
-      
-      <AddListingModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onSubmit={handleAddRoom}
-      />
-      
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Search Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="flex items-center gap-2 mb-6">
-            <Search className="w-5 h-5 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-900">What are you looking for?</h2>
+
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        {/* Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12"
+        >
+          <div>
+            <h1 className="text-5xl font-black text-white mb-4 tracking-tight">
+              Elite <span className="text-gradient">Spaces</span>
+            </h1>
+            <p className="text-xl text-gray-400 font-light">Discover hand-picked premium listings in your favorite neighborhoods.</p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <MapPin className="w-4 h-4 inline mr-1" />
-                Location
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl text-white font-bold transition-all hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 flex items-center gap-3"
+          >
+            <Home className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+            List Your Room
+          </button>
+        </motion.div>
+
+        <AddListingModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          onSubmit={handleAddRoom}
+        />
+
+        {/* Search & Filter Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="glass-card p-10 rounded-[2.5rem] mb-16 shadow-2xl border-white/5 relative overflow-hidden group"
+        >
+          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-500 opacity-50" />
+
+          <div className="flex items-center gap-4 mb-10">
+            <div className="w-12 h-12 glass-card rounded-xl flex items-center justify-center">
+              <Search className="w-6 h-6 text-blue-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white tracking-tight">Refine Your Search</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+            <div className="space-y-3">
+              <label className="text-sm font-bold text-gray-400 ml-1 uppercase tracking-widest flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-blue-500" /> Location
               </label>
               <input
                 type="text"
-                placeholder="Enter area or city"
+                placeholder="Where to?"
                 value={searchFilters.location}
                 onChange={(e) => setSearchFilters({ ...searchFilters, location: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-5 py-4 glass-card rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all bg-white/5 text-white placeholder-gray-500 border-white/5"
               />
             </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <DollarSign className="w-4 h-4 inline mr-1" />
-                Monthly Budget
+
+            <div className="space-y-3">
+              <label className="text-sm font-bold text-gray-400 ml-1 uppercase tracking-widest flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-purple-500" /> Monthly Budget
               </label>
-              <select 
+              <select
                 value={searchFilters.budget}
                 onChange={(e) => setSearchFilters({ ...searchFilters, budget: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-5 py-4 glass-card rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all bg-[#1a1a3a] text-white border-white/5 appearance-none cursor-pointer"
               >
-                <option value="">Any budget</option>
-                <option value="5000-10000">₹5,000 - ₹10,000</option>
-                <option value="10000-15000">₹10,000 - ₹15,000</option>
-                <option value="15000-25000">₹15,000 - ₹25,000</option>
-                <option value="25000+">₹25,000+</option>
+                <option value="" className="bg-[#0c0c1d]">Any budget</option>
+                <option value="5000-10000" className="bg-[#0c0c1d]">₹5,000 - ₹10,000</option>
+                <option value="10000-15000" className="bg-[#0c0c1d]">₹10,000 - ₹15,000</option>
+                <option value="15000-25000" className="bg-[#0c0c1d]">₹15,000 - ₹25,000</option>
+                <option value="25000+" className="bg-[#0c0c1d]">₹25,000+</option>
               </select>
             </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Home className="w-4 h-4 inline mr-1" />
-                Room Type
+
+            <div className="space-y-3">
+              <label className="text-sm font-bold text-gray-400 ml-1 uppercase tracking-widest flex items-center gap-2">
+                <Home className="w-4 h-4 text-pink-500" /> Room Type
               </label>
-              <select 
+              <select
                 value={searchFilters.roomType}
                 onChange={(e) => setSearchFilters({ ...searchFilters, roomType: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-5 py-4 glass-card rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all bg-[#1a1a3a] text-white border-white/5 appearance-none cursor-pointer"
               >
-                <option value="">Any type</option>
-                <option value="Private">Private Room</option>
-                <option value="Shared">Shared Room</option>
-                <option value="Studio">Studio Apartment</option>
-                <option value="Hostel">Hostel/Paying Guest</option>
+                <option value="" className="bg-[#0c0c1d]">Any type</option>
+                <option value="Private" className="bg-[#0c0c1d]">Private Room</option>
+                <option value="Shared" className="bg-[#0c0c1d]">Shared Room</option>
+                <option value="Studio" className="bg-[#0c0c1d]">Studio Apartment</option>
+                <option value="Hostel" className="bg-[#0c0c1d]">Hostel/PG</option>
               </select>
             </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Bedrooms</label>
-              <select 
+
+            <div className="space-y-3">
+              <label className="text-sm font-bold text-gray-400 ml-1 uppercase tracking-widest flex items-center gap-2">
+                <Users className="w-4 h-4 text-orange-500" /> Bedrooms
+              </label>
+              <select
                 value={searchFilters.bedrooms}
                 onChange={(e) => setSearchFilters({ ...searchFilters, bedrooms: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-5 py-4 glass-card rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all bg-[#1a1a3a] text-white border-white/5 appearance-none cursor-pointer"
               >
-                <option value="">Any</option>
-                <option value="1">1 Bedroom</option>
-                <option value="2">2 Bedrooms</option>
-                <option value="3">3 Bedrooms</option>
-                <option value="4+">4+ Bedrooms</option>
+                <option value="" className="bg-[#0c0c1d]">Any</option>
+                <option value="1" className="bg-[#0c0c1d]">1 Bed</option>
+                <option value="2" className="bg-[#0c0c1d]">2 Beds</option>
+                <option value="3" className="bg-[#0c0c1d]">3 Beds</option>
+                <option value="4+" className="bg-[#0c0c1d]">4+ Beds</option>
               </select>
             </div>
           </div>
-          
-          <div className="flex gap-3">
-            <button 
+
+          <div className="flex gap-4">
+            <button
               onClick={handleSearch}
               disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2.5 rounded-lg font-medium transition-colors duration-200"
+              className="px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl text-white font-bold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 shadow-xl shadow-blue-900/30 flex-1 md:flex-none"
             >
-              {loading ? "Searching..." : "Search"}
+              {loading ? "Searching..." : "Apply Filters"}
             </button>
-            <button 
+            <button
               onClick={handleClearFilters}
               disabled={loading}
-              className="border border-gray-300 hover:bg-gray-50 disabled:bg-gray-100 text-gray-700 px-6 py-2.5 rounded-lg font-medium transition-colors duration-200"
+              className="px-10 py-4 glass-card rounded-2xl text-gray-300 font-bold transition-all hover:bg-white/10 active:scale-95 disabled:opacity-50 flex-1 md:flex-none"
             >
-              Clear
+              Reset
             </button>
           </div>
-        </div>
+        </motion.div>
 
         {loading && (
-          <div className="text-center py-16">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading rooms...</p>
+          <div className="text-center py-32">
+            <div className="w-20 h-20 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-8 shadow-2xl shadow-blue-500/20"></div>
+            <p className="text-2xl text-gray-400 font-light animate-pulse">Curating your results...</p>
           </div>
         )}
 
         {error && !loading && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-16"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-20"
           >
-            <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl max-w-md mx-auto">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                <span className="font-semibold">Error</span>
+            <div className="glass-card border-red-500/20 px-10 py-12 rounded-[2.5rem] max-w-xl mx-auto shadow-2xl">
+              <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-8">
+                <div className="w-4 h-4 bg-red-500 rounded-full animate-ping" />
               </div>
-              <p>{error}</p>
-              <div className="flex gap-3 mt-4 justify-center">
+              <h3 className="text-2xl font-black text-white mb-4">Something went wrong</h3>
+              <p className="text-gray-400 mb-10 font-light">{error}</p>
+              <div className="flex gap-4 justify-center">
                 <button
                   onClick={() => window.location.reload()}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                  className="px-8 py-4 bg-red-600/20 border border-red-500/30 text-red-100 rounded-2xl hover:bg-red-600/30 transition-all font-bold"
                 >
-                  Refresh Page
+                  Refresh
                 </button>
                 <button
-                  onClick={() => {
-                    setError(null);
-                    const fetchRooms = async () => {
-                      try {
-                        setLoading(true);
-                        const fetchedRooms = await getAllRooms();
-                        setRooms(fetchedRooms);
-                      } catch (err) {
-                        setError("Failed to load rooms. Please check your connection and try again.");
-                      } finally {
-                        setLoading(false);
-                      }
-                    };
-                    fetchRooms();
-                  }}
-                  className="px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm"
+                  onClick={handleClearFilters}
+                  className="px-8 py-4 glass-card text-gray-300 rounded-2xl hover:bg-white/10 transition-all font-bold"
                 >
                   Retry
                 </button>
@@ -383,150 +385,141 @@ const FindRoom = () => {
         )}
 
         {!loading && !error && (
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                {rooms.length} {rooms.length === 1 ? 'Room' : 'Rooms'} Available
-              </h2>
-              <div className="text-sm text-gray-600">
-                Showing all available spaces in your area
+          <div className="pb-24">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex justify-between items-center mb-10"
+            >
+              <div>
+                <h2 className="text-3xl font-black text-white tracking-tight">
+                  <span className="text-gradient">{rooms.length}</span> Spaces Available
+                </h2>
+                <p className="text-gray-500 font-medium">Results based on your elite preferences</p>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {rooms.map((room) => (
-                <div
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+              {rooms.map((room, i) => (
+                <motion.div
                   key={room.id}
-                  className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-200"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="glass-card rounded-[2rem] overflow-hidden group hover:border-blue-500/30 transition-all duration-500 hover:-translate-y-2 shadow-2xl relative"
                 >
                   {/* Image Section */}
-                  <div className="relative h-48 bg-gray-100">
+                  <div className="relative h-72 bg-white/5 overflow-hidden">
                     <img
                       src={room.images[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500"}
                       alt={room.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
                     />
-                    <div className="absolute top-3 left-3">
-                      <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">
+                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0c0c1d] to-transparent" />
+
+                    <div className="absolute top-6 left-6">
+                      <span className="px-4 py-2 glass-card rounded-full text-xs font-black uppercase tracking-widest text-white border-white/20 shadow-xl">
                         {room.type}
                       </span>
                     </div>
+
                     <button
                       onClick={() => handleAddToFavorites(room.id)}
-                      className="absolute top-3 right-3 p-1.5 bg-white/90 rounded-full hover:bg-white transition-colors"
+                      className="absolute top-6 right-6 p-3 glass-card rounded-full hover:bg-white transition-all group/fav active:scale-90"
                     >
-                      <Heart className="w-4 h-4 text-gray-600 hover:text-red-500" />
+                      <Heart className="w-5 h-5 text-white group-hover/fav:text-red-500 transition-colors" />
                     </button>
                   </div>
 
                   {/* Content Section */}
-                  <div className="p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-semibold text-gray-900 text-base leading-tight">
-                        {room.title}
-                      </h3>
-                      <div className="text-right ml-2">
-                        <div className="text-lg font-bold text-gray-900">₹{room.price.toLocaleString()}</div>
-                        <div className="text-xs text-gray-500">
-                          {room.type === "Hostel" ? "per year" : "per month"}
+                  <div className="p-8">
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-2xl font-black text-white leading-tight mb-2 truncate group-hover:text-blue-400 transition-colors">
+                          {room.title}
+                        </h3>
+                        <div className="flex items-center gap-2 text-gray-400 text-sm">
+                          <MapPin className="w-4 h-4 text-blue-500" />
+                          <span className="truncate uppercase tracking-wider font-bold">{room.location}</span>
+                        </div>
+                      </div>
+                      <div className="text-right ml-4">
+                        <div className="text-3xl font-black text-white tracking-tight">₹{room.price.toLocaleString()}</div>
+                        <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mt-1">
+                          {room.type === "Hostel" ? "Per Year" : "Per Month"}
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1 text-gray-600 text-sm mb-3">
-                      <MapPin className="w-3 h-3" />
-                      <span className="truncate">{room.location}</span>
-                    </div>
-
-                    {/* Room Details */}
-                    <div className="flex items-center gap-3 text-xs text-gray-600 mb-3">
-                      <span className="flex items-center gap-1">
-                        <Home className="w-3 h-3" />
-                        {room.bedrooms} bed{room.bedrooms !== 1 ? "s" : ""}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="w-3 h-3" />
-                        {room.bathrooms} bath{room.bathrooms !== 1 ? "s" : ""}
-                      </span>
-                      <span>{room.area}</span>
-                    </div>
-
-                    {/* Amenities Preview */}
-                    {room.amenities && room.amenities.length > 0 && (
-                      <div className="flex items-center gap-2 mb-3">
-                        {room.amenities.slice(0, 3).map((amenity, index) => (
-                          <span key={index} className="text-xs text-gray-500">
-                            {amenity === "WiFi" && <Wifi className="w-3 h-3 inline" />}
-                            {amenity === "Parking" && <Car className="w-3 h-3 inline" />}
-                            {amenity}
-                          </span>
-                        ))}
-                        {room.amenities.length > 3 && (
-                          <span className="text-xs text-gray-400">+{room.amenities.length - 3} more</span>
-                        )}
+                    {/* Room Details Grid */}
+                    <div className="grid grid-cols-3 gap-2 mb-8 p-4 glass-card bg-white/5 rounded-2xl border-white/5">
+                      <div className="flex flex-col items-center gap-1">
+                        <BedDouble className="w-5 h-5 text-blue-400" />
+                        <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider">{room.bedrooms} Bed</span>
                       </div>
-                    )}
-
-                    {/* Tags */}
-                    {room.tags && room.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {room.tags.slice(0, 2).map((tag, index) => (
-                          <span
-                            key={index}
-                            className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs"
-                          >
-                            {tag}
-                          </span>
-                        ))}
+                      <div className="flex flex-col items-center gap-1 border-x border-white/10 px-2">
+                        <Bath className="w-5 h-5 text-purple-400" />
+                        <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider">{room.bathrooms} Bath</span>
                       </div>
-                    )}
+                      <div className="flex flex-col items-center gap-1 text-center">
+                        <Maximize className="w-5 h-5 text-pink-400" />
+                        <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider truncate w-full px-1">{room.area}</span>
+                      </div>
+                    </div>
 
                     {/* Posted By */}
                     {room.postedBy && (
-                      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100">
-                        <div className="w-6 h-6 bg-gray-300 rounded-full"></div>
-                        <div className="text-xs text-gray-600">
-                          <div className="font-medium">{room.postedBy.name}</div>
-                          <div className="text-gray-400">Listed by owner</div>
+                      <div className="flex items-center gap-4 mb-8 p-3 glass-card border-none bg-white/5 rounded-2xl group/user">
+                        <div className="w-10 h-10 glass-card rounded-xl flex items-center justify-center text-blue-400 font-bold uppercase overflow-hidden shadow-xl border-white/20">
+                          {room.postedBy.name.charAt(0)}
+                        </div>
+                        <div className="text-xs">
+                          <div className="font-black text-white uppercase tracking-wider">{room.postedBy.name}</div>
+                          <div className="text-gray-500 font-bold uppercase tracking-widest text-[9px] mt-0.5">Verified Host</div>
                         </div>
                       </div>
                     )}
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-4 mt-auto">
                       <button
                         onClick={() => handleViewDetails(room.id)}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center gap-1"
+                        className="flex-1 h-14 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest transition-all hover:from-blue-500 hover:to-purple-500 active:scale-95 shadow-lg shadow-blue-900/20 flex items-center justify-center gap-3"
                       >
-                        <Eye className="w-3 h-3" />
-                        View Details
-                      </button>
-                      <button
-                        onClick={() => handleAddToFavorites(room.id)}
-                        className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-                      >
-                        <Heart className="w-4 h-4 text-gray-600" />
+                        <Eye className="w-5 h-5" />
+                        View
                       </button>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
 
             {rooms.length === 0 && (
-              <div className="text-center py-16">
-                <div className="text-gray-400 mb-4">
-                  <Home className="w-12 h-12 mx-auto" />
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-32"
+              >
+                <div className="w-24 h-24 glass-card rounded-[2rem] flex items-center justify-center mx-auto mb-10">
+                  <Home className="w-12 h-12 text-gray-600" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No rooms found</h3>
-                <p className="text-gray-600 text-sm">Try adjusting your search filters or browse all available rooms.</p>
-              </div>
+                <h3 className="text-3xl font-black text-white mb-4">No results found</h3>
+                <p className="text-xl text-gray-500 font-light mb-12">Adjust your filters to see more premium spaces.</p>
+                <button
+                  onClick={handleClearFilters}
+                  className="px-10 py-5 bg-white text-midnight font-black uppercase tracking-widest rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-2xl"
+                >
+                  Clear All
+                </button>
+              </motion.div>
             )}
           </div>
         )}
       </div>
     </div>
   );
+
 };
 
 export default FindRoom;

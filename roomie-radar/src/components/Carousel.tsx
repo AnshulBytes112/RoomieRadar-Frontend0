@@ -1,7 +1,19 @@
-import { useState, useEffect, useCallback } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useRef } from "react"
+import Autoplay from "embla-carousel-autoplay"
+import { motion } from "framer-motion"
+import {
+  Carousel as CarouselPrimitive,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui"
 
 const Carousel = () => {
+  const plugin = useRef(
+    Autoplay({ delay: 4000, stopOnInteraction: false })
+  )
+
   // Simulated authentication check (replace with real auth logic)
   const isAuthenticated = !!localStorage.getItem('userToken');
   const handleGetStarted = () => {
@@ -11,8 +23,6 @@ const Carousel = () => {
       window.location.href = '/find-room';
     }
   };
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [isTransitioning, setIsTransitioning] = useState(false)
 
   const slides = [
     {
@@ -35,144 +45,90 @@ const Carousel = () => {
     }
   ]
 
-  const goToSlide = useCallback((slideIndex: number) => {
-    if (isTransitioning) return
-    setIsTransitioning(true)
-    setCurrentSlide(slideIndex)
-    setTimeout(() => setIsTransitioning(false), 600)
-  }, [isTransitioning])
-
-  const goToNext = useCallback(() => {
-    if (isTransitioning) return
-    goToSlide((currentSlide + 1) % slides.length)
-  }, [currentSlide, slides.length, goToSlide, isTransitioning])
-
-  const goToPrevious = useCallback(() => {
-    if (isTransitioning) return
-    goToSlide(currentSlide === 0 ? slides.length - 1 : currentSlide - 1)
-  }, [currentSlide, slides.length, goToSlide, isTransitioning])
-
-  useEffect(() => {
-    const interval = setInterval(goToNext, 5000)
-    return () => clearInterval(interval)
-  }, [goToNext])
-
   return (
-    <div className="relative h-screen overflow-hidden">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentSlide}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.6, ease: "easeInOut" }}
-          className="absolute inset-0"
-        >
-          {/* Background Image */}
-          <div className="absolute inset-0">
-            <img
-              src={slides[currentSlide].image}
-              alt={slides[currentSlide].title}
-              className="w-full h-full object-cover"
-            />
-            {/* Dark Overlay */}
-            <div className="absolute inset-0 bg-black/40"></div>
-          </div>
-
-          {/* Content */}
-          <div className="relative z-10 flex flex-col items-center justify-center h-full text-center text-white px-6">
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="text-6xl md:text-7xl lg:text-8xl font-black mb-6 bg-gradient-to-r from-white via-yellow-200 to-orange-200 bg-clip-text text-transparent drop-shadow-2xl"
-            >
-              {slides[currentSlide].title}
-            </motion.h1>
-            
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.4 }}
-              className="text-2xl md:text-3xl lg:text-4xl font-light mb-12 max-w-4xl bg-gradient-to-r from-gray-200 to-gray-300 bg-clip-text text-transparent"
-            >
-              {slides[currentSlide].description}
-            </motion.p>
-
-            {/* Get Started Button */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.6 }}
-              className="mb-20"
-            >
-              <button
-                className="bg-white/20 backdrop-blur-lg border border-white/30 text-white font-bold py-4 px-8 rounded-2xl text-xl hover:bg-white/30 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
-                onClick={handleGetStarted}
-              >
-                Get Started
-              </button>
-            </motion.div>
-          </div>
-
-          {/* Floating Decorative Elements */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 0.8 }}
-            className="absolute top-20 left-20 w-32 h-32 bg-white/10 rounded-full backdrop-blur-sm"
-          ></motion.div>
-          <motion.div
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 1.0 }}
-            className="absolute bottom-40 right-20 w-24 h-24 bg-yellow-400/20 rounded-full backdrop-blur-sm"
-          ></motion.div>
-          <motion.div
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 1.2 }}
-            className="absolute top-1/2 right-1/4 w-16 h-16 bg-orange-400/20 rounded-full backdrop-blur-sm"
-          ></motion.div>
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Navigation Arrows */}
-      <button
-        onClick={goToPrevious}
-        disabled={isTransitioning}
-        className="absolute left-8 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-lg text-white p-4 rounded-full hover:bg-white/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed z-20"
+    <div className="relative h-screen overflow-hidden group">
+      <CarouselPrimitive
+        plugins={[plugin.current]}
+        className="w-full h-full"
+        opts={{
+          loop: true,
+        }}
       >
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-      </button>
+        <CarouselContent className="-ml-0">
+          {slides.map((slide) => (
+            <CarouselItem key={slide.id} className="pl-0 h-screen relative">
+              {/* Background Image */}
+              <div className="absolute inset-0">
+                <img
+                  src={slide.image}
+                  alt={slide.title}
+                  className="w-full h-full object-cover"
+                />
+                {/* Dark Overlay */}
+                <div className="absolute inset-0 bg-black/40"></div>
+              </div>
 
-      <button
-        onClick={goToNext}
-        disabled={isTransitioning}
-        className="absolute right-8 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-lg text-white p-4 rounded-full hover:bg-white/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed z-20"
-      >
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      </button>
+              {/* Content */}
+              <div className="relative z-10 flex flex-col items-center justify-center h-full text-center text-white px-6">
+                <motion.h1
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.2 }}
+                  className="text-6xl md:text-7xl lg:text-8xl font-black mb-6 bg-gradient-to-r from-white via-yellow-200 to-orange-200 bg-clip-text text-transparent drop-shadow-2xl"
+                >
+                  {slide.title}
+                </motion.h1>
 
-      {/* Dot Indicators */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-4 z-20">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            disabled={isTransitioning}
-            className={`w-4 h-4 rounded-full transition-all duration-300 ${
-              index === currentSlide 
-                ? 'bg-white scale-125' 
-                : 'bg-white/50 hover:bg-white/75'
-            } disabled:cursor-not-allowed`}
-          />
-        ))}
-      </div>
+                <motion.p
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.4 }}
+                  className="text-2xl md:text-3xl lg:text-4xl font-light mb-12 max-w-4xl bg-gradient-to-r from-gray-200 to-gray-300 bg-clip-text text-transparent"
+                >
+                  {slide.description}
+                </motion.p>
+
+                {/* Get Started Button */}
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.6 }}
+                  className="mb-20"
+                >
+                  <button
+                    className="bg-white/20 backdrop-blur-lg border border-white/30 text-white font-bold py-4 px-8 rounded-2xl text-xl hover:bg-white/30 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+                    onClick={handleGetStarted}
+                  >
+                    Get Started
+                  </button>
+                </motion.div>
+              </div>
+
+              {/* Floating Decorative Elements (Per Slide or Global? Per slide for simplicity in mapping, but visually might flicker. The original had them outside the map. I'll put them inside for now as the content is inside. Actually, to keep them persistent, they should be outside the CarouselContent if possible, or repeated. If they are decorative and static, maybe outside. But the original had them animating in. I'll keep them inside the slide for now to match the "content" structure of the slide) */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.7, delay: 0.8 }}
+                className="absolute top-20 left-20 w-32 h-32 bg-white/10 rounded-full backdrop-blur-sm"
+              ></motion.div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.7, delay: 1.0 }}
+                className="absolute bottom-40 right-20 w-24 h-24 bg-yellow-400/20 rounded-full backdrop-blur-sm"
+              ></motion.div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.7, delay: 1.2 }}
+                className="absolute top-1/2 right-1/4 w-16 h-16 bg-orange-400/20 rounded-full backdrop-blur-sm"
+              ></motion.div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious className="left-8 text-black opacity-0 group-hover:opacity-100 transition-opacity" />
+        <CarouselNext className="right-8 text-black opacity-0 group-hover:opacity-100 transition-opacity" />
+      </CarouselPrimitive>
     </div>
   )
 }

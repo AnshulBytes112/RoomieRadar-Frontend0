@@ -54,8 +54,8 @@ const MyBookings: React.FC = () => {
     try {
       setCancelling(bookingId);
       await cancelBooking(bookingId);
-      setBookings(prev => prev.map(booking => 
-        booking.id === bookingId 
+      setBookings(prev => prev.map(booking =>
+        booking.id === bookingId
           ? { ...booking, status: 'cancelled' }
           : booking
       ));
@@ -69,35 +69,37 @@ const MyBookings: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'approved': return 'bg-green-100 text-green-800 border-green-200';
-      case 'rejected': return 'bg-red-100 text-red-800 border-red-200';
-      case 'cancelled': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'pending': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+      case 'approved': return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'rejected': return 'bg-red-500/10 text-red-400 border-red-500/20';
+      case 'cancelled': return 'bg-white/5 text-gray-500 border-white/10';
+      default: return 'bg-white/5 text-gray-500 border-white/10';
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-20 flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your bookings...</p>
-        </div>
+      <div className="min-h-screen pt-20 flex flex-col items-center justify-center bg-[#0c0c1d]">
+        <div className="w-20 h-20 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-8 shadow-2xl shadow-blue-500/20"></div>
+        <p className="text-2xl text-gray-400 font-light animate-pulse uppercase tracking-[0.2em]">Syncing Bookings...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen pt-20 flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
+      <div className="min-h-screen pt-20 flex items-center justify-center bg-[#0c0c1d] px-6">
+        <div className="glass-card p-12 rounded-[3rem] text-center max-w-xl w-full border-red-500/20 shadow-2xl">
+          <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-8">
+            <div className="w-4 h-4 bg-red-500 rounded-full animate-ping" />
+          </div>
+          <h3 className="text-3xl font-black text-white mb-4">Transmission Lost</h3>
+          <p className="text-gray-400 mb-10 font-light">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-10 py-4 bg-red-600/20 border border-red-500/30 text-red-100 rounded-2xl hover:bg-red-600/30 transition-all font-black uppercase tracking-widest text-xs"
           >
-            Try Again
+            Reconnect
           </button>
         </div>
       </div>
@@ -105,104 +107,135 @@ const MyBookings: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen pt-20 bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="min-h-screen pt-32 bg-[#0c0c1d] relative overflow-hidden">
+      {/* Background blobs for depth */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
+        <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob" />
+        <div className="absolute top-[40%] -right-[10%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob animation-delay-2000" />
+      </div>
+
+      <div className="max-w-5xl mx-auto px-6 relative z-10 pb-24">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-20"
         >
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">My Bookings</h1>
-          <p className="text-gray-600">Track and manage your room booking requests</p>
+          <h1 className="text-6xl font-black text-white mb-6 tracking-tight">
+            My <span className="text-gradient">Bookings</span>
+          </h1>
+          <p className="text-2xl text-gray-400 font-light max-w-2xl leading-relaxed">
+            Elegantly track your pending experiences and secured living spaces.
+          </p>
         </motion.div>
 
         {bookings.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-12"
+            className="text-center py-32 glass-card rounded-[3rem] border-dashed border-white/5"
           >
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-32 h-32 glass-card rounded-full flex items-center justify-center mx-auto mb-8 border-white/10 shadow-2xl">
+              <svg className="w-14 h-14 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">No bookings yet</h3>
-            <p className="text-gray-600 mb-6">Start exploring rooms and make your first booking!</p>
+            <h2 className="text-4xl font-black text-white mb-4">Void Archive</h2>
+            <p className="text-xl text-gray-500 mb-12 font-light">Your journey hasn't started yet. Let's find your first elite space.</p>
             <button
               onClick={() => navigate('/find-room')}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-12 py-5 bg-white text-midnight rounded-2xl font-black uppercase tracking-widest text-xs hover:scale-105 active:scale-95 shadow-2xl transition-all"
             >
-              Browse Rooms
+              Browse Experiences
             </button>
           </motion.div>
         ) : (
-          <div className="grid gap-6">
+          <div className="grid gap-10">
             {bookings.map((booking, index) => (
               <motion.div
                 key={booking.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20"
+                className="glass-card group p-10 rounded-[3rem] border-white/5 hover:border-blue-500/20 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-900/10 relative overflow-hidden"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-semibold text-gray-800">{booking.roomTitle}</h3>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(booking.status)}`}>
-                        {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                <div className="absolute top-0 right-0 w-2 h-full bg-gradient-to-b from-blue-500 to-purple-500 opacity-20" />
+
+                <div className="flex flex-col md:flex-row items-start justify-between gap-10">
+                  <div className="flex-1 space-y-6">
+                    <div className="flex flex-wrap items-center gap-4">
+                      <h3 className="text-3xl font-black text-white tracking-tight group-hover:text-blue-400 transition-colors uppercase">
+                        {booking.roomTitle}
+                      </h3>
+                      <span className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border shadow-xl ${getStatusColor(booking.status)}`}>
+                        {booking.status}
                       </span>
                     </div>
-                    <p className="text-gray-600 flex items-center gap-2 mb-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      </svg>
-                      {booking.roomLocation}
-                    </p>
-                    <p className="text-2xl font-bold text-blue-600">₹{booking.roomPrice.toLocaleString()}/month</p>
+
+                    <div className="flex items-center gap-3 text-gray-500">
+                      <div className="w-8 h-8 glass-card rounded-lg flex items-center justify-center border-white/10">
+                        <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        </svg>
+                      </div>
+                      <span className="font-bold uppercase tracking-widest text-sm">{booking.roomLocation}</span>
+                    </div>
+
+                    <div className="text-4xl font-black text-white tracking-tighter">
+                      ₹{booking.roomPrice.toLocaleString()}
+                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-600 ml-3">per month</span>
+                    </div>
                   </div>
+
                   {booking.roomImage && (
-                    <img
-                      src={booking.roomImage}
-                      alt={booking.roomTitle}
-                      className="w-20 h-20 rounded-lg object-cover ml-4"
-                    />
+                    <div className="relative group/img flex-shrink-0">
+                      <img
+                        src={booking.roomImage}
+                        alt={booking.roomTitle}
+                        className="w-40 h-40 rounded-[2rem] object-cover border-2 border-white/5 shadow-2xl group-hover/img:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-blue-500/10 rounded-[2rem] opacity-0 group-hover/img:opacity-100 transition-opacity" />
+                    </div>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 my-10 p-6 glass-card bg-white/5 border-none rounded-[2rem]">
                   <div>
-                    <p className="text-sm text-gray-500">Check-in Date</p>
-                    <p className="font-medium">{new Date(booking.checkInDate).toLocaleDateString()}</p>
+                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Check-in</p>
+                    <p className="font-bold text-white text-lg">{new Date(booking.checkInDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Booking Date</p>
-                    <p className="font-medium">{new Date(booking.createdAt).toLocaleDateString()}</p>
+                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Requested On</p>
+                    <p className="font-bold text-white text-lg">{new Date(booking.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Booking ID</p>
+                    <p className="font-bold text-white text-lg">#RM-{booking.id.toString().padStart(4, '0')}</p>
                   </div>
                 </div>
 
                 {booking.message && (
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-500 mb-1">Your Message</p>
-                    <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{booking.message}</p>
+                  <div className="mb-10">
+                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4 ml-1">Transmission Message</p>
+                    <p className="text-gray-400 font-light italic text-lg leading-relaxed glass-card bg-white/5 p-6 rounded-[2rem] border-none border-l-4 border-blue-500/50">
+                      "{booking.message}"
+                    </p>
                   </div>
                 )}
 
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-4 pt-4 border-t border-white/5">
                   <button
                     onClick={() => navigate(`/room/${booking.roomId}`)}
-                    className="px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                    className="flex-1 h-14 glass-card bg-white/5 text-blue-400 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all border-none"
                   >
-                    View Room
+                    View Experience
                   </button>
                   {booking.status === 'pending' && (
                     <button
                       onClick={() => handleCancelBooking(booking.id)}
                       disabled={cancelling === booking.id}
-                      className="px-4 py-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                      className="flex-1 h-14 bg-red-500/10 text-red-500 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-red-500/20 transition-all disabled:opacity-50"
                     >
-                      {cancelling === booking.id ? 'Cancelling...' : 'Cancel Request'}
+                      {cancelling === booking.id ? 'Cancelling...' : 'Purge Request'}
                     </button>
                   )}
                 </div>

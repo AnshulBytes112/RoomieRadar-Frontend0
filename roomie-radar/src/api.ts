@@ -21,21 +21,43 @@ export async function authFetch(input: RequestInfo | URL, init?: RequestInit) {
     ...(init?.headers || {}),
   };
 
-  if (token) {
-    (mergedHeaders as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-  }
-
   const url =
     typeof input === 'string' && input.startsWith('/')
       ? `${API_BASE_URL}${input}`
       : input;
 
+  if (token) {
+    (mergedHeaders as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+    console.log(`DEBUG: authFetch sending token for ${url}`);
+  } else {
+    console.warn(`DEBUG: authFetch NO TOKEN found for ${url}`);
+  }
+
+  console.log('DEBUG: authFetch Headers:', mergedHeaders);
+
   const response = await fetch(url, { ...init, headers: mergedHeaders });
 
-  if (response.status === 401) {
+  if (response.status === 401 || response.status === 403) {
     try {
       localStorage.removeItem('userToken');
+      window.dispatchEvent(new Event('auth-error'));
     } catch { }
+  }
+
+  // Robust parsing: If response is not OK, throw an error with details
+  if (!response.ok) {
+    let errorDetail = '';
+    try {
+      const errorJson = await response.json();
+      errorDetail = errorJson.message || JSON.stringify(errorJson);
+    } catch {
+      try {
+        errorDetail = await response.text();
+      } catch {
+        errorDetail = response.statusText;
+      }
+    }
+    throw new Error(errorDetail || `Request failed with status ${response.status}`);
   }
 
   return response;
@@ -339,9 +361,10 @@ export async function addToFavorites(roomId: number) {
 
 export async function removeFromFavorites(roomId: number) {
   // DELETE /api/favorites/{roomId}
-  return authFetch(`/api/favorites/${roomId}`, {
+  const res = await authFetch(`/api/favorites/${roomId}`, {
     method: 'DELETE'
-  }).then(res => res.json());
+  });
+  return res.status === 204 ? { success: true } : res.json().catch(() => ({ success: true }));
 }
 
 export async function getUserFavorites() {
@@ -389,58 +412,62 @@ export async function updateBooking(bookingId: number, bookingData: any) {
   }).then(res => res.json());
 }
 
-// ===== ROOMMATE CONNECTIONS =====
-export async function sendConnectionRequest(roommateId: number, message?: string) {
-  // POST /api/connections
-  return authFetch('/api/connections', {
+// ===== ROOMMATE CONNECTIONS (MESSAGE REQUESTS) =====
+export async function sendConnectionRequest(toUserId: number, message?: string) {
+  // POST /api/message-requests
+  return authFetch('/api/message-requests', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ roommateId, message })
+    body: JSON.stringify({ toUserId, message })
   }).then(res => res.json());
 }
 
-export async function acceptConnectionRequest(connectionId: number) {
-  // PUT /api/connections/{id}/accept
-  return authFetch(`/api/connections/${connectionId}/accept`, {
-    method: 'PUT'
+export async function acceptConnectionRequest(requestId: number) {
+  // POST /api/message-requests/{id}/respond
+  return authFetch(`/api/message-requests/${requestId}/respond`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ accept: true })
   }).then(res => res.json());
 }
 
-export async function rejectConnectionRequest(connectionId: number) {
-  // PUT /api/connections/{id}/reject
-  return authFetch(`/api/connections/${connectionId}/reject`, {
-    method: 'PUT'
+export async function rejectConnectionRequest(requestId: number) {
+  // POST /api/message-requests/${requestId}/respond
+  return authFetch(`/api/message-requests/${requestId}/respond`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ accept: false })
   }).then(res => res.json());
-}
-
-export async function getUserConnections() {
-  // GET /api/connections
-  return authFetch('/api/connections').then(res => res.json());
 }
 
 export async function getPendingConnections() {
-  // GET /api/connections/pending
-  return authFetch('/api/connections/pending').then(res => res.json());
+  // GET /api/message-requests/inbox
+  return authFetch('/api/message-requests/inbox').then(res => res.json());
 }
 
-// ===== MESSAGING =====
-export async function sendMessage(recipientId: number, message: string, type: 'room' | 'roommate') {
-  // POST /api/messages
-  return authFetch('/api/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ recipientId, message, type })
-  }).then(res => res.json());
+export async function getSentRequests() {
+  // GET /api/message-requests/sent
+  return authFetch('/api/message-requests/sent').then(res => res.json());
 }
 
+// ===== MESSAGING (CONVERSATIONS) =====
 export async function getConversations() {
-  // GET /api/messages/conversations
-  return authFetch('/api/messages/conversations').then(res => res.json());
+  // GET /api/conversations
+  return authFetch('/api/conversations').then(res => res.json());
 }
 
 export async function getMessages(conversationId: number) {
-  // GET /api/messages/conversations/{id}
-  return authFetch(`/api/messages/conversations/${conversationId}`).then(res => res.json());
+  // GET /api/conversations/{id}/messages
+  return authFetch(`/api/conversations/${conversationId}/messages`).then(res => res.json());
+}
+
+export async function sendMessage(conversationId: number, message: string) {
+  // POST /api/conversations/{id}/messages
+  return authFetch(`/api/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message })
+  }).then(res => res.json());
 }
 
 // ===== IMAGE UPLOAD =====

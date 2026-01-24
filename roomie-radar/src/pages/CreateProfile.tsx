@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { createRoommateProfile } from "../api";
 import { useAuth } from "../contexts/AuthContext";
+import { User, Briefcase, MapPin, Smile, Heart, Target, Image as ImageIcon } from 'lucide-react';
 
 const CreateProfile = () => {
   const navigate = useNavigate();
@@ -54,14 +56,11 @@ const CreateProfile = () => {
         .filter(Boolean),
       avatar:
         formData.avatar ||
-        "https://images.unsplash.com/photo-1511367469-f85a21fda167?w=150&h=150&fit=crop&crop=face"
+        "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=150&h=150&fit=crop&crop=face"
     };
-
-    console.log("Submitting payload:", payload);
 
     try {
       await createRoommateProfile(payload);
-      alert("Profile created successfully!");
       navigate("/find-roommate");
     } catch (err: any) {
       setError(err.message || "Failed to create profile. Please try again.");
@@ -70,143 +69,199 @@ const CreateProfile = () => {
     }
   };
 
+  const inputClasses = "w-full px-6 py-4 glass-card bg-white/[0.03] border-white/5 rounded-2xl focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none text-white placeholder-gray-600 font-bold text-sm tracking-wide";
+  const labelClasses = "flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-3 ml-1";
+
+  const sections = [
+    {
+      title: "Archetype",
+      icon: <User className="w-4 h-4" />,
+      fields: [
+        { name: "name", label: "Identity", type: "text", placeholder: "SYSTEM_NAME", required: true },
+        { name: "age", label: "Cycle Count", type: "number", placeholder: "18", required: true, min: 18 },
+        { name: "occupation", label: "Function", type: "text", placeholder: "Professional Role" }
+      ]
+    },
+    {
+      title: "Logistics",
+      icon: <Target className="w-4 h-4" />,
+      fields: [
+        { name: "location", label: "Sector", type: "text", placeholder: "Core Location" },
+        { name: "budget", label: "Resource Allocation", type: "text", placeholder: "Budget Range" }
+      ]
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-6">
-      <div className="bg-white rounded-3xl shadow-xl p-10 max-w-xl w-full border border-gray-100">
-        <h1 className="text-4xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 mb-8">
-          Create Your Roommate Profile
-        </h1>
+    <div className="min-h-screen bg-[#0c0c1d] pt-32 pb-24 relative overflow-hidden">
+      {/* Dynamic Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
+        <div className="absolute -top-[10%] -left-[10%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[150px] mix-blend-screen animate-blob" />
+        <div className="absolute top-[40%] -right-[10%] w-[700px] h-[700px] bg-purple-600/10 rounded-full blur-[150px] mix-blend-screen animate-blob animation-delay-2000" />
+      </div>
 
-        {error && (
-          <div className="mb-6 p-4 bg-red-100 text-red-600 rounded-lg text-center font-semibold">
-            {error}
+      <div className="max-w-4xl mx-auto px-6 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-16"
+        >
+          <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase mb-6">
+            Initialize <span className="text-gradient">Profile.</span>
+          </h1>
+          <p className="text-gray-500 font-black uppercase tracking-[0.3em] text-xs">Configure your synchronization parameters</p>
+        </motion.div>
+
+        <form onSubmit={handleSubmit} className="space-y-12">
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="p-6 glass-card border-red-500/20 bg-red-500/5 text-red-400 rounded-[2rem] text-center font-black uppercase tracking-widest text-[10px]"
+            >
+              {error}
+            </motion.div>
+          )}
+
+          {/* Grid Layout for sections */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            {sections.map((section, idx) => (
+              <motion.div
+                key={section.title}
+                initial={{ opacity: 0, x: idx === 0 ? -20 : 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 * idx }}
+                className="space-y-8"
+              >
+                <div className="flex items-center gap-4 mb-2">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                    {section.icon}
+                  </div>
+                  <h3 className="text-xl font-black text-white uppercase tracking-wider">{section.title}</h3>
+                </div>
+
+                {section.fields.map((field) => (
+                  <div key={field.name}>
+                    <label className={labelClasses}>{field.label}</label>
+                    <input
+                      name={field.name}
+                      type={field.type}
+                      value={(formData as any)[field.name]}
+                      onChange={handleChange}
+                      required={field.required}
+                      placeholder={field.placeholder}
+                      className={inputClasses}
+                    />
+                  </div>
+                ))}
+              </motion.div>
+            ))}
           </div>
-        )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <label className="block">
-            <span className="text-gray-700 font-semibold">Full Name</span>
-            <input
-              name="name"
-              type="text"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full rounded-lg border-gray-300 border px-4 py-3 focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your full name"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-gray-700 font-semibold">Age</span>
-            <input
-              name="age"
-              type="number"
-              min={18}
-              max={100}
-              value={formData.age}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full rounded-lg border-gray-300 border px-4 py-3 focus:ring-2 focus:ring-blue-500"
-              placeholder="Your age"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-gray-700 font-semibold">Occupation</span>
-            <input
-              name="occupation"
-              type="text"
-              value={formData.occupation}
-              onChange={handleChange}
-              className="mt-1 block w-full rounded-lg border-gray-300 border px-4 py-3 focus:ring-2 focus:ring-blue-500"
-              placeholder="Your occupation"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-gray-700 font-semibold">Lifestyle (comma separated)</span>
-            <input
-              name="lifestyle"
-              type="text"
-              value={formData.lifestyle}
-              onChange={handleChange}
-              placeholder="e.g. Quiet, Clean, Studious"
-              className="mt-1 block w-full rounded-lg border-gray-300 border px-4 py-3 focus:ring-2 focus:ring-blue-500"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-gray-700 font-semibold">Budget</span>
-            <input
-              name="budget"
-              type="text"
-              value={formData.budget}
-              onChange={handleChange}
-              placeholder="Your budget range"
-              className="mt-1 block w-full rounded-lg border-gray-300 border px-4 py-3 focus:ring-2 focus:ring-blue-500"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-gray-700 font-semibold">Location</span>
-            <input
-              name="location"
-              type="text"
-              value={formData.location}
-              onChange={handleChange}
-              placeholder="Preferred location"
-              className="mt-1 block w-full rounded-lg border-gray-300 border px-4 py-3 focus:ring-2 focus:ring-blue-500"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-gray-700 font-semibold">Bio</span>
-            <textarea
-              name="bio"
-              value={formData.bio}
-              onChange={handleChange}
-              placeholder="Tell us about yourself"
-              className="mt-1 block w-full rounded-lg border-gray-300 border px-4 py-3 focus:ring-2 focus:ring-blue-500"
-              rows={4}
-            ></textarea>
-          </label>
-
-          <label className="block">
-            <span className="text-gray-700 font-semibold">Interests (comma separated)</span>
-            <input
-              name="interests"
-              type="text"
-              value={formData.interests}
-              onChange={handleChange}
-              placeholder="e.g. Reading, Yoga, Cooking"
-              className="mt-1 block w-full rounded-lg border-gray-300 border px-4 py-3 focus:ring-2 focus:ring-blue-500"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-gray-700 font-semibold">Avatar URL</span>
-            <input
-              name="avatar"
-              type="url"
-              value={formData.avatar ||  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face"}
-              onChange={handleChange}
-              placeholder="Link to your profile picture"
-              className="mt-1 block w-full rounded-lg border-gray-300 border px-4 py-3 focus:ring-2 focus:ring-blue-500"
-            />
-          </label>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full mt-6 py-3 rounded-lg font-semibold text-white ${
-              loading ? "bg-gray-400 cursor-not-allowed" : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-            } transition-colors duration-300`}
+          {/* Full Width Sections */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="space-y-12"
           >
-            {loading ? "Creating Profile..." : "Create Profile"}
-          </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              <div>
+                <label className={labelClasses}>
+                  <Smile className="w-3 h-3 text-blue-400" /> Behavior Traits
+                </label>
+                <input
+                  name="lifestyle"
+                  type="text"
+                  value={formData.lifestyle}
+                  onChange={handleChange}
+                  placeholder="QUIET, CLEAN, SOCIAL..."
+                  className={inputClasses}
+                />
+                <p className="text-[8px] font-bold text-gray-600 mt-2 ml-1 uppercase tracking-widest">Comma separated values</p>
+              </div>
+              <div>
+                <label className={labelClasses}>
+                  <Heart className="w-3 h-3 text-purple-400" /> Interests
+                </label>
+                <input
+                  name="interests"
+                  type="text"
+                  value={formData.interests}
+                  onChange={handleChange}
+                  placeholder="CODING, YOGA, GAMING..."
+                  className={inputClasses}
+                />
+                <p className="text-[8px] font-bold text-gray-600 mt-2 ml-1 uppercase tracking-widest">Comma separated values</p>
+              </div>
+            </div>
+
+            <div>
+              <label className={labelClasses}>
+                <Briefcase className="w-3 h-3 text-pink-400" /> Manifesto
+              </label>
+              <textarea
+                name="bio"
+                value={formData.bio}
+                onChange={handleChange}
+                placeholder="INPUT DATA PAYLOAD..."
+                className={`${inputClasses} min-h-[160px] resize-none pt-6`}
+              ></textarea>
+            </div>
+
+            <div className="pb-8 border-b border-white/5">
+              <label className={labelClasses}>
+                <ImageIcon className="w-3 h-3 text-green-400" /> Visual Identity
+              </label>
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                <div className="w-32 h-32 rounded-[2.5rem] glass-card border-white/10 overflow-hidden flex-shrink-0 group relative">
+                  <img
+                    src={formData.avatar || "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=300&h=300&fit=crop&crop=face"}
+                    alt="Preview"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                </div>
+                <div className="flex-1 w-full">
+                  <input
+                    name="avatar"
+                    type="url"
+                    value={formData.avatar}
+                    onChange={handleChange}
+                    placeholder="HTTPS://SOURCE.IMAGE/URL"
+                    className={inputClasses}
+                  />
+                  <p className="text-[8px] font-bold text-gray-600 mt-3 ml-1 uppercase tracking-widest">Leave empty for system default appearance</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-8">
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full py-6 rounded-3xl font-black uppercase tracking-[0.25em] text-sm text-white transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-2xl ${loading
+                    ? "bg-gray-800 cursor-not-allowed opacity-50"
+                    : "bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 shadow-purple-900/40"
+                  }`}
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center gap-4">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <span>Processing...</span>
+                  </div>
+                ) : "Create Identity"}
+              </button>
+            </div>
+          </motion.div>
         </form>
       </div>
+
+      <style>{`
+        ::-webkit-calendar-picker-indicator {
+          filter: invert(1);
+        }
+      `}</style>
     </div>
   );
 };
