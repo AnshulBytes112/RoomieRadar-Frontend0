@@ -3,19 +3,28 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserBookings, cancelBooking, updateBooking } from '../api';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 interface Booking {
   id: number;
-  roomId: number;
-  roomTitle: string;
-  roomLocation: string;
-  roomPrice: number;
+  room: {
+    id: number;
+    title: string;
+    location: string;
+    price: number;
+    images?: string[];
+  };
+  user: {
+    id: number;
+    name: string;
+    email: string;
+  };
   checkInDate: string;
   checkOutDate?: string;
+  phone?: string;
   message?: string;
-  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'SCHEDULE_INSPECTION';
   createdAt: string;
-  roomImage?: string;
 }
 
 const MyBookings: React.FC = () => {
@@ -25,6 +34,15 @@ const MyBookings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState<number | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    bookingId: number | null;
+    bookingTitle: string;
+  }>({
+    isOpen: false,
+    bookingId: null,
+    bookingTitle: ''
+  });
 
   useEffect(() => {
     if (!user) {
@@ -48,17 +66,26 @@ const MyBookings: React.FC = () => {
     fetchBookings();
   }, [user, navigate]);
 
-  const handleCancelBooking = async (bookingId: number) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) return;
+  const handleCancelBooking = (bookingId: number, bookingTitle: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      bookingId,
+      bookingTitle
+    });
+  };
+
+  const confirmCancelBooking = async () => {
+    if (!confirmDialog.bookingId) return;
 
     try {
-      setCancelling(bookingId);
-      await cancelBooking(bookingId);
+      setCancelling(confirmDialog.bookingId);
+      await cancelBooking(confirmDialog.bookingId);
       setBookings(prev => prev.map(booking =>
-        booking.id === bookingId
-          ? { ...booking, status: 'cancelled' }
+        booking.id === confirmDialog.bookingId
+          ? { ...booking, status: 'CANCELLED' }
           : booking
       ));
+      setConfirmDialog({ isOpen: false, bookingId: null, bookingTitle: '' });
     } catch (err) {
       console.error('Error cancelling booking:', err);
       alert('Failed to cancel booking. Please try again.');
@@ -67,12 +94,16 @@ const MyBookings: React.FC = () => {
     }
   };
 
+  const cancelConfirmDialog = () => {
+    setConfirmDialog({ isOpen: false, bookingId: null, bookingTitle: '' });
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
-      case 'approved': return 'bg-green-500/20 text-green-400 border-green-500/30';
-      case 'rejected': return 'bg-red-500/10 text-red-400 border-red-500/20';
-      case 'cancelled': return 'bg-white/5 text-gray-500 border-white/10';
+      case 'PENDING': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+      case 'CONFIRMED': return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'CANCELLED': return 'bg-white/5 text-gray-500 border-white/10';
+      case 'SCHEDULE_INSPECTION': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
       default: return 'bg-white/5 text-gray-500 border-white/10';
     }
   };
@@ -164,7 +195,7 @@ const MyBookings: React.FC = () => {
                   <div className="flex-1 space-y-6">
                     <div className="flex flex-wrap items-center gap-4">
                       <h3 className="text-3xl font-black text-white tracking-tight group-hover:text-blue-400 transition-colors uppercase">
-                        {booking.roomTitle}
+                        {booking.room.title}
                       </h3>
                       <span className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border shadow-xl ${getStatusColor(booking.status)}`}>
                         {booking.status}
@@ -177,20 +208,20 @@ const MyBookings: React.FC = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         </svg>
                       </div>
-                      <span className="font-bold uppercase tracking-widest text-sm">{booking.roomLocation}</span>
+                      <span className="font-bold uppercase tracking-widest text-sm">{booking.room.location}</span>
                     </div>
 
                     <div className="text-4xl font-black text-white tracking-tighter">
-                      ₹{booking.roomPrice.toLocaleString()}
+                      ₹{booking.room.price.toLocaleString()}
                       <span className="text-[10px] font-black uppercase tracking-widest text-gray-600 ml-3">per month</span>
                     </div>
                   </div>
 
-                  {booking.roomImage && (
+                  {booking.room.images && booking.room.images.length > 0 && (
                     <div className="relative group/img flex-shrink-0">
                       <img
-                        src={booking.roomImage}
-                        alt={booking.roomTitle}
+                        src={booking.room.images[0]}
+                        alt={booking.room.title}
                         className="w-40 h-40 rounded-[2rem] object-cover border-2 border-white/5 shadow-2xl group-hover/img:scale-105 transition-transform duration-500"
                       />
                       <div className="absolute inset-0 bg-blue-500/10 rounded-[2rem] opacity-0 group-hover/img:opacity-100 transition-opacity" />
@@ -224,14 +255,14 @@ const MyBookings: React.FC = () => {
 
                 <div className="flex flex-wrap gap-4 pt-4 border-t border-white/5">
                   <button
-                    onClick={() => navigate(`/room/${booking.roomId}`)}
+                    onClick={() => navigate(`/room/${booking.room.id}`)}
                     className="flex-1 h-14 glass-card bg-white/5 text-blue-400 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all border-none"
                   >
                     View Experience
                   </button>
-                  {booking.status === 'pending' && (
+                  {booking.status === 'PENDING' && (
                     <button
-                      onClick={() => handleCancelBooking(booking.id)}
+                      onClick={() => handleCancelBooking(booking.id, booking.room.title)}
                       disabled={cancelling === booking.id}
                       className="flex-1 h-14 bg-red-500/10 text-red-500 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-red-500/20 transition-all disabled:opacity-50"
                     >
@@ -244,6 +275,18 @@ const MyBookings: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Custom Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title="Purge Booking Request"
+        message={`Are you sure you want to cancel your booking for "${confirmDialog.bookingTitle}"? This action cannot be undone and the room owner will be notified of your cancellation.`}
+        confirmText="Purge Request"
+        cancelText="Keep Booking"
+        type="danger"
+        onConfirm={confirmCancelBooking}
+        onCancel={cancelConfirmDialog}
+      />
     </div>
   );
 };

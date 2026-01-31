@@ -32,8 +32,8 @@ const Register = () => {
       } else {
         setError(result?.message || "Registration failed.");
       }
-    } catch (err) {
-      setError("Registration failed. Please try again.");
+    } catch (err: any) {
+      setError(err.message || "Registration failed. Please try again.");
     }
   };
 

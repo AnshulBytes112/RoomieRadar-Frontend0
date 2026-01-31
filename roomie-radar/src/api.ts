@@ -16,8 +16,9 @@ function getAuthToken() {
 export async function authFetch(input: RequestInfo | URL, init?: RequestInit) {
   const token = getAuthToken();
 
+  const isFormData = init?.body instanceof FormData;
   const mergedHeaders: HeadersInit = {
-    'Content-Type': 'application/json',
+    ...(!isFormData && { 'Content-Type': 'application/json' }),
     ...(init?.headers || {}),
   };
 
@@ -49,7 +50,7 @@ export async function authFetch(input: RequestInfo | URL, init?: RequestInit) {
     let errorDetail = '';
     try {
       const errorJson = await response.json();
-      errorDetail = errorJson.message || JSON.stringify(errorJson);
+      errorDetail = errorJson.error || errorJson.message || JSON.stringify(errorJson);
     } catch {
       try {
         errorDetail = await response.text();
@@ -98,18 +99,20 @@ export async function searchRooms(filters: {
   roomType?: string;
   bedrooms?: number;
   bathrooms?: number;
+  page?: number;
+  size?: number;
 }) {
-  // GET /api/rooms/search?location=...&budget=...&type=...
+  // GET /api/rooms/search?location=...&page=...&size=...
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([key, value]) => {
-    if (value) params.append(key, value.toString());
+    if (value !== undefined && value !== null) params.append(key, value.toString());
   });
   return authFetch(`/api/rooms/search?${params}`).then(res => res.json());
 }
 
-export async function getAllRooms() {
-  // GET /api/rooms
-  return authFetch('/api/rooms').then(res => res.json());
+export async function getAllRooms(page = 0, size = 10) {
+  // GET /api/rooms?page=...&size=...
+  return authFetch(`/api/rooms?page=${page}&size=${size}`).then(res => res.json());
 }
 
 export async function createRoomListing(roomData: {
@@ -212,20 +215,23 @@ export async function searchRoommates(filters?: {
   budget?: string;
   location?: string;
   occupation?: string;
+  gender?: string;
+  page?: number;
+  size?: number;
 }) {
-  // GET /api/roommates/search?ageRange=...&lifestyle=...&budget=...&location=...
+  // GET /api/roommates/search?ageRange=...&page=...&size=...
   const params = new URLSearchParams();
   if (filters) {
     Object.entries(filters).forEach(([key, value]) => {
-      if (value) params.append(key, value.toString());
+      if (value !== undefined && value !== null) params.append(key, value.toString());
     });
   }
   return authFetch(`/api/roommates/search?${params}`).then(res => res.json());
 }
 
-export async function getAllRoommates() {
-  // GET /api/roommates
-  return authFetch('/api/roommates').then(res => res.json());
+export async function getAllRoommates(page = 0, size = 10) {
+  // GET /api/roommates?page=...&size=...
+  return authFetch(`/api/roommates?page=${page}&size=${size}`).then(res => res.json());
 }
 export async function getUserProfile() {
   // GET /api/roommates/me
@@ -294,6 +300,23 @@ export async function userLogin(credentials: { username: string; password: strin
   });
 
   console.log('Login response status:', response.status);
+
+  // Handle errors robustly
+  if (!response.ok) {
+    let errorDetail = '';
+    try {
+      const errorJson = await response.json();
+      errorDetail = errorJson.error || errorJson.message || JSON.stringify(errorJson);
+    } catch {
+      try {
+        errorDetail = await response.text();
+      } catch {
+        errorDetail = response.statusText;
+      }
+    }
+    throw new Error(errorDetail || `Login failed with status ${response.status}`);
+  }
+
   const result = await response.json();
   console.log('Login response data:', result);
 
@@ -320,6 +343,22 @@ export async function userRegister(userData: {
 
   console.log('Registration response status:', response.status);
   console.log('Registration response headers:', response.headers);
+
+  // Handle errors robustly
+  if (!response.ok) {
+    let errorDetail = '';
+    try {
+      const errorJson = await response.json();
+      errorDetail = errorJson.error || errorJson.message || JSON.stringify(errorJson);
+    } catch {
+      try {
+        errorDetail = await response.text();
+      } catch {
+        errorDetail = response.statusText;
+      }
+    }
+    throw new Error(errorDetail || `Registration failed with status ${response.status}`);
+  }
 
   const result = await response.json();
   console.log('Registration response data:', result);
@@ -378,16 +417,20 @@ export async function checkIfFavorited(roomId: number) {
 }
 
 // ===== BOOKINGS & RESERVATIONS =====
-export async function bookRoom(roomId: number, bookingData: {
+export async function bookRoom(bookingData: {
+  roomId: number;
+  name: string;
+  email: string;
+  phone?: string;
   checkInDate: string;
   message?: string;
-  phone?: string;
+  sendEmailConfirmation?: boolean;
 }) {
   // POST /api/bookings
   return authFetch('/api/bookings', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ roomId, ...bookingData })
+    body: JSON.stringify(bookingData)
   }).then(res => res.json());
 }
 
@@ -397,8 +440,8 @@ export async function getUserBookings() {
 }
 
 export async function cancelBooking(bookingId: number) {
-  // DELETE /api/bookings/{id}
-  return authFetch(`/api/bookings/${bookingId}`, {
+  // DELETE /api/bookings?bookingId={id}
+  return authFetch(`/api/bookings?bookingId=${bookingId}`, {
     method: 'DELETE'
   }).then(res => res.json());
 }

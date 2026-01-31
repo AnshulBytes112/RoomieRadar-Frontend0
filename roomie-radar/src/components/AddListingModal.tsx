@@ -95,7 +95,12 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = 'unset';
+    };
   }, [isOpen, onClose]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -258,16 +263,16 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
             onClick={(e) => e.stopPropagation()}
           >
             <motion.div
-              className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 max-h-[90vh] overflow-y-auto"
+              className="w-full max-w-4xl glass-card rounded-2xl shadow-2xl border-white/10 p-6 max-h-[90vh] overflow-y-auto bg-[#0c0c1d]"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 20, opacity: 0 }}
             >
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">{isEditing ? "Edit Listing" : "Add New Listing"}</h3>
+                <h3 className="text-2xl font-bold text-white">{isEditing ? "Edit Listing" : "Add New Listing"}</h3>
                 <button
                   onClick={onClose}
-                  className="text-gray-500 hover:text-gray-800 text-2xl"
+                  className="text-gray-400 hover:text-white text-2xl transition-colors"
                   aria-label="Close"
                 >
                   ✕
@@ -276,34 +281,34 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
 
               <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Title <span className="text-red-500">*</span>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    Title <span className="text-red-400">*</span>
                   </label>
                   <input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500"
                     placeholder="Spacious 2BHK in Downtown"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Location <span className="text-red-500">*</span>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    Location <span className="text-red-400">*</span>
                   </label>
                   <input
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500"
                     placeholder="Area, City"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Price (₹/month) <span className="text-red-500">*</span>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    Price (₹/month) <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="number"
@@ -311,14 +316,14 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500"
                     placeholder="25000"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Bedrooms <span className="text-red-500">*</span>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    Bedrooms <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="number"
@@ -326,13 +331,13 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
                     value={bedrooms}
                     onChange={(e) => setBedrooms(e.target.value)}
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Bathrooms <span className="text-red-500">*</span>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    Bathrooms <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="number"
@@ -340,42 +345,42 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
                     value={bathrooms}
                     onChange={(e) => setBathrooms(e.target.value)}
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
                     Area
                   </label>
                   <input
                     value={area}
                     onChange={(e) => setArea(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500"
                     placeholder="1200 sq ft"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Type <span className="text-red-500">*</span>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    Type <span className="text-red-400">*</span>
                   </label>
                   <select
                     value={type}
                     onChange={(e) =>
                       setType(e.target.value as "Private" | "Shared" | "Studio" | "Hostel")
                     }
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white"
                   >
-                    <option value="Private">Private Room</option>
-                    <option value="Shared">Shared Room</option>
-                    <option value="Studio">Studio Apartment</option>
-                    <option value="Hostel">Hostel</option>
+                    <option value="Private" className="bg-[#0c0c1d]">Private Room</option>
+                    <option value="Shared" className="bg-[#0c0c1d]">Shared Room</option>
+                    <option value="Studio" className="bg-[#0c0c1d]">Studio Apartment</option>
+                    <option value="Hostel" className="bg-[#0c0c1d]">Hostel</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
                     Security Deposit (₹)
                   </label>
                   <input

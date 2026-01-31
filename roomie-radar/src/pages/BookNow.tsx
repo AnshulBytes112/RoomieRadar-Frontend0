@@ -12,6 +12,7 @@ interface FormData {
   phone: string;
   message: string;
   checkInDate: string;
+  sendEmailConfirmation: boolean;
 }
 
 interface Room {
@@ -45,7 +46,8 @@ const BookNow: React.FC = () => {
       email: user?.email || '',
       phone: '',
       message: '',
-      checkInDate: ''
+      checkInDate: '',
+      sendEmailConfirmation: true
     }
   });
 
@@ -98,10 +100,14 @@ const BookNow: React.FC = () => {
 
     try {
       // Call the booking API
-      await bookRoom(room.id, {
+      await bookRoom({
+        roomId: room.id,
+        name: data.name,
+        email: data.email,
+        phone: data.phone || user?.phone || '',
         checkInDate: data.checkInDate,
         message: data.message,
-        phone: data.phone || user?.phone || ''
+        sendEmailConfirmation: data.sendEmailConfirmation
       });
 
       setSubmitStatus('success');
@@ -245,6 +251,22 @@ const BookNow: React.FC = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="glass-card p-12 rounded-[3.5rem] border-white/5 shadow-2xl"
         >
+          {/* Informational Message */}
+          <div className="mb-8 p-6 glass-card bg-blue-500/5 border border-blue-500/20 rounded-2xl">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-white font-medium mb-2">
+                  Booking requests help owners respond faster and do not require payment.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {submitStatus === 'success' && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
@@ -256,8 +278,18 @@ const BookNow: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-black text-white mb-2 uppercase">Request Transmitted</h3>
-              <p className="text-gray-400 font-medium tracking-wide">The room owner is now alerted. Redirecting to your secure dashboard...</p>
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <h3 className="text-2xl font-black text-white uppercase">Booking Request Sent</h3>
+                <span className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-bold uppercase rounded-full">
+                  Pending
+                </span>
+              </div>
+              <p className="text-gray-400 font-medium tracking-wide mb-4">
+                The owner usually responds within 24 hours.
+              </p>
+              <p className="text-gray-500 text-sm">
+                You can track your request in "My Bookings".
+              </p>
             </motion.div>
           )}
 
@@ -335,6 +367,31 @@ const BookNow: React.FC = () => {
                 {...register('message', { maxLength: { value: 500, message: 'Message cannot exceed 500 characters' } })}
               />
               {errors.message && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest ml-1">{errors.message.message}</p>}
+            </div>
+
+            {/* Email Confirmation Checkbox */}
+            <div className="space-y-3">
+              <div className="flex items-start gap-4 p-6 glass-card bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.04] transition-all">
+                <div className="flex items-center justify-center mt-1">
+                  <input
+                    type="checkbox"
+                    id="sendEmailConfirmation"
+                    className="w-5 h-5 rounded border-white/20 bg-white/10 text-blue-500 focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-0 focus:ring-offset-[#0c0c1d] cursor-pointer"
+                    {...register('sendEmailConfirmation')}
+                  />
+                </div>
+                <div className="flex-1">
+                  <label htmlFor="sendEmailConfirmation" className="text-white font-medium cursor-pointer flex items-center gap-2">
+                    Send email confirmation
+                    <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </label>
+                  <p className="text-gray-500 text-sm mt-1">
+                    Receive a confirmation email with your booking details and tracking information
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-6 pt-6">

@@ -1,5 +1,6 @@
 import { Route, Routes, useLocation } from "react-router-dom"
 import { AnimatePresence, motion } from "framer-motion"
+import { useEffect } from "react"
 import { AuthProvider } from "./contexts/AuthContext"
 import Navbar from "./components/Navbar"
 import ProtectedRoute from "./components/ProtectedRoute"
@@ -24,6 +25,11 @@ function App() {
   const location = useLocation();
   const hideNavbarRoutes = ['/login', '/register', '/unauthorized'];
   const showNavbar = !hideNavbarRoutes.includes(location.pathname);
+
+  // Scroll to top when route changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   return (
     <AuthProvider>

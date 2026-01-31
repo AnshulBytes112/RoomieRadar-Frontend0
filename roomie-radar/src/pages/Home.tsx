@@ -1,6 +1,6 @@
 import Footer from "@/components/Footer"
 import { Link, useNavigate } from "react-router-dom"
-import { fetchRoomDetails, addToFavorites } from "../api"
+import { addToFavorites } from "../api"
 import { useAuth } from "../contexts/AuthContext"
 import { Badge, Button, ScrollStack, ScrollStackItem, CardDescription, CardTitle } from "@/components/ui"
 import { motion } from "framer-motion"
@@ -99,7 +99,7 @@ const Home = () => {
     <div className="min-h-screen bg-[#0c0c1d] text-white overflow-hidden font-sans">
 
       {/* Hero Section */}
-      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden pt-28 md:pt-0">
         {/* Background Gradients & Elements */}
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0c0c1d]/60 to-[#0c0c1d] z-10" />
@@ -151,7 +151,7 @@ const Home = () => {
       {/* Featured Listings (Grid Layout) */}
       <section className="py-24 relative bg-[#0c0c1d]">
         <div className="container mx-auto px-6">
-          <div className="flex justify-between items-end mb-16">
+          <div className="flex justify-between items-end mb-8 md:mb-16">
             <div>
               <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-white to-gray-400 mb-4">
                 Featured Rooms
@@ -163,7 +163,7 @@ const Home = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-8">
             {featuredRooms.map((room) => (
               <motion.div
                 key={room.id}
@@ -173,49 +173,51 @@ const Home = () => {
                 transition={{ duration: 0.5 }}
               >
                 <div className="bg-[#181836]/50 border border-white/10 rounded-xl overflow-hidden group hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-900/20 backdrop-blur-sm h-full flex flex-col">
-                  <div className="relative h-64 overflow-hidden">
+                  <div className="relative h-32 md:h-64 overflow-hidden">
                     <img
                       src={room.image}
                       alt={room.title}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
-                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-sm font-semibold text-white border border-white/10">
-                      {room.price}
-                    </div>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleAddToFavorites(room.id);
                       }}
-                      className="absolute top-4 left-4 p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white transition-colors"
+                      className="absolute top-2 left-2 p-1.5 rounded-full bg-black/40 hover:bg-white/20 backdrop-blur-md text-white transition-colors"
                     >
-                      <Heart className="h-5 w-5" />
+                      <Heart className="h-4 w-4" />
                     </button>
                   </div>
-                  <div className="p-5 flex-grow">
-                    <CardTitle className="text-xl font-bold text-white mb-2 line-clamp-1">{room.title}</CardTitle>
-                    <CardDescription className="flex items-center text-gray-400 mb-4">
-                      <MapPin className="h-4 w-4 mr-1 text-blue-400" />
+                  <div className="p-3 md:p-5 flex-grow">
+                    <div className="flex flex-col mb-1 md:mb-3">
+                      <CardTitle className="text-xs md:text-xl font-bold text-white mb-0.5 line-clamp-1">{room.title}</CardTitle>
+                      <p className="text-sm md:text-2xl font-black text-blue-400">{room.price.split('/')[0]}</p>
+                    </div>
+
+                    <CardDescription className="flex items-center text-gray-400 mb-2 md:mb-4 text-[9px] md:text-base">
+                      <MapPin className="h-2.5 w-2.5 md:h-4 md:w-4 mr-1 text-blue-400" />
                       {room.location}
                     </CardDescription>
-                    <div className="grid grid-cols-3 gap-2 text-sm text-gray-300">
-                      <div className="flex items-center gap-1 bg-white/5 py-1 px-2 rounded">
-                        <BedDouble className="h-4 w-4 text-blue-400" />
+
+                    <div className="grid grid-cols-3 gap-1 md:gap-2 text-[7px] md:text-sm text-gray-300">
+                      <div className="flex items-center gap-1 bg-white/5 py-0.5 md:py-1 px-1 md:px-2 rounded">
+                        <BedDouble className="h-2.5 w-2.5 md:h-4 md:w-4 text-blue-400" />
                         <span>{room.bedrooms}</span>
                       </div>
-                      <div className="flex items-center gap-1 bg-white/5 py-1 px-2 rounded">
-                        <Bath className="h-4 w-4 text-blue-400" />
+                      <div className="flex items-center gap-1 bg-white/5 py-0.5 md:py-1 px-1 md:px-2 rounded">
+                        <Bath className="h-2.5 w-2.5 md:h-4 md:w-4 text-blue-400" />
                         <span>{room.bathrooms}</span>
                       </div>
-                      <div className="flex items-center gap-1 bg-white/5 py-1 px-2 rounded">
-                        <Maximize className="h-4 w-4 text-blue-400" />
-                        <span>{room.area}</span>
+                      <div className="flex items-center gap-1 bg-white/5 py-0.5 md:py-1 px-1 md:px-2 rounded">
+                        <Maximize className="h-2.5 w-2.5 md:h-4 md:w-4 text-blue-400" />
+                        <span>{room.area.split(' ')[0]}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="p-5 pt-0">
-                    <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border-none" onClick={() => handleViewDetails(room.id)}>
-                      View Details
+                  <div className="p-2 md:p-5 pt-0">
+                    <Button className="w-full h-7 md:h-10 text-[9px] md:text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border-none shadow-md" onClick={() => handleViewDetails(room.id)}>
+                      Details
                     </Button>
                   </div>
                 </div>
@@ -232,7 +234,7 @@ const Home = () => {
       </section>
 
       {/* Why Choose Us with ScrollStack (Features) */}
-      <section className="bg-[#0F0F24] relative pb-[32rem]">
+      <section className="bg-[#0F0F24] relative pb-[15rem] md:pb-[32rem]">
         <div className="container mx-auto px-6 pt-24">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <Badge variant="secondary" className="mb-4 bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 border-purple-500/20">Why RoomieRadar?</Badge>
@@ -241,25 +243,25 @@ const Home = () => {
           </div>
 
           <div className="w-full max-w-6xl mx-auto">
-            <ScrollStack useWindowScroll={true} itemStackDistance={80} itemDistance={100} stackPosition="25%">
+            <ScrollStack useWindowScroll={true} itemStackDistance={80} stackPosition="25%">
               {/* Card 1: Verified via Background Checks */}
               <ScrollStackItem itemClassName="bg-[#1e1b4b] bg-gradient-to-br from-blue-900 to-slate-900 border-blue-500/20 overflow-hidden">
-                <div className="flex flex-col md:flex-row h-full">
-                  <div className="w-full md:w-1/2 p-8 flex flex-col justify-center text-left">
-                    <div className="w-16 h-16 bg-blue-500/20 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/10">
-                      <ShieldCheck className="w-8 h-8 text-blue-400" />
+                <div className="flex flex-col-reverse md:flex-row h-full">
+                  <div className="w-full md:w-1/2 md:p-8 flex flex-col justify-center text-left">
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-blue-500/20 rounded-xl md:rounded-2xl flex items-center justify-center mb-4 md:mb-6 shadow-lg shadow-blue-500/10">
+                      <ShieldCheck className="w-6 h-6 md:w-8 md:h-8 text-blue-400" />
                     </div>
-                    <h3 className="text-3xl font-bold text-white mb-4">100% Verified Listings</h3>
-                    <p className="text-lg text-gray-300 mb-6 leading-relaxed">
+                    <h3 className="text-xl md:text-3xl font-bold text-white mb-3 md:mb-4">100% Verified Listings</h3>
+                    <p className="text-sm md:text-lg text-gray-300 mb-4 md:mb-6 leading-relaxed">
                       We take safety seriously. Every host and room on our platform undergoes a strict manual verification process.
                     </p>
-                    <ul className="space-y-3 text-gray-400">
-                      <li className="flex items-center"><div className="w-2 h-2 bg-blue-400 rounded-full mr-3" /> Identity verification checks</li>
-                      <li className="flex items-center"><div className="w-2 h-2 bg-blue-400 rounded-full mr-3" /> Property ownership validation</li>
-                      <li className="flex items-center"><div className="w-2 h-2 bg-blue-400 rounded-full mr-3" /> Scam-free guarantee</li>
+                    <ul className="space-y-2 md:space-y-3 text-xs md:text-gray-400">
+                      <li className="flex items-center"><div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3" /> Identity verification checks</li>
+                      <li className="flex items-center"><div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3" /> Property ownership validation</li>
+                      <li className="flex items-center"><div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3" /> Scam-free guarantee</li>
                     </ul>
                   </div>
-                  <div className="w-full md:w-1/2 relative h-64 md:h-auto overflow-hidden">
+                  <div className="w-full md:w-1/2 relative h-32 md:h-auto overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-r from-[#1e1b4b] to-transparent z-10" />
                     <img
                       src="https://images.unsplash.com/photo-1573164713988-8665fc963095?ixlib=rb-4.0.3&auto=format&fit=crop&w=1469&q=80"
@@ -272,22 +274,22 @@ const Home = () => {
 
               {/* Card 2: AI Compatibility */}
               <ScrollStackItem itemClassName="bg-[#2e1065] bg-gradient-to-br from-purple-900 to-fuchsia-900 border-purple-500/20 overflow-hidden">
-                <div className="flex flex-col md:flex-row h-full">
-                  <div className="w-full md:w-1/2 p-8 flex flex-col justify-center text-left">
-                    <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-purple-500/10">
-                      <Users className="w-8 h-8 text-purple-400" />
+                <div className="flex flex-col-reverse md:flex-row h-full">
+                  <div className="w-full md:w-1/2 md:p-8 flex flex-col justify-center text-left">
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-purple-500/20 rounded-xl md:rounded-2xl flex items-center justify-center mb-4 md:mb-6 shadow-lg shadow-purple-500/10">
+                      <Users className="w-6 h-6 md:w-8 md:h-8 text-purple-400" />
                     </div>
-                    <h3 className="text-3xl font-bold text-white mb-4">Compatible Roommates</h3>
-                    <p className="text-lg text-gray-300 mb-6 leading-relaxed">
+                    <h3 className="text-xl md:text-3xl font-bold text-white mb-3 md:mb-4">Compatible Roommates</h3>
+                    <p className="text-sm md:text-lg text-gray-300 mb-4 md:mb-6 leading-relaxed">
                       Living with someone is personal. Our AI matches you based on lifestyle, habits, and personality traits.
                     </p>
-                    <ul className="space-y-3 text-gray-400">
-                      <li className="flex items-center"><div className="w-2 h-2 bg-purple-400 rounded-full mr-3" /> Lifestyle & habit matching</li>
-                      <li className="flex items-center"><div className="w-2 h-2 bg-purple-400 rounded-full mr-3" /> Chat before you book</li>
-                      <li className="flex items-center"><div className="w-2 h-2 bg-purple-400 rounded-full mr-3" /> Community events & meetups</li>
+                    <ul className="space-y-2 md:space-y-3 text-xs md:text-gray-400">
+                      <li className="flex items-center"><div className="w-1.5 h-1.5 bg-purple-400 rounded-full mr-3" /> Lifestyle & habit matching</li>
+                      <li className="flex items-center"><div className="w-1.5 h-1.5 bg-purple-400 rounded-full mr-3" /> Chat before you book</li>
+                      <li className="flex items-center"><div className="w-1.5 h-1.5 bg-purple-400 rounded-full mr-3" /> Community events & meetups</li>
                     </ul>
                   </div>
-                  <div className="w-full md:w-1/2 relative h-64 md:h-auto overflow-hidden">
+                  <div className="w-full md:w-1/2 relative h-32 md:h-auto overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-r from-[#2e1065] to-transparent z-10" />
                     <img
                       src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?ixlib=rb-4.0.3&auto=format&fit=crop&w=1632&q=80"
@@ -300,22 +302,22 @@ const Home = () => {
 
               {/* Card 3: Instant Booking */}
               <ScrollStackItem itemClassName="bg-[#431407] bg-gradient-to-br from-orange-900 to-red-900 border-orange-500/20 overflow-hidden">
-                <div className="flex flex-col md:flex-row h-full">
-                  <div className="w-full md:w-1/2 p-8 flex flex-col justify-center text-left">
-                    <div className="w-16 h-16 bg-orange-500/20 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-orange-500/10">
-                      <Zap className="w-8 h-8 text-orange-400" />
+                <div className="flex flex-col-reverse md:flex-row h-full">
+                  <div className="w-full md:w-1/2 md:p-8 flex flex-col justify-center text-left">
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-orange-500/20 rounded-xl md:rounded-2xl flex items-center justify-center mb-4 md:mb-6 shadow-lg shadow-orange-500/10">
+                      <Zap className="w-6 h-6 md:w-8 md:h-8 text-orange-400" />
                     </div>
-                    <h3 className="text-3xl font-bold text-white mb-4">Instant Booking</h3>
-                    <p className="text-lg text-gray-300 mb-6 leading-relaxed">
+                    <h3 className="text-xl md:text-3xl font-bold text-white mb-3 md:mb-4">Instant Booking</h3>
+                    <p className="text-sm md:text-lg text-gray-300 mb-4 md:mb-6 leading-relaxed">
                       Found the one? Secure it instantly using our safe payment gateway. No waiting for approvals.
                     </p>
-                    <ul className="space-y-3 text-gray-400">
-                      <li className="flex items-center"><div className="w-2 h-2 bg-orange-400 rounded-full mr-3" /> Secure payment hold</li>
-                      <li className="flex items-center"><div className="w-2 h-2 bg-orange-400 rounded-full mr-3" /> 24-hour refund policy</li>
-                      <li className="flex items-center"><div className="w-2 h-2 bg-orange-400 rounded-full mr-3" /> Digital lease signing</li>
+                    <ul className="space-y-2 md:space-y-3 text-xs md:text-gray-400">
+                      <li className="flex items-center"><div className="w-1.5 h-1.5 bg-orange-400 rounded-full mr-3" /> Secure payment hold</li>
+                      <li className="flex items-center"><div className="w-1.5 h-1.5 bg-orange-400 rounded-full mr-3" /> 24-hour refund policy</li>
+                      <li className="flex items-center"><div className="w-1.5 h-1.5 bg-orange-400 rounded-full mr-3" /> Digital lease signing</li>
                     </ul>
                   </div>
-                  <div className="w-full md:w-1/2 relative h-64 md:h-auto overflow-hidden">
+                  <div className="w-full md:w-1/2 relative h-32 md:h-auto overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-r from-[#431407] to-transparent z-10" />
                     <img
                       src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1073&q=80"

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { getPendingConnections, getSentRequests, acceptConnectionRequest, rejectConnectionRequest } from '../api';
@@ -10,10 +10,11 @@ const Connections = () => {
     const [sentRequests, setSentRequests] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<number | null>(null);
+    const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
-    const fetchData = async () => {
+    const fetchData = async (isBackground = false) => {
         try {
-            setIsLoading(true);
+            if (!isBackground) setIsLoading(true);
             const [inbox, sent] = await Promise.all([
                 getPendingConnections(),
                 getSentRequests()
@@ -23,12 +24,21 @@ const Connections = () => {
         } catch (error) {
             console.error('Failed to fetch connections:', error);
         } finally {
-            setIsLoading(false);
+            if (!isBackground) setIsLoading(false);
         }
     };
 
     useEffect(() => {
         fetchData();
+
+        // Setup polling
+        pollingRef.current = setInterval(() => {
+            fetchData(true);
+        }, 5000);
+
+        return () => {
+            if (pollingRef.current) clearInterval(pollingRef.current);
+        };
     }, []);
 
     const handleAccept = async (id: number) => {
@@ -72,23 +82,23 @@ const Connections = () => {
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mb-12"
+                    className="mb-8 md:mb-12"
                 >
-                    <h1 className="text-5xl md:text-6xl font-black text-white tracking-tight uppercase mb-4">
+                    <h1 className="text-3xl md:text-6xl font-black text-white tracking-tight uppercase mb-4">
                         Connection <span className="text-gradient">Matrix</span>
                     </h1>
-                    <p className="text-gray-500 font-black uppercase tracking-[0.2em] text-xs">Manage your synchronization requests</p>
+                    <p className="text-gray-500 font-black uppercase tracking-[0.2em] text-[10px] md:text-xs">Manage your synchronization requests</p>
                 </motion.div>
 
                 {/* Tab Switcher */}
-                <div className="flex gap-4 mb-10">
+                <div className="flex gap-4 mb-8 md:mb-10 overflow-x-auto pb-4 no-scrollbar">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
-                            className={`relative px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all overflow-hidden ${activeTab === tab.id
-                                    ? 'text-white'
-                                    : 'text-gray-500 hover:text-gray-300'
+                            className={`relative px-6 md:px-8 py-3 md:py-4 rounded-2xl font-black uppercase tracking-widest text-[9px] md:text-[10px] transition-all whitespace-nowrap overflow-hidden ${activeTab === tab.id
+                                ? 'text-white'
+                                : 'text-gray-500 hover:text-gray-300'
                                 }`}
                         >
                             {activeTab === tab.id && (
@@ -97,7 +107,7 @@ const Connections = () => {
                                     className="absolute inset-0 bg-white/5 border border-white/10 rounded-2xl -z-10"
                                 />
                             )}
-                            <span className="relative z-10 flex items-center gap-3">
+                            <span className="relative z-10 flex items-center gap-2 md:gap-3">
                                 {tab.label}
                                 <span className={`px-2 py-0.5 rounded-md text-[8px] ${activeTab === tab.id ? 'bg-blue-600 text-white' : 'bg-white/5 text-gray-500'}`}>
                                     {tab.count}
@@ -131,32 +141,29 @@ const Connections = () => {
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: idx * 0.05 }}
-                                        className="glass-card p-8 rounded-[2.5rem] border-white/5 hover:border-white/10 transition-all flex flex-col md:flex-row items-center gap-8 group"
+                                        className="glass-card p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border-white/5 hover:border-white/10 transition-all flex flex-col md:flex-row items-center gap-6 md:gap-8 group"
                                     >
                                         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 p-0.5 shadow-2xl group-hover:scale-105 transition-transform">
                                             <div className="w-full h-full rounded-full bg-[#0c0c1d] flex items-center justify-center overflow-hidden">
-                                                <span className="text-2xl font-black text-white">{(activeTab === 'inbox' ? request.fromUsername : request.toUsername)?.[0]?.toUpperCase()}</span>
+                                                <span className="text-2xl font-black text-white">{(activeTab === 'inbox' ? (request.fromName || request.fromUsername) : (request.toName || request.toUsername))?.[0]?.toUpperCase()}</span>
                                             </div>
                                         </div>
 
                                         <div className="flex-1 text-center md:text-left">
                                             <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-2">
-                                                {activeTab === 'inbox' ? request.fromUsername : request.toUsername}
+                                                {activeTab === 'inbox' ? (request.fromName || request.fromUsername) : (request.toName || request.toUsername)}
                                             </h3>
                                             <p className="text-gray-400 text-sm italic font-medium leading-relaxed max-w-xl">
                                                 "{request.message || 'Transmission initiated without data payload.'}"
                                             </p>
                                             <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-4">
-                                                <span className="text-[8px] font-black uppercase tracking-widest text-gray-500 bg-white/5 px-2 py-1 rounded">
-                                                    ID: {request.id}
-                                                </span>
                                                 <span className="text-[8px] font-black uppercase tracking-widest text-blue-400 bg-blue-400/10 px-2 py-1 rounded border border-blue-400/20">
                                                     {new Date(request.createdAt).toLocaleDateString()}
                                                 </span>
                                                 {activeTab === 'sent' && (
                                                     <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded border ${request.status === 'PENDING' ? 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' :
-                                                            request.status === 'ACCEPTED' ? 'text-green-400 bg-green-400/10 border-green-400/20' :
-                                                                'text-red-400 bg-red-400/10 border-red-400/20'
+                                                        request.status === 'ACCEPTED' ? 'text-green-400 bg-green-400/10 border-green-400/20' :
+                                                            'text-red-400 bg-red-400/10 border-red-400/20'
                                                         }`}>
                                                         {request.status}
                                                     </span>
@@ -165,18 +172,18 @@ const Connections = () => {
                                         </div>
 
                                         {activeTab === 'inbox' && (
-                                            <div className="flex gap-4">
+                                            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                                                 <button
                                                     onClick={() => handleReject(request.id)}
                                                     disabled={actionLoading === request.id}
-                                                    className="h-14 px-8 rounded-2xl bg-white/5 hover:bg-red-500/10 text-gray-500 hover:text-red-400 font-black uppercase tracking-widest text-[10px] transition-all border border-transparent hover:border-red-500/20 disabled:opacity-50"
+                                                    className="h-12 md:h-14 px-6 md:px-8 rounded-xl md:rounded-2xl bg-white/5 hover:bg-red-500/10 text-gray-500 hover:text-red-400 font-black uppercase tracking-widest text-[9px] md:text-[10px] transition-all border border-transparent hover:border-red-500/20 disabled:opacity-50 flex-1 md:flex-none"
                                                 >
                                                     Decline
                                                 </button>
                                                 <button
                                                     onClick={() => handleAccept(request.id)}
                                                     disabled={actionLoading === request.id}
-                                                    className="h-14 px-8 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black uppercase tracking-widest text-[10px] transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-purple-900/40 disabled:opacity-50"
+                                                    className="h-12 md:h-14 px-6 md:px-8 rounded-xl md:rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black uppercase tracking-widest text-[9px] md:text-[10px] transition-all hover:scale-105 active:scale-95 shadow-xl md:shadow-2xl shadow-purple-900/40 disabled:opacity-50 flex-1 md:flex-none"
                                                 >
                                                     Accept signal
                                                 </button>

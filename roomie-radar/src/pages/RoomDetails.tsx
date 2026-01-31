@@ -207,7 +207,7 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-24 flex items-center justify-center">
+      <div className="min-h-screen pt-20 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading room details...</p>
@@ -218,7 +218,7 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
 
   if (error || !room) {
     return (
-      <div className="min-h-screen pt-24 flex items-center justify-center">
+      <div className="min-h-screen pt-20 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -252,16 +252,16 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
   ] as const;
 
   return (
-    <div className="min-h-screen pt-24 bg-[#0c0c1d] pb-20 relative overflow-hidden">
-      {/* Background blobs for depth */}
+    <div className="min-h-screen pt-20 bg-[#0c0c1d] pb-16 relative overflow-hidden">
+      {/* Background blobs for depth - softer */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-        <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob" />
-        <div className="absolute top-[40%] -right-[10%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob animation-delay-2000" />
+        <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[150px] mix-blend-screen animate-blob" />
+        <div className="absolute top-[40%] -right-[10%] w-[600px] h-[600px] bg-purple-600/5 rounded-full blur-[150px] mix-blend-screen animate-blob animation-delay-2000" />
       </div>
 
       {/* Header */}
-      <div className="relative z-10 border-b border-white/5 mb-12">
-        <div className="max-w-7xl mx-auto px-6 py-10">
+      <div className="relative z-10 border-b border-white/5 mb-8">
+        <div className="max-w-6xl mx-auto px-4 py-8">
           <button
             onClick={() => navigate('/find-room')}
             className="flex items-center gap-3 text-gray-500 hover:text-white mb-8 transition-colors group font-black uppercase tracking-widest text-[10px]"
@@ -306,7 +306,7 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
+      <div className="max-w-6xl mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Left Column - Images and Basic Info */}
           <div className="lg:col-span-2 space-y-12">
@@ -314,7 +314,7 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              className="glass-card rounded-[3rem] overflow-hidden shadow-2xl border-white/5 group"
+              className="glass-card rounded-[2rem] overflow-hidden shadow-lg border-white/5 group"
             >
               <div className="relative aspect-[16/10] w-full overflow-hidden">
                 <img
@@ -325,27 +325,67 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c1d]/50 to-transparent" />
 
-                <div className="absolute top-8 right-8 flex gap-4">
+                <div className="absolute top-6 right-6 flex gap-3">
+                  {/* Photo counter */}
+                  {room.images && room.images.length > 1 && (
+                    <div className="px-3 py-2 glass-card rounded-full text-xs font-medium text-white/80 backdrop-blur-sm border-white/10">
+                      {currentImageIndex + 1} / {room.images.length}
+                    </div>
+                  )}
                   <button
                     onClick={toggleWishlist}
-                    className="p-4 glass-card rounded-2xl hover:bg-white transition-all group/wish border-none shadow-2xl"
+                    className="p-3 glass-card rounded-xl hover:bg-white/10 transition-all group/wish border-none shadow-lg"
                   >
-                    <svg className={`w-6 h-6 ${isInWishlist ? 'fill-red-500 stroke-red-500' : 'stroke-white group-hover/wish:stroke-red-500'} transition-colors`} fill="none" viewBox="0 0 24 24">
+                    <svg className={`w-5 h-5 ${isInWishlist ? 'fill-red-500 stroke-red-500' : 'stroke-white group-hover/wish:stroke-red-500'} transition-colors`} fill="none" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                   </button>
                 </div>
+                
+                {/* Navigation arrows */}
+                {room.images && room.images.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => setCurrentImageIndex((prev) => (prev - 1 + room.images!.length) % room.images!.length)}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 p-2 glass-card rounded-full bg-black/30 hover:bg-black/50 transition-all border-white/10 text-white"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => setCurrentImageIndex((prev) => (prev + 1) % room.images!.length)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2 glass-card rounded-full bg-black/30 hover:bg-black/50 transition-all border-white/10 text-white"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </>
+                )}
               </div>
 
               {/* Image Strip */}
               {room.images && room.images.length > 1 && (
-                <div className="p-8 bg-white/5 border-t border-white/5">
-                  <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                <div className="p-6 bg-white/5 border-t border-white/5">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-medium text-gray-400">Gallery</span>
+                    <button
+                      onClick={() => openGallery(0)}
+                      className="text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                      </svg>
+                      View All
+                    </button>
+                  </div>
+                  <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                     {room.images.map((img, idx) => (
                       <button
                         key={idx}
                         onClick={() => setCurrentImageIndex(idx)}
-                        className={`flex-shrink-0 w-28 h-28 rounded-2xl overflow-hidden transition-all duration-300 ${idx === currentImageIndex ? 'ring-4 ring-blue-500 scale-105 shadow-2xl shadow-blue-500/20' : 'opacity-40 hover:opacity-100'
+                        className={`flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden transition-all duration-300 ${idx === currentImageIndex ? 'ring-2 ring-blue-400 scale-105 shadow-lg shadow-blue-400/20' : 'opacity-60 hover:opacity-100'
                           }`}
                       >
                         <img src={img || '/placeholder.jpg'} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
@@ -361,66 +401,83 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="glass-card rounded-[3rem] overflow-hidden border-white/5"
+              className="glass-card rounded-[2rem] overflow-hidden border-white/5"
             >
-              <div className="flex px-10 border-b border-white/5 bg-white/[0.02]">
+              <div className="flex px-8 border-b border-white/5 bg-white/[0.02]">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`px-8 py-8 text-[11px] font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === tab.id ? 'text-blue-400' : 'text-gray-500 hover:text-white'
+                    className={`px-6 py-6 text-[10px] font-medium uppercase tracking-[0.15em] transition-all relative ${activeTab === tab.id ? 'text-blue-400' : 'text-gray-500 hover:text-white'
                       }`}
                   >
                     {tab.label}
                     {activeTab === tab.id && (
                       <motion.div
                         layoutId="activeTab"
-                        className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500"
+                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400"
                       />
                     )}
                   </button>
                 ))}
               </div>
 
-              <div className="p-12">
+              <div className="p-10">
                 {activeTab === 'overview' && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="space-y-12"
                   >
-                    <div className="p-10 glass-card bg-white/5 border-none rounded-[2.5rem]">
-                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-6">Property Manifesto</h4>
-                      <p className="text-2xl text-white font-light leading-relaxed">
-                        {room.description || 'This elite space is waiting to be defined by its next resident. Every detail is curated for an exceptional living experience.'}
+                    <div className="p-8 glass-card bg-white/5 border-none rounded-[2rem]">
+                      <h4 className="text-[10px] font-medium text-gray-500 uppercase tracking-[0.2em] mb-4">About This Home</h4>
+                      <p className="text-lg text-white leading-relaxed">
+                        {room.description || 'A comfortable and well-maintained space perfect for your next home. This property offers everything you need for a pleasant living experience.'}
                       </p>
+                      
+                      {/* Emotional appeal */}
+                      <div className="mt-6 p-4 glass-card bg-blue-500/5 border-blue-500/10 rounded-xl">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
+                            <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                          </div>
+                          <span className="text-sm font-medium text-blue-400">Perfect for Your Lifestyle</span>
+                        </div>
+                        <p className="text-xs text-gray-400">Imagine coming home to this peaceful space after a long day. Your comfort is our priority.</p>
+                      </div>
                     </div>
 
                     <div>
-                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-8 ml-2">Space Characteristics</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                      <h4 className="text-[10px] font-medium text-gray-500 uppercase tracking-[0.2em] mb-6 ml-2">Property Details</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {[
-                          { val: room.bedrooms, label: 'Sleep Areas', color: 'text-blue-400' },
-                          { val: room.bathrooms, label: 'Bath Areas', color: 'text-purple-400' },
-                          { val: room.area, label: 'Dimensions', color: 'text-pink-400' },
-                          { val: room.type, label: 'Architecture', color: 'text-orange-400' }
+                          { val: room.bedrooms, label: 'Bedrooms', color: 'text-blue-400', icon: '🛏️' },
+                          { val: room.bathrooms, label: 'Bathrooms', color: 'text-purple-400', icon: '🚿' },
+                          { val: room.area, label: 'Area', color: 'text-pink-400', icon: '📏' },
+                          { val: room.type, label: 'Type', color: 'text-orange-400', icon: '🏠' }
                         ].map((stat, i) => (
-                          <div key={i} className="p-8 glass-card bg-white/5 border-none rounded-3xl text-center hover:bg-white/10 transition-colors">
-                            <div className={`text-2xl font-black mb-2 ${stat.color}`}>{stat.val || 'N/A'}</div>
-                            <div className="text-[9px] font-black uppercase text-gray-500 tracking-widest">{stat.label}</div>
+                          <div key={i} className="p-6 glass-card bg-white/5 border-none rounded-2xl text-center hover:bg-white/10 transition-colors">
+                            <div className="text-2xl mb-2">{stat.icon}</div>
+                            <div className={`text-lg font-bold mb-1 ${stat.color}`}>{stat.val || 'N/A'}</div>
+                            <div className="text-[9px] font-medium text-gray-500 uppercase tracking-wider">{stat.label}</div>
                           </div>
                         ))}
                       </div>
                     </div>
 
                     <div>
-                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-8 ml-2">Identity Markers</h4>
+                      <h4 className="text-[10px] font-medium text-gray-500 uppercase tracking-[0.2em] mb-6 ml-2">Features & Amenities</h4>
                       <div className="flex flex-wrap gap-3">
                         {(room.tags || []).map(tag => (
-                          <span key={tag} className="px-6 py-3 glass-card bg-white/5 border-white/10 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl">
+                          <span key={tag} className="px-4 py-2 glass-card bg-white/5 border-white/10 text-white rounded-xl text-[10px] font-medium uppercase tracking-[0.1em]">
                             {tag}
                           </span>
                         ))}
+                        {(!room.tags || room.tags.length === 0) && (
+                          <span className="text-gray-500 text-sm italic">Standard amenities included</span>
+                        )}
                       </div>
                     </div>
                   </motion.div>
@@ -433,17 +490,17 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
                     className="space-y-12"
                   >
                     <div>
-                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-8 ml-2">Elite Amenities</h4>
+                      <h4 className="text-[10px] font-medium text-gray-500 uppercase tracking-[0.2em] mb-6 ml-2">Amenities</h4>
                       {room.amenities && room.amenities.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {room.amenities.map((amenity, idx) => (
-                            <div key={idx} className="flex items-center gap-6 p-6 glass-card bg-white/5 border-none rounded-3xl group hover:bg-white/10 transition-all">
-                              <div className="w-10 h-10 glass-card rounded-xl flex items-center justify-center border-none bg-blue-500/10 text-blue-400 group-hover:scale-110 transition-transform">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div key={idx} className="flex items-center gap-4 p-4 glass-card bg-white/5 border-none rounded-xl group hover:bg-white/10 transition-all">
+                              <div className="w-8 h-8 glass-card rounded-lg flex items-center justify-center border-none bg-green-500/10 text-green-400 group-hover:scale-110 transition-transform">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                 </svg>
                               </div>
-                              <span className="text-white font-bold uppercase tracking-widest text-xs">{amenity}</span>
+                              <span className="text-white font-medium text-sm">{amenity}</span>
                             </div>
                           ))}
                         </div>
@@ -452,15 +509,20 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
                       )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {[
-                        { label: 'Vehicle Storage', status: room.parking },
-                        { label: 'Fauna Inclusive', status: room.petFriendly },
-                        { label: 'Fully Configured', status: room.furnished }
+                        { label: 'Parking Available', status: room.parking, icon: '🚗' },
+                        { label: 'Pet Friendly', status: room.petFriendly, icon: '🐕' },
+                        { label: 'Furnished', status: room.furnished, icon: '🪑' }
                       ].map((feat, i) => (
-                        <div key={i} className="flex items-center gap-4 p-6 glass-card bg-white/5 border-none rounded-3xl">
-                          <div className={`w-3 h-3 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)] ${feat.status ? 'bg-green-500 shadow-green-500/50' : 'bg-red-500 shadow-red-500/50'}`} />
-                          <span className="text-gray-400 font-black uppercase tracking-widest text-[9px]">{feat.label}</span>
+                        <div key={i} className="flex items-center gap-3 p-4 glass-card bg-white/5 border-none rounded-xl">
+                          <div className="text-xl">{feat.icon}</div>
+                          <div className="flex-1">
+                            <div className="text-xs font-medium text-gray-400">{feat.label}</div>
+                            <div className={`text-sm font-medium ${feat.status ? 'text-green-400' : 'text-gray-500'}`}>
+                              {feat.status ? 'Available' : 'Not Available'}
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -572,66 +634,107 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="glass-card p-10 rounded-[3rem] border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.5)] bg-gradient-to-b from-white/[0.05] to-transparent sticky top-32"
+              className="glass-card p-8 rounded-[2rem] border-white/10 shadow-lg bg-gradient-to-b from-white/[0.03] to-transparent sticky top-32"
             >
-              <div className="mb-12">
-                <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-6">Financial Matrix</h4>
-                <div className="space-y-6">
-                  <div className="flex justify-between items-end border-b border-white/5 pb-4">
-                    <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Monthly Rent</span>
-                    <span className="text-2xl font-black text-white">{displayPrice(room.price, room.type).split('/')[0]}</span>
+              <div className="mb-8">
+                <h4 className="text-[10px] font-medium text-gray-500 uppercase tracking-[0.2em] mb-4">Pricing Details</h4>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                    <span className="text-gray-400 font-medium uppercase tracking-wider text-[9px]">Monthly Rent</span>
+                    <span className="text-xl font-bold text-white">{displayPrice(room.price, room.type).split('/')[0]}</span>
                   </div>
-                  <div className="flex justify-between items-end border-b border-white/5 pb-4">
-                    <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Security Escrow</span>
-                    <span className="text-2xl font-black text-white">{displayAmount(room.deposit)}</span>
+                  <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                    <span className="text-gray-400 font-medium uppercase tracking-wider text-[9px]">Security Deposit</span>
+                    <span className="text-xl font-bold text-white">{displayAmount(room.deposit)}</span>
                   </div>
-                  <div className="flex justify-between items-end">
-                    <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Maintenance</span>
-                    <span className="text-2xl font-black text-white">{displayAmount(room.maintenance)}</span>
-                  </div>
-                </div>
-
-                <div className="mt-12 p-8 glass-card bg-blue-500/10 border-blue-500/20 rounded-[2rem] text-center">
-                  <div className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] mb-4">Total Activation Cost</div>
-                  <div className="text-5xl font-black text-white tracking-tighter">
-                    ₹{(() => {
-                      const rent = parseInt(formatPrice(room.price)) || 0;
-                      const deposit = parseInt(formatPrice(room.deposit)) || 0;
-                      return (rent + deposit).toLocaleString();
-                    })()}
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 font-medium uppercase tracking-wider text-[9px]">Maintenance</span>
+                    <span className="text-xl font-bold text-white">{displayAmount(room.maintenance)}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <button
-                  onClick={handleBookNow}
-                  className="w-full h-20 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white rounded-3xl font-black uppercase tracking-[0.3em] text-xs hover:scale-[1.02] transition-all shadow-2xl shadow-purple-900/40 active:scale-95"
-                >
-                  Book Experience
-                </button>
+              {/* Trust indicators */}
+              <div className="mb-8 p-4 glass-card bg-green-500/5 border-green-500/10 rounded-xl">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-medium text-green-400">Verified Property</span>
+                </div>
+                <p className="text-xs text-gray-400">This property has been verified by our team for your safety.</p>
+              </div>
+
+              <div className="space-y-3">
+                {/* Primary CTA - Schedule Inspection */}
                 <button
                   onClick={handleScheduleVisit}
-                  className="w-full h-16 glass-card bg-white/5 border-white/10 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-white/10 transition-all"
+                  className="w-full h-16 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl font-semibold uppercase tracking-[0.15em] text-sm hover:from-blue-400 hover:to-blue-500 transition-all shadow-lg shadow-blue-900/30 flex items-center justify-center gap-2"
                 >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
                   Schedule Inspection
                 </button>
+                
+                {/* Secondary CTAs */}
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={handleContactOwner}
+                    className="h-14 glass-card bg-white/5 border-white/10 text-white rounded-xl font-medium uppercase tracking-[0.1em] text-xs hover:bg-white/10 transition-all flex items-center justify-center gap-1"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    Call
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!user) {
+                        navigate('/login');
+                      } else if (room.contactEmail) {
+                        window.open(`mailto:${room.contactEmail}?subject=Inquiry about ${room.title || 'Room'}`, '_self');
+                      } else {
+                        alert("Email address not available");
+                      }
+                    }}
+                    className="h-14 glass-card bg-white/5 border-white/10 text-white rounded-xl font-medium uppercase tracking-[0.1em] text-xs hover:bg-white/10 transition-all flex items-center justify-center gap-1"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Email
+                  </button>
+                </div>
+                
                 <button
-                  onClick={handleContactOwner}
-                  className="w-full h-16 glass-card border-none bg-blue-500/10 text-blue-400 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-blue-500/20 transition-all"
+                  onClick={handleBookNow}
+                  className="w-full h-12 glass-card border-none bg-purple-500/10 text-purple-400 rounded-xl font-medium uppercase tracking-[0.1em] text-xs hover:bg-purple-500/20 transition-all"
                 >
-                  Direct Manifest Contact
+                  Book Now
                 </button>
               </div>
 
-              <div className="mt-10 grid grid-cols-2 gap-4">
-                <div className="p-4 glass-card bg-white/5 border-none rounded-2xl text-center">
-                  <div className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Availability</div>
-                  <div className="text-xs font-bold text-white uppercase">{room.availableFrom || 'ASAP'}</div>
+              {/* Availability and trust info */}
+              <div className="mt-6 space-y-3">
+                <div className="flex items-center justify-between p-3 glass-card bg-white/5 border-none rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <span className="text-xs font-medium text-gray-400">Available</span>
+                  </div>
+                  <span className="text-xs font-bold text-white">{room.availableFrom || 'Immediately'}</span>
                 </div>
-                <div className="p-4 glass-card bg-white/5 border-none rounded-2xl text-center">
-                  <div className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-1">Verification</div>
-                  <div className="text-xs font-bold text-green-400 uppercase">Trusted</div>
+                
+                <div className="flex items-center justify-between p-3 glass-card bg-white/5 border-none rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <span className="text-xs font-medium text-gray-400">Secure Booking</span>
+                  </div>
+                  <span className="text-xs font-bold text-blue-400">Protected</span>
                 </div>
               </div>
             </motion.div>

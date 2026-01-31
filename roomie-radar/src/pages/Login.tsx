@@ -23,8 +23,8 @@ const Login = () => {
       } else {
         setError(result?.message || "Invalid credentials.");
       }
-    } catch (err) {
-      setError("Login failed. Please try again.");
+    } catch (err: any) {
+      setError(err.message || "Login failed. Please try again.");
     }
   };
 

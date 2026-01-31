@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useCallback, useEffect } from 'react';
+import React, { useLayoutEffect, useRef, useCallback, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import Lenis from 'lenis';
 
@@ -47,7 +47,7 @@ export interface ScrollStackItemProps {
 
 export const ScrollStackItem: React.FC<ScrollStackItemProps> = ({ children, itemClassName = '' }) => (
     <div
-        className={`scroll-stack-card relative w-full h-[500px] my-8 p-12 rounded-[40px] shadow-[0_0_30px_rgba(0,0,0,0.1)] box-border origin-top will-change-transform ${itemClassName}`.trim()}
+        className={`scroll-stack-card relative w-full h-[320px] md:h-[500px] my-2 md:my-8 p-6 md:p-12 rounded-[2rem] md:rounded-[40px] shadow-[0_0_30px_rgba(0,0,0,0.1)] box-border origin-top will-change-transform ${itemClassName}`.trim()}
         style={{
             backfaceVisibility: 'hidden',
             transformStyle: 'preserve-3d'
@@ -60,7 +60,6 @@ export const ScrollStackItem: React.FC<ScrollStackItemProps> = ({ children, item
 interface ScrollStackProps {
     className?: string;
     children: ReactNode;
-    itemDistance?: number;
     itemScale?: number;
     itemStackDistance?: number;
     stackPosition?: string;
@@ -74,7 +73,6 @@ interface ScrollStackProps {
 const ScrollStack: React.FC<ScrollStackProps> = ({
     children,
     className = '',
-    itemDistance = 100,
     itemScale = 0.03,
     itemStackDistance = 60,
     stackPosition = '20%',
@@ -86,6 +84,17 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
 }) => {
     const scrollerRef = useRef<HTMLDivElement>(null);
     const cardsRef = useRef<HTMLElement[]>([]);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    const effectiveBaseScale = isMobile ? 0.94 : baseScale;
+    const effectiveItemStackDistance = isMobile ? 20 : itemStackDistance;
 
     // Cache layout metrics
     const layoutCache = useRef<{
@@ -145,9 +154,9 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
             const cardTop = cardTops[i];
             if (cardTop === undefined) return;
 
-            const triggerStart = cardTop - stackPositionPx - itemStackDistance * i;
+            const triggerStart = cardTop - stackPositionPx - effectiveItemStackDistance * i;
             const triggerEnd = cardTop - scaleEndPositionPx;
-            const pinStart = cardTop - stackPositionPx - itemStackDistance * i;
+            const pinStart = cardTop - stackPositionPx - effectiveItemStackDistance * i;
             const pinEnd = endElementTop - containerHeight / 2;
 
             let scaleProgress = 0;
@@ -157,19 +166,19 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
                 scaleProgress = 1;
             }
 
-            const targetScale = baseScale + i * itemScale;
+            const targetScale = effectiveBaseScale + i * itemScale;
             const scale = 1 - scaleProgress * (1 - targetScale);
             const rotation = rotationAmount ? i * rotationAmount * scaleProgress : 0;
 
             let translateY = 0;
             const isPinned = scrollTop >= pinStart && scrollTop <= pinEnd;
             if (isPinned) {
-                translateY = scrollTop - cardTop + stackPositionPx + itemStackDistance * i;
+                translateY = scrollTop - cardTop + stackPositionPx + effectiveItemStackDistance * i;
             } else if (scrollTop > pinEnd) {
-                translateY = pinEnd - cardTop + stackPositionPx + itemStackDistance * i;
+                translateY = pinEnd - cardTop + stackPositionPx + effectiveItemStackDistance * i;
             }
 
-            const transform = `translate3d(0, ${translateY.toFixed(2)}px, 0) scale(${scale.toFixed(3)}) rotate(${rotation.toFixed(2)}deg)`;
+            const transform = `translate3d(0, ${translateY.toFixed(2)}px, 0) scale(${scale.toFixed(4)}) rotate(${rotation.toFixed(3)}deg)`;
             card.style.transform = transform;
         });
     };
@@ -183,6 +192,12 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
         cardsRef.current = cards;
 
         measureLayout();
+
+        const handleResize = () => {
+            measureLayout();
+            updateCardTransforms(window.scrollY);
+        };
+        window.addEventListener('resize', handleResize);
 
         let lenis: Lenis | null = null;
         let localRafId: number | null = null;
@@ -203,6 +218,7 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
 
             return () => {
                 lenis?.off('scroll', onScroll);
+                window.removeEventListener('resize', handleResize);
                 stopGlobalLenis();
             };
         } else {
@@ -250,7 +266,7 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
                 overscrollBehavior: 'contain',
             }}
         >
-            <div className={`scroll-stack-inner relative px-6 ${useWindowScroll ? 'pt-[20vh] pb-[20vh]' : 'pt-[100px] pb-[30rem]'}`}>
+            <div className={`scroll-stack-inner relative px-2 md:px-6 ${useWindowScroll ? 'pt-[5vh] pb-[10vh] md:pt-[20vh] md:pb-[20vh]' : 'pt-[30px] pb-[10rem] md:pt-[100px] md:pb-[30rem]'}`}>
                 {children}
                 {/* 
                 We place the end-marker INSIDE the wrapper. 

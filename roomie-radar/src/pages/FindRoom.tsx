@@ -45,6 +45,12 @@ const FindRoom = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 10,
+    totalPages: 0,
+    totalElements: 0,
+  });
   const [searchFilters, setSearchFilters] = useState({
     location: "",
     budget: "",
@@ -53,33 +59,7 @@ const FindRoom = () => {
     bathrooms: "",
   });
 
-  useEffect(() => {
-    const fetchRooms = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        console.log("Fetching all rooms from API...");
-        const fetchedRooms = await getAllRooms();
-        console.log("Fetched rooms:", fetchedRooms);
-        setRooms(fetchedRooms);
-      } catch (err) {
-        console.error("Error fetching rooms:", err);
-        setError("Failed to load rooms. Please check your connection and try again.");
-        setRooms([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRooms();
-  }, []);
-
-  const handleSearch = async () => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-
+  const fetchRooms = async (page = 0) => {
     try {
       setLoading(true);
       setError(null);
@@ -90,18 +70,47 @@ const FindRoom = () => {
         roomType: searchFilters.roomType || undefined,
         bedrooms: searchFilters.bedrooms ? parseInt(searchFilters.bedrooms) : undefined,
         bathrooms: searchFilters.bathrooms ? parseInt(searchFilters.bathrooms) : undefined,
+        page,
+        size: pagination.size,
       };
 
-      console.log("Searching with filters:", filters);
-      const results = await searchRooms(filters);
-      console.log("Search results:", results);
-      setRooms(results);
+      console.log("Fetching rooms with filters:", filters);
+      const response = await searchRooms(filters);
+      console.log("Fetched rooms response:", response);
+
+      if (response && response.content) {
+        setRooms(response.content);
+        setPagination(prev => ({
+          ...prev,
+          page: response.number,
+          totalPages: response.totalPages,
+          totalElements: response.totalElements
+        }));
+      } else {
+        setRooms([]);
+      }
     } catch (err) {
-      console.error("Search failed:", err);
-      setError("Search failed. Please check your connection and try again.");
+      console.error("Error fetching rooms:", err);
+      setError("Failed to load rooms. Please check your connection and try again.");
+      setRooms([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchRooms(0);
+  }, []); // Initial load
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 0 && newPage < pagination.totalPages) {
+      fetchRooms(newPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleSearch = () => {
+    fetchRooms(0);
   };
 
   const handleViewDetails = (roomId: number) => {
@@ -137,21 +146,22 @@ const FindRoom = () => {
       bedrooms: "",
       bathrooms: "",
     });
-    const fetchAllRooms = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const fetchedRooms = await getAllRooms();
-        setRooms(fetchedRooms);
-      } catch (err) {
-        console.error("Error fetching rooms:", err);
-        setError("Failed to load rooms. Please check your connection and try again.");
-        setRooms([]);
-      } finally {
-        setLoading(false);
+    // We need to trigger a fetch after state update, but state updates are async.
+    // Ideally use useEffect or pass reset filters directly.
+    // For simplicity, we'll reset and call fetch with empty filters manually.
+    setLoading(true);
+    getAllRooms(0, 10).then(response => {
+      if (response && response.content) {
+        setRooms(response.content);
+        setPagination(prev => ({
+          ...prev,
+          page: response.number,
+          totalPages: response.totalPages,
+          totalElements: response.totalElements
+        }));
       }
-    };
-    fetchAllRooms();
+      setLoading(false);
+    }).catch(() => setLoading(false));
   };
 
   // Fixed handleAddRoom function to match backend entity
@@ -389,27 +399,27 @@ const FindRoom = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex justify-between items-center mb-10"
+              className="flex justify-between items-center mb-6 md:mb-10"
             >
               <div>
-                <h2 className="text-3xl font-black text-white tracking-tight">
-                  <span className="text-gradient">{rooms.length}</span> Spaces Available
+                <h2 className="text-xl md:text-3xl font-black text-white tracking-tight">
+                  <span className="text-gradient">{pagination.totalElements}</span> Spaces
                 </h2>
-                <p className="text-gray-500 font-medium">Results based on your elite preferences</p>
+                <p className="text-xs md:text-base text-gray-500 font-medium">Page {pagination.page + 1} of {pagination.totalPages}</p>
               </div>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-8">
               {rooms.map((room, i) => (
                 <motion.div
                   key={room.id}
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="glass-card rounded-[2rem] overflow-hidden group hover:border-blue-500/30 transition-all duration-500 hover:-translate-y-2 shadow-2xl relative"
+                  className="glass-card rounded-2xl md:rounded-[2rem] overflow-hidden group hover:border-blue-500/30 transition-all duration-500 hover:-translate-y-2 shadow-2xl relative flex flex-col"
                 >
                   {/* Image Section */}
-                  <div className="relative h-72 bg-white/5 overflow-hidden">
+                  <div className="relative h-32 md:h-72 bg-white/5 overflow-hidden">
                     <img
                       src={room.images[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500"}
                       alt={room.title}
@@ -417,76 +427,60 @@ const FindRoom = () => {
                     />
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0c0c1d] to-transparent" />
 
-                    <div className="absolute top-6 left-6">
-                      <span className="px-4 py-2 glass-card rounded-full text-xs font-black uppercase tracking-widest text-white border-white/20 shadow-xl">
+                    <div className="absolute top-2 left-2 md:top-6 md:left-6">
+                      <span className="px-2 py-1 md:px-4 md:py-2 glass-card rounded-full text-[8px] md:text-xs font-black uppercase tracking-widest text-white border-white/20 shadow-xl">
                         {room.type}
                       </span>
                     </div>
 
                     <button
-                      onClick={() => handleAddToFavorites(room.id)}
-                      className="absolute top-6 right-6 p-3 glass-card rounded-full hover:bg-white transition-all group/fav active:scale-90"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToFavorites(room.id);
+                      }}
+                      className="absolute top-2 right-2 md:top-6 md:right-6 p-1.5 md:p-3 glass-card rounded-full hover:bg-white transition-all group/fav active:scale-90"
                     >
-                      <Heart className="w-5 h-5 text-white group-hover/fav:text-red-500 transition-colors" />
+                      <Heart className="w-3 h-3 md:w-5 md:h-5 text-white group-hover/fav:text-red-500 transition-colors" />
                     </button>
                   </div>
 
                   {/* Content Section */}
-                  <div className="p-8">
-                    <div className="flex justify-between items-start mb-6">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-2xl font-black text-white leading-tight mb-2 truncate group-hover:text-blue-400 transition-colors">
-                          {room.title}
-                        </h3>
-                        <div className="flex items-center gap-2 text-gray-400 text-sm">
-                          <MapPin className="w-4 h-4 text-blue-500" />
-                          <span className="truncate uppercase tracking-wider font-bold">{room.location}</span>
-                        </div>
-                      </div>
-                      <div className="text-right ml-4">
-                        <div className="text-3xl font-black text-white tracking-tight">₹{room.price.toLocaleString()}</div>
-                        <div className="text-[10px] font-black uppercase tracking-widest text-gray-500 mt-1">
-                          {room.type === "Hostel" ? "Per Year" : "Per Month"}
-                        </div>
-                      </div>
+                  <div className="p-3 md:p-8 flex-grow flex flex-col">
+                    <div className="flex flex-col mb-1 md:mb-6">
+                      <h3 className="text-xs md:text-2xl font-black text-white leading-tight mb-0.5 md:mb-2 truncate group-hover:text-blue-400 transition-colors order-1">
+                        {room.title}
+                      </h3>
+                      <div className="text-sm md:text-3xl font-black text-blue-400 md:text-white tracking-tight order-2">₹{room.price.toLocaleString()}</div>
+                    </div>
+
+                    <div className="flex items-center gap-1 md:gap-2 text-gray-400 text-[9px] md:text-sm mb-2 md:mb-4">
+                      <MapPin className="w-2.5 h-2.5 md:w-4 md:h-4 text-blue-500" />
+                      <span className="truncate uppercase tracking-wider font-bold">{room.location}</span>
                     </div>
 
                     {/* Room Details Grid */}
-                    <div className="grid grid-cols-3 gap-2 mb-8 p-4 glass-card bg-white/5 rounded-2xl border-white/5">
-                      <div className="flex flex-col items-center gap-1">
-                        <BedDouble className="w-5 h-5 text-blue-400" />
-                        <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider">{room.bedrooms} Bed</span>
+                    <div className="grid grid-cols-3 gap-1 md:gap-2 mb-2 md:mb-8 p-1 md:p-4 glass-card bg-white/5 rounded-lg md:rounded-2xl border-white/5">
+                      <div className="flex flex-col items-center gap-0.5 md:gap-1">
+                        <BedDouble className="w-3 h-3 md:w-5 md:h-5 text-blue-400" />
+                        <span className="text-[7px] md:text-[10px] font-black uppercase text-gray-400 tracking-wider text-center">{room.bedrooms} Bed</span>
                       </div>
-                      <div className="flex flex-col items-center gap-1 border-x border-white/10 px-2">
-                        <Bath className="w-5 h-5 text-purple-400" />
-                        <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider">{room.bathrooms} Bath</span>
+                      <div className="flex flex-col items-center gap-0.5 md:gap-1 border-x border-white/10 px-1 md:px-2">
+                        <Bath className="w-3 h-3 md:w-5 md:h-5 text-purple-400" />
+                        <span className="text-[7px] md:text-[10px] font-black uppercase text-gray-400 tracking-wider text-center">{room.bathrooms} Bath</span>
                       </div>
-                      <div className="flex flex-col items-center gap-1 text-center">
-                        <Maximize className="w-5 h-5 text-pink-400" />
-                        <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider truncate w-full px-1">{room.area}</span>
+                      <div className="flex flex-col items-center gap-0.5 md:gap-1 text-center">
+                        <Maximize className="w-3 h-3 md:w-5 md:h-5 text-pink-400" />
+                        <span className="text-[7px] md:text-[10px] font-black uppercase text-gray-400 tracking-wider truncate w-full px-0.5">{room.area}</span>
                       </div>
                     </div>
 
-                    {/* Posted By */}
-                    {room.postedBy && (
-                      <div className="flex items-center gap-4 mb-8 p-3 glass-card border-none bg-white/5 rounded-2xl group/user">
-                        <div className="w-10 h-10 glass-card rounded-xl flex items-center justify-center text-blue-400 font-bold uppercase overflow-hidden shadow-xl border-white/20">
-                          {room.postedBy.name.charAt(0)}
-                        </div>
-                        <div className="text-xs">
-                          <div className="font-black text-white uppercase tracking-wider">{room.postedBy.name}</div>
-                          <div className="text-gray-500 font-bold uppercase tracking-widest text-[9px] mt-0.5">Verified Host</div>
-                        </div>
-                      </div>
-                    )}
-
                     {/* Action Buttons */}
-                    <div className="flex gap-4 mt-auto">
+                    <div className="flex gap-2 md:gap-4 mt-auto">
                       <button
                         onClick={() => handleViewDetails(room.id)}
-                        className="flex-1 h-14 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl text-sm font-black uppercase tracking-widest transition-all hover:from-blue-500 hover:to-purple-500 active:scale-95 shadow-lg shadow-blue-900/20 flex items-center justify-center gap-3"
+                        className="flex-1 h-8 md:h-14 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg md:rounded-2xl text-[9px] md:text-sm font-black uppercase tracking-widest transition-all hover:from-blue-500 hover:to-purple-500 active:scale-95 shadow-lg shadow-blue-900/20 flex items-center justify-center gap-1 md:gap-3"
                       >
-                        <Eye className="w-5 h-5" />
+                        <Eye className="w-3 h-3 md:w-5 md:h-5" />
                         View
                       </button>
                     </div>
@@ -494,6 +488,29 @@ const FindRoom = () => {
                 </motion.div>
               ))}
             </div>
+
+            {/* Pagination Controls */}
+            {pagination.totalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-12">
+                <button
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page === 0}
+                  className="px-6 py-3 glass-card rounded-xl text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-all font-bold uppercase tracking-wider text-sm"
+                >
+                  Previous
+                </button>
+                <div className="text-white font-black text-lg">
+                  {pagination.page + 1} <span className="text-gray-500 text-sm font-medium">/ {pagination.totalPages}</span>
+                </div>
+                <button
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page === pagination.totalPages - 1}
+                  className="px-6 py-3 glass-card rounded-xl text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-all font-bold uppercase tracking-wider text-sm"
+                >
+                  Next
+                </button>
+              </div>
+            )}
 
             {rooms.length === 0 && (
               <motion.div
