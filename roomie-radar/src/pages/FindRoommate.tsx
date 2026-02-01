@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Eye } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
-import { getAllRoommates, sendConnectionRequest, searchRoommates, getCurrentUser } from "../api";
+import { sendConnectionRequest, searchRoommates, getCurrentUser, getConversations } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 import Toast from "../components/ui/Toast";
 import type { ToastType } from "../components/ui/Toast";
@@ -22,6 +22,7 @@ interface RoommateProfile {
   avatar: string;
   isOnline: boolean;
   lastActive: string;
+  housingStatus?: string;
 }
 
 const FindRoommate = () => {
@@ -52,6 +53,7 @@ const FindRoommate = () => {
     type: 'success'
   });
   const [hasRoommateProfile, setHasRoommateProfile] = useState(false);
+  const [connectedUserIds, setConnectedUserIds] = useState<Set<number>>(new Set());
 
   const fetchRoommates = async (page = 0) => {
     try {
@@ -96,8 +98,24 @@ const FindRoommate = () => {
     if (user) {
       fetchRoommates(0);
       checkUserRoommateProfile();
+      fetchConnections();
     }
   }, [user]); // Removed activeFilters and searchQuery from deps to avoid auto-refetch on every keypress
+
+  const fetchConnections = async () => {
+    try {
+      const conversations = await getConversations();
+      const ids = new Set<number>();
+      conversations.forEach((convo: any) => {
+        if (convo.otherParticipant?.id) {
+          ids.add(convo.otherParticipant.id);
+        }
+      });
+      setConnectedUserIds(ids);
+    } catch (err) {
+      console.error('Error fetching conversations:', err);
+    }
+  };
 
   const checkUserRoommateProfile = async () => {
     try {
@@ -108,10 +126,6 @@ const FindRoommate = () => {
     } catch (err) {
       console.error('Error checking user roommate profile:', err);
     }
-  };
-
-  const handleSearch = () => {
-    fetchRoommates(0);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -155,6 +169,7 @@ const FindRoommate = () => {
         message: `Connection request sent to ${profile.name}! They'll get back to you soon.`,
         type: 'success'
       });
+      fetchConnections();
     } catch (err: any) {
       console.error('Error sending connection request:', err);
       setToast({
@@ -169,11 +184,23 @@ const FindRoommate = () => {
     fetchRoommates(0);
   };
 
+  const canViewDetails = (profile?: RoommateProfile | null) => {
+    if (!profile) return false;
+    return connectedUserIds.has(profile.userId);
+  };
+
   const getCompatibilityColor = (score: number) => {
     if (score >= 90) return "text-green-400 bg-green-400/10";
     if (score >= 80) return "text-blue-400 bg-blue-400/10";
     if (score >= 70) return "text-yellow-400 bg-yellow-400/10";
     return "text-gray-400 bg-white/5";
+  };
+
+  const getHousingLabel = (status?: string) => {
+    if (status === 'has-room') return 'Has Room';
+    if (status === 'seeking-room') return 'Seeking Room';
+    if (status === 'has-roommate') return 'Has Roommate';
+    return 'Status Unknown';
   };
 
   return (
@@ -371,6 +398,11 @@ const FindRoommate = () => {
                               <MapPin className="w-2.5 h-2.5 md:w-4 md:h-4 text-pink-500" />
                               <span className="text-[7px] md:text-sm font-bold uppercase tracking-wider truncate max-w-[80px] md:max-w-none">{profile.location}</span>
                             </div>
+                            <div className="mt-1 md:mt-3 flex justify-center">
+                              <span className="px-2 md:px-3 py-0.5 md:py-1 glass-card bg-white/5 border-white/10 text-[7px] md:text-[10px] font-black uppercase tracking-widest text-blue-300 rounded-full">
+                                {getHousingLabel(profile.housingStatus)}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -426,6 +458,9 @@ const FindRoommate = () => {
                           </div>
                           <div className="text-center">
                             <p className="text-[9px] font-bold text-white">{profile.budget}</p>
+                            <p className="text-[7px] text-gray-500 font-bold uppercase tracking-widest mt-1">
+                              {getHousingLabel(profile.housingStatus)}
+                            </p>
                           </div>
                         </div>
 
@@ -438,7 +473,16 @@ const FindRoommate = () => {
                             Connect
                           </button>
                           <button
-                            onClick={() => setSelectedProfile(profile)}
+                            onClick={() => {
+                              if (!canViewDetails(profile)) {
+                                setToast({
+                                  isVisible: true,
+                                  message: 'Connect first to view full profile details.',
+                                  type: 'error'
+                                });
+                              }
+                              setSelectedProfile(profile);
+                            }}
                             className="px-3 md:px-6 py-2 md:py-5 glass-card text-gray-400 hover:text-white rounded-lg md:rounded-2xl border-none hover:bg-white/10 transition-all font-bold group/eye"
                           >
                             <Eye className="w-4 h-4 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
@@ -564,46 +608,69 @@ const FindRoommate = () => {
                     <MapPin className="text-pink-500 w-4 h-4 md:w-5 md:h-5" />
                     <span className="text-base md:text-lg font-bold uppercase tracking-widest">{selectedProfile.location}</span>
                   </div>
-                </div>
-              </div>
-
-              <div className="p-6 md:p-10 glass-card bg-white/5 border-none rounded-[1.5rem] md:rounded-[2.5rem]">
-                <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-4 md:mb-6">Manifesto</h4>
-                <p className="text-lg md:text-2xl text-white font-light leading-relaxed">"{selectedProfile.bio}"</p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-10">
-                <div className="space-y-6">
-                  <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-1">Lifestyles</h4>
-                  <div className="flex flex-wrap gap-3">
-                    {selectedProfile.lifestyle.map((trait, idx) => (
-                      <span key={`modal-lifestyle-${selectedProfile.id}-${idx}`} className="px-6 py-3 glass-card bg-blue-500/10 border-blue-500/20 text-blue-300 rounded-2xl text-sm font-black uppercase tracking-widest">
-                        {trait}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-1">Interests</h4>
-                  <div className="flex flex-wrap gap-3">
-                    {selectedProfile.interests.map((interest, idx) => (
-                      <span key={`modal-interest-${selectedProfile.id}-${idx}`} className="px-6 py-3 glass-card bg-purple-500/10 border-purple-500/20 text-purple-300 rounded-2xl text-sm font-black uppercase tracking-widest">
-                        {interest}
-                      </span>
-                    ))}
+                  <div className="mt-3 flex justify-center">
+                    <span className="px-4 py-2 glass-card bg-white/5 border-white/10 text-blue-300 rounded-full text-[9px] md:text-[11px] font-black uppercase tracking-widest">
+                      {getHousingLabel(selectedProfile.housingStatus)}
+                    </span>
                   </div>
                 </div>
               </div>
+              {canViewDetails(selectedProfile) ? (
+                <>
+                  <div className="p-6 md:p-10 glass-card bg-white/5 border-none rounded-[1.5rem] md:rounded-[2.5rem]">
+                    <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-4 md:mb-6">Manifesto</h4>
+                    <p className="text-lg md:text-2xl text-white font-light leading-relaxed">"{selectedProfile.bio}"</p>
+                  </div>
 
-              <div className="flex gap-6 pt-8">
-                <button
-                  onClick={() => handleConnect(selectedProfile)}
-                  className="flex-1 py-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-3xl font-black uppercase tracking-widest text-sm hover:from-blue-500 hover:to-purple-500 transition-all shadow-2xl shadow-blue-900/40"
-                >
-                  Confirm Connection
-                </button>
-              </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-10">
+                    <div className="space-y-6">
+                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-1">Lifestyles</h4>
+                      <div className="flex flex-wrap gap-3">
+                        {selectedProfile.lifestyle.map((trait, idx) => (
+                          <span key={`modal-lifestyle-${selectedProfile.id}-${idx}`} className="px-6 py-3 glass-card bg-blue-500/10 border-blue-500/20 text-blue-300 rounded-2xl text-sm font-black uppercase tracking-widest">
+                            {trait}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-1">Interests</h4>
+                      <div className="flex flex-wrap gap-3">
+                        {selectedProfile.interests.map((interest, idx) => (
+                          <span key={`modal-interest-${selectedProfile.id}-${idx}`} className="px-6 py-3 glass-card bg-purple-500/10 border-purple-500/20 text-purple-300 rounded-2xl text-sm font-black uppercase tracking-widest">
+                            {interest}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="p-6 md:p-10 glass-card bg-white/5 border-none rounded-[1.5rem] md:rounded-[2.5rem] text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mx-auto mb-4">
+                    <Eye className="w-6 h-6 text-blue-400" />
+                  </div>
+                  <h4 className="text-lg md:text-2xl font-black text-white uppercase tracking-widest mb-2">Profile Locked</h4>
+                  <p className="text-sm md:text-base text-gray-400 font-medium">
+                    Full details unlock after your connection request is accepted.
+                  </p>
+                  <div className="mt-6 flex gap-4 justify-center">
+                    <button
+                      onClick={() => handleConnect(selectedProfile)}
+                      className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:from-blue-500 hover:to-purple-500 transition-all shadow-xl shadow-blue-900/40"
+                    >
+                      Send Request
+                    </button>
+                    <button
+                      onClick={() => setSelectedProfile(null)}
+                      className="px-8 py-3 glass-card text-gray-400 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all border-none"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
         </motion.div>

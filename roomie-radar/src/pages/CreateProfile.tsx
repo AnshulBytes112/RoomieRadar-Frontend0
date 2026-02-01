@@ -16,6 +16,7 @@ const CreateProfile = () => {
     lifestyle: "",
     budget: "",
     location: "",
+    housingStatus: "",
     bio: "",
     interests: "",
     avatar: ""
@@ -25,7 +26,7 @@ const CreateProfile = () => {
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -49,6 +50,7 @@ const CreateProfile = () => {
         .filter(Boolean),
       budget: formData.budget,
       location: formData.location,
+      housingStatus: formData.housingStatus,
       bio: formData.bio,
       interests: formData.interests
         .split(",")
@@ -165,6 +167,22 @@ const CreateProfile = () => {
             transition={{ delay: 0.3 }}
             className="space-y-12"
           >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              <div>
+                <label className={labelClasses}>Housing Status</label>
+                <select
+                  name="housingStatus"
+                  value={formData.housingStatus}
+                  onChange={handleChange}
+                  className={inputClasses}
+                >
+                  <option value="" className="bg-midnight text-gray-400">Select Status</option>
+                  <option value="has-room" className="bg-midnight text-white">Has Room</option>
+                  <option value="seeking-room" className="bg-midnight text-white">Seeking Room</option>
+                  <option value="has-roommate" className="bg-midnight text-white">Has Roommate</option>
+                </select>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               <div>
                 <label className={labelClasses}>

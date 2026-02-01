@@ -222,29 +222,29 @@ const FindRoom = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0c1d] pt-24 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0c0c1d] pt-20 sm:pt-24 relative overflow-hidden">
       {/* Background blobs for depth */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
         <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob" />
         <div className="absolute top-[40%] -right-[10%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob animation-delay-2000" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         {/* Header Section */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12"
+          className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 sm:gap-6 mb-8 sm:mb-12"
         >
           <div>
-            <h1 className="text-5xl font-black text-white mb-4 tracking-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-3 sm:mb-4 tracking-tight">
               Elite <span className="text-gradient">Spaces</span>
             </h1>
-            <p className="text-xl text-gray-400 font-light">Discover hand-picked premium listings in your favorite neighborhoods.</p>
+            <p className="text-sm sm:text-base md:text-xl text-gray-400 font-light">Discover hand-picked premium listings in your favorite neighborhoods.</p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
-            className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl text-white font-bold transition-all hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 flex items-center gap-3"
+            className="group relative px-5 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl sm:rounded-2xl text-white font-bold transition-all hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 flex items-center gap-2 sm:gap-3 text-sm"
           >
             <Home className="w-5 h-5 group-hover:rotate-12 transition-transform" />
             List Your Room
@@ -262,39 +262,39 @@ const FindRoom = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="glass-card p-10 rounded-[2.5rem] mb-16 shadow-2xl border-white/5 relative overflow-hidden group"
+          className="glass-card p-5 sm:p-8 lg:p-10 rounded-2xl sm:rounded-[2.5rem] mb-8 sm:mb-16 shadow-2xl border-white/5 relative overflow-hidden group"
         >
           <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-500 opacity-50" />
 
-          <div className="flex items-center gap-4 mb-10">
-            <div className="w-12 h-12 glass-card rounded-xl flex items-center justify-center">
-              <Search className="w-6 h-6 text-blue-400" />
+          <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-10">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 glass-card rounded-xl flex items-center justify-center">
+              <Search className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
             </div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">Refine Your Search</h2>
+            <h2 className="text-lg sm:text-2xl font-bold text-white tracking-tight">Refine Your Search</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-10">
             <div className="space-y-3">
-              <label className="text-sm font-bold text-gray-400 ml-1 uppercase tracking-widest flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-blue-500" /> Location
+              <label className="text-[10px] sm:text-sm font-bold text-gray-400 ml-1 uppercase tracking-widest flex items-center gap-2">
+                <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500" /> Location
               </label>
               <input
                 type="text"
                 placeholder="Where to?"
                 value={searchFilters.location}
                 onChange={(e) => setSearchFilters({ ...searchFilters, location: e.target.value })}
-                className="w-full px-5 py-4 glass-card rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all bg-white/5 text-white placeholder-gray-500 border-white/5"
+                className="w-full px-4 py-3 sm:px-5 sm:py-4 glass-card rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all bg-white/5 text-white placeholder-gray-500 border-white/5 text-sm"
               />
             </div>
 
             <div className="space-y-3">
-              <label className="text-sm font-bold text-gray-400 ml-1 uppercase tracking-widest flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-purple-500" /> Monthly Budget
+              <label className="text-[10px] sm:text-sm font-bold text-gray-400 ml-1 uppercase tracking-widest flex items-center gap-2">
+                <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-500" /> Monthly Budget
               </label>
               <select
                 value={searchFilters.budget}
                 onChange={(e) => setSearchFilters({ ...searchFilters, budget: e.target.value })}
-                className="w-full px-5 py-4 glass-card rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all bg-[#1a1a3a] text-white border-white/5 appearance-none cursor-pointer"
+                className="w-full px-4 py-3 sm:px-5 sm:py-4 glass-card rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all bg-[#1a1a3a] text-white border-white/5 appearance-none cursor-pointer text-sm"
               >
                 <option value="" className="bg-[#0c0c1d]">Any budget</option>
                 <option value="5000-10000" className="bg-[#0c0c1d]">₹5,000 - ₹10,000</option>
@@ -305,13 +305,13 @@ const FindRoom = () => {
             </div>
 
             <div className="space-y-3">
-              <label className="text-sm font-bold text-gray-400 ml-1 uppercase tracking-widest flex items-center gap-2">
-                <Home className="w-4 h-4 text-pink-500" /> Room Type
+              <label className="text-[10px] sm:text-sm font-bold text-gray-400 ml-1 uppercase tracking-widest flex items-center gap-2">
+                <Home className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-pink-500" /> Room Type
               </label>
               <select
                 value={searchFilters.roomType}
                 onChange={(e) => setSearchFilters({ ...searchFilters, roomType: e.target.value })}
-                className="w-full px-5 py-4 glass-card rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all bg-[#1a1a3a] text-white border-white/5 appearance-none cursor-pointer"
+                className="w-full px-4 py-3 sm:px-5 sm:py-4 glass-card rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all bg-[#1a1a3a] text-white border-white/5 appearance-none cursor-pointer text-sm"
               >
                 <option value="" className="bg-[#0c0c1d]">Any type</option>
                 <option value="Private" className="bg-[#0c0c1d]">Private Room</option>
@@ -322,13 +322,13 @@ const FindRoom = () => {
             </div>
 
             <div className="space-y-3">
-              <label className="text-sm font-bold text-gray-400 ml-1 uppercase tracking-widest flex items-center gap-2">
-                <Users className="w-4 h-4 text-orange-500" /> Bedrooms
+              <label className="text-[10px] sm:text-sm font-bold text-gray-400 ml-1 uppercase tracking-widest flex items-center gap-2">
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500" /> Bedrooms
               </label>
               <select
                 value={searchFilters.bedrooms}
                 onChange={(e) => setSearchFilters({ ...searchFilters, bedrooms: e.target.value })}
-                className="w-full px-5 py-4 glass-card rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all bg-[#1a1a3a] text-white border-white/5 appearance-none cursor-pointer"
+                className="w-full px-4 py-3 sm:px-5 sm:py-4 glass-card rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all bg-[#1a1a3a] text-white border-white/5 appearance-none cursor-pointer text-sm"
               >
                 <option value="" className="bg-[#0c0c1d]">Any</option>
                 <option value="1" className="bg-[#0c0c1d]">1 Bed</option>
@@ -339,18 +339,18 @@ const FindRoom = () => {
             </div>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <button
               onClick={handleSearch}
               disabled={loading}
-              className="px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl text-white font-bold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 shadow-xl shadow-blue-900/30 flex-1 md:flex-none"
+              className="px-6 py-3 sm:px-10 sm:py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl sm:rounded-2xl text-white font-bold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 shadow-xl shadow-blue-900/30 flex-1 md:flex-none text-sm"
             >
               {loading ? "Searching..." : "Apply Filters"}
             </button>
             <button
               onClick={handleClearFilters}
               disabled={loading}
-              className="px-10 py-4 glass-card rounded-2xl text-gray-300 font-bold transition-all hover:bg-white/10 active:scale-95 disabled:opacity-50 flex-1 md:flex-none"
+              className="px-6 py-3 sm:px-10 sm:py-4 glass-card rounded-xl sm:rounded-2xl text-gray-300 font-bold transition-all hover:bg-white/10 active:scale-95 disabled:opacity-50 flex-1 md:flex-none text-sm"
             >
               Reset
             </button>
@@ -399,27 +399,27 @@ const FindRoom = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex justify-between items-center mb-6 md:mb-10"
+              className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4 sm:mb-8"
             >
               <div>
-                <h2 className="text-xl md:text-3xl font-black text-white tracking-tight">
+                <h2 className="text-lg sm:text-xl md:text-3xl font-black text-white tracking-tight">
                   <span className="text-gradient">{pagination.totalElements}</span> Spaces
                 </h2>
-                <p className="text-xs md:text-base text-gray-500 font-medium">Page {pagination.page + 1} of {pagination.totalPages}</p>
+                <p className="text-[10px] sm:text-xs md:text-base text-gray-500 font-medium">Page {pagination.page + 1} of {pagination.totalPages}</p>
               </div>
             </motion.div>
 
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
               {rooms.map((room, i) => (
                 <motion.div
                   key={room.id}
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="glass-card rounded-2xl md:rounded-[2rem] overflow-hidden group hover:border-blue-500/30 transition-all duration-500 hover:-translate-y-2 shadow-2xl relative flex flex-col"
+                  className="glass-card rounded-2xl overflow-hidden group hover:border-blue-500/30 transition-all duration-500 hover:-translate-y-1 shadow-xl relative flex flex-col"
                 >
                   {/* Image Section */}
-                  <div className="relative h-32 md:h-72 bg-white/5 overflow-hidden">
+                  <div className="relative h-40 sm:h-48 lg:h-64 bg-white/5 overflow-hidden">
                     <img
                       src={room.images[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500"}
                       alt={room.title}
@@ -427,8 +427,8 @@ const FindRoom = () => {
                     />
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0c0c1d] to-transparent" />
 
-                    <div className="absolute top-2 left-2 md:top-6 md:left-6">
-                      <span className="px-2 py-1 md:px-4 md:py-2 glass-card rounded-full text-[8px] md:text-xs font-black uppercase tracking-widest text-white border-white/20 shadow-xl">
+                    <div className="absolute top-2 left-2 sm:top-4 sm:left-4">
+                      <span className="px-2 py-1 sm:px-3 sm:py-1.5 glass-card rounded-full text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-white border-white/20 shadow-xl">
                         {room.type}
                       </span>
                     </div>
@@ -438,49 +438,49 @@ const FindRoom = () => {
                         e.stopPropagation();
                         handleAddToFavorites(room.id);
                       }}
-                      className="absolute top-2 right-2 md:top-6 md:right-6 p-1.5 md:p-3 glass-card rounded-full hover:bg-white transition-all group/fav active:scale-90"
+                      className="absolute top-2 right-2 sm:top-4 sm:right-4 p-2 sm:p-3 glass-card rounded-full hover:bg-white transition-all group/fav active:scale-90"
                     >
-                      <Heart className="w-3 h-3 md:w-5 md:h-5 text-white group-hover/fav:text-red-500 transition-colors" />
+                      <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-white group-hover/fav:text-red-500 transition-colors" />
                     </button>
                   </div>
 
                   {/* Content Section */}
-                  <div className="p-3 md:p-8 flex-grow flex flex-col">
+                  <div className="p-4 sm:p-6 flex-grow flex flex-col">
                     <div className="flex flex-col mb-1 md:mb-6">
-                      <h3 className="text-xs md:text-2xl font-black text-white leading-tight mb-0.5 md:mb-2 truncate group-hover:text-blue-400 transition-colors order-1">
+                      <h3 className="text-base sm:text-lg font-black text-white leading-tight mb-1 truncate group-hover:text-blue-400 transition-colors order-1">
                         {room.title}
                       </h3>
-                      <div className="text-sm md:text-3xl font-black text-blue-400 md:text-white tracking-tight order-2">₹{room.price.toLocaleString()}</div>
+                      <div className="text-lg sm:text-xl font-black text-blue-400 sm:text-white tracking-tight order-2">₹{room.price.toLocaleString()}</div>
                     </div>
 
-                    <div className="flex items-center gap-1 md:gap-2 text-gray-400 text-[9px] md:text-sm mb-2 md:mb-4">
-                      <MapPin className="w-2.5 h-2.5 md:w-4 md:h-4 text-blue-500" />
+                    <div className="flex items-center gap-2 text-gray-400 text-[10px] sm:text-xs mb-3">
+                      <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500" />
                       <span className="truncate uppercase tracking-wider font-bold">{room.location}</span>
                     </div>
 
                     {/* Room Details Grid */}
-                    <div className="grid grid-cols-3 gap-1 md:gap-2 mb-2 md:mb-8 p-1 md:p-4 glass-card bg-white/5 rounded-lg md:rounded-2xl border-white/5">
+                    <div className="grid grid-cols-3 gap-2 mb-4 p-2 sm:p-3 glass-card bg-white/5 rounded-xl border-white/5">
                       <div className="flex flex-col items-center gap-0.5 md:gap-1">
-                        <BedDouble className="w-3 h-3 md:w-5 md:h-5 text-blue-400" />
-                        <span className="text-[7px] md:text-[10px] font-black uppercase text-gray-400 tracking-wider text-center">{room.bedrooms} Bed</span>
+                        <BedDouble className="w-4 h-4 text-blue-400" />
+                        <span className="text-[9px] font-black uppercase text-gray-400 tracking-wider text-center">{room.bedrooms} Bed</span>
                       </div>
-                      <div className="flex flex-col items-center gap-0.5 md:gap-1 border-x border-white/10 px-1 md:px-2">
-                        <Bath className="w-3 h-3 md:w-5 md:h-5 text-purple-400" />
-                        <span className="text-[7px] md:text-[10px] font-black uppercase text-gray-400 tracking-wider text-center">{room.bathrooms} Bath</span>
+                      <div className="flex flex-col items-center gap-0.5 border-x border-white/10 px-1">
+                        <Bath className="w-4 h-4 text-purple-400" />
+                        <span className="text-[9px] font-black uppercase text-gray-400 tracking-wider text-center">{room.bathrooms} Bath</span>
                       </div>
-                      <div className="flex flex-col items-center gap-0.5 md:gap-1 text-center">
-                        <Maximize className="w-3 h-3 md:w-5 md:h-5 text-pink-400" />
-                        <span className="text-[7px] md:text-[10px] font-black uppercase text-gray-400 tracking-wider truncate w-full px-0.5">{room.area}</span>
+                      <div className="flex flex-col items-center gap-0.5 text-center">
+                        <Maximize className="w-4 h-4 text-pink-400" />
+                        <span className="text-[9px] font-black uppercase text-gray-400 tracking-wider truncate w-full px-0.5">{room.area}</span>
                       </div>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2 md:gap-4 mt-auto">
+                    <div className="flex gap-3 mt-auto">
                       <button
                         onClick={() => handleViewDetails(room.id)}
-                        className="flex-1 h-8 md:h-14 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg md:rounded-2xl text-[9px] md:text-sm font-black uppercase tracking-widest transition-all hover:from-blue-500 hover:to-purple-500 active:scale-95 shadow-lg shadow-blue-900/20 flex items-center justify-center gap-1 md:gap-3"
+                        className="flex-1 h-10 sm:h-12 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all hover:from-blue-500 hover:to-purple-500 active:scale-95 shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2"
                       >
-                        <Eye className="w-3 h-3 md:w-5 md:h-5" />
+                        <Eye className="w-4 h-4" />
                         View
                       </button>
                     </div>

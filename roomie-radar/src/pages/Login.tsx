@@ -115,27 +115,33 @@ const Login = () => {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-8 sm:px-12 lg:px-24 z-10">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-8 lg:px-24 py-10 sm:py-16 z-10">
         <motion.div
           className="max-w-md w-full"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
         >
+          <div className="lg:hidden flex items-center justify-center gap-3 mb-6">
+            <div className="w-10 h-10 glass-card rounded-xl flex items-center justify-center shadow-xl">
+              <FiHome className="text-blue-400 text-xl" />
+            </div>
+            <span className="text-2xl font-black text-white tracking-tight">Roomie<span className="text-gradient">Radar</span></span>
+          </div>
           {/* Main Container */}
-          <div className="glass-card p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+          <div className="glass-card p-6 sm:p-10 rounded-2xl sm:rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
 
-            <div className="text-center mb-10">
-              <h2 className="text-4xl font-black text-white mb-3 tracking-tight">Login</h2>
-              <p className="text-gray-400 font-light">Continue your journey with RoomieRadar</p>
+            <div className="text-center mb-6 sm:mb-10">
+              <h2 className="text-2xl sm:text-4xl font-black text-white mb-2 sm:mb-3 tracking-tight">Login</h2>
+              <p className="text-sm sm:text-base text-gray-400 font-light">Continue your journey with RoomieRadar</p>
             </div>
 
             <motion.form
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="space-y-6"
+              className="space-y-4 sm:space-y-6"
               onSubmit={handleLogin}
             >
               {error && (
@@ -149,14 +155,14 @@ const Login = () => {
               )}
 
               <motion.div variants={itemVariants} className="space-y-2">
-                <label className="text-sm font-semibold text-gray-300 ml-1">Username</label>
+                <label className="text-xs sm:text-sm font-semibold text-gray-300 ml-1">Username</label>
                 <div className="relative group/input">
-                  <FiUser className="absolute left-4 top-4 text-gray-400 group-focus-within/input:text-blue-400 transition-colors w-5 h-5" />
+                  <FiUser className="absolute left-4 top-3.5 sm:top-4 text-gray-400 group-focus-within/input:text-blue-400 transition-colors w-5 h-5" />
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 glass-card rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all bg-white/5 text-white placeholder-gray-500"
+                    className="w-full pl-12 pr-4 py-3 sm:py-4 glass-card rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all bg-white/5 text-white placeholder-gray-500 text-sm"
                     placeholder="e.g. johndoe"
                     required
                   />
@@ -164,14 +170,14 @@ const Login = () => {
               </motion.div>
 
               <motion.div variants={itemVariants} className="space-y-2">
-                <label className="text-sm font-semibold text-gray-300 ml-1">Password</label>
+                <label className="text-xs sm:text-sm font-semibold text-gray-300 ml-1">Password</label>
                 <div className="relative group/input">
-                  <FiLock className="absolute left-4 top-4 text-gray-400 group-focus-within/input:text-purple-400 transition-colors w-5 h-5" />
+                  <FiLock className="absolute left-4 top-3.5 sm:top-4 text-gray-400 group-focus-within/input:text-purple-400 transition-colors w-5 h-5" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 glass-card rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all bg-white/5 text-white placeholder-gray-500"
+                    className="w-full pl-12 pr-4 py-3 sm:py-4 glass-card rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all bg-white/5 text-white placeholder-gray-500 text-sm"
                     placeholder="••••••••"
                     required
                   />
@@ -185,16 +191,16 @@ const Login = () => {
                     <div className="w-5 h-5 border-2 border-gray-600 rounded-lg peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all" />
                     <FiCheckCircle className="absolute top-0.5 left-0.5 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
                   </div>
-                  <span className="ml-3 text-sm text-gray-400 group-hover:text-gray-300 transition-colors">Remember me</span>
+                  <span className="ml-3 text-xs sm:text-sm text-gray-400 group-hover:text-gray-300 transition-colors">Remember me</span>
                 </label>
-                <Link to="/forgot-password" className="text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors">
+                <Link to="/forgot-password" className="text-xs sm:text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors">
                   Forgot?
                 </Link>
               </div>
 
               <motion.button
                 type="submit"
-                className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-lg shadow-xl shadow-blue-900/40 transition-all duration-300"
+                className="w-full h-12 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-sm sm:text-lg shadow-xl shadow-blue-900/40 transition-all duration-300"
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -202,8 +208,8 @@ const Login = () => {
               </motion.button>
             </motion.form>
 
-            <div className="mt-10 text-center">
-              <p className="text-gray-400 font-light">
+            <div className="mt-8 sm:mt-10 text-center">
+              <p className="text-sm sm:text-base text-gray-400 font-light">
                 New to the community?{' '}
                 <Link to="/register" className="text-white font-bold hover:text-blue-400 transition-colors underline underline-offset-8">
                   Create an account
@@ -213,7 +219,7 @@ const Login = () => {
           </div>
 
           {/* Trust Badges */}
-          <div className="mt-12 flex items-center justify-center space-x-8 text-gray-500">
+          <div className="mt-8 sm:mt-12 flex items-center justify-center space-x-6 sm:space-x-8 text-gray-500">
             <div className="flex items-center space-x-2 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-500 cursor-default">
               <FiShield className="w-5 h-5" />
               <span className="text-xs font-bold uppercase tracking-widest">Secure</span>

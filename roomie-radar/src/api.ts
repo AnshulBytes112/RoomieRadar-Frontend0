@@ -2,7 +2,11 @@
 // Spring Boot REST API endpoints
 
 // --- Configuration ---
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  (typeof window !== 'undefined'
+    ? `http://${window.location.hostname}:8080`
+    : 'http://localhost:8080');
 
 // --- Auth token helpers ---
 function getAuthToken() {
@@ -248,6 +252,7 @@ export async function createRoommateProfile(profileData: {
   bio: string;
   interests: string[];
   avatar?: string;
+  housingStatus?: string;
 }) {
   const response = await authFetch('/api/roommates', {
     method: 'POST',
@@ -441,9 +446,21 @@ export async function getUserBookings() {
 
 export async function cancelBooking(bookingId: number) {
   // DELETE /api/bookings?bookingId={id}
-  return authFetch(`/api/bookings?bookingId=${bookingId}`, {
+  const res = await authFetch(`/api/bookings?bookingId=${bookingId}`, {
     method: 'DELETE'
-  }).then(res => res.json());
+  });
+
+  if (res.status === 204) {
+    return { success: true };
+  }
+
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    return res.json();
+  }
+
+  const text = await res.text();
+  return text ? { message: text } : { success: true };
 }
 
 export async function updateBooking(bookingId: number, bookingData: any) {

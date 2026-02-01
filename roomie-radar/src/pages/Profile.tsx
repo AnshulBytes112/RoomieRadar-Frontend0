@@ -41,7 +41,8 @@ const Profile = () => {
         location: "",
         bio: "",
         interests: [] as string[],
-        gender: ""
+        gender: "",
+        housingStatus: ""
     });
 
     useEffect(() => {
@@ -72,7 +73,8 @@ const Profile = () => {
                     location: userData.roomateProfile?.location || "",
                     bio: userData.roomateProfile?.bio || "",
                     interests: userData.roomateProfile?.interests || [],
-                    gender: userData.roomateProfile?.gender || ""
+                    gender: userData.roomateProfile?.gender || "",
+                    housingStatus: userData.roomateProfile?.housingStatus || ""
                 });
             }
         } catch (err) {
@@ -118,7 +120,8 @@ const Profile = () => {
                 location: "",
                 bio: "",
                 interests: [],
-                avatar: ""
+                avatar: "",
+                housingStatus: ""
             }));
         } catch (err: any) {
             setError(err.message || "Failed to delete roommate profile.");
@@ -169,7 +172,8 @@ const Profile = () => {
                     location: "Bangalore", // Default location
                     bio: "Profile re-enabled - please update your information",
                     interests: ["Music"], // Default interests
-                    avatar: formData.avatar
+                    avatar: formData.avatar,
+                    housingStatus: formData.housingStatus
                 });
             }
             setIsProfileDisabled(false);
@@ -237,7 +241,8 @@ const Profile = () => {
                 bio: formData.bio,
                 interests: formData.interests,
                 avatar: formData.avatar,
-                gender: formData.gender
+                gender: formData.gender,
+                housingStatus: formData.housingStatus
             };
 
             if (formData.roommateProfileId) {
@@ -278,18 +283,18 @@ const Profile = () => {
                     initial="hidden"
                     animate="visible"
                     variants={containerVariants}
-                    className="glass-card rounded-[2.5rem] shadow-2xl border-white/5"
+                    className="glass-card rounded-2xl sm:rounded-[2.5rem] shadow-2xl border-white/5"
                 >
                     {/* Header / Banner */}
-                    <div className="relative h-64 bg-gray-900">
+                    <div className="relative h-48 sm:h-64 bg-gray-900">
                         {/* Abstract Gradient Pattern */}
                         <div className="absolute inset-0 bg-gradient-premium opacity-80"></div>
                         <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.1) 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
                         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0c0c1d] to-transparent"></div>
 
-                        <div className="absolute -bottom-16 left-12 z-50">
+                        <div className="absolute -bottom-12 sm:-bottom-16 left-6 sm:left-12 z-50">
                             <div className="relative group">
-                                <div className="w-40 h-40 rounded-[2.5rem] border-4 border-[#0c0c1d] bg-midnight-light flex items-center justify-center text-5xl font-black text-white overflow-hidden shadow-2xl relative">
+                                <div className="w-28 h-28 sm:w-40 sm:h-40 rounded-2xl sm:rounded-[2.5rem] border-4 border-[#0c0c1d] bg-midnight-light flex items-center justify-center text-3xl sm:text-5xl font-black text-white overflow-hidden shadow-2xl relative">
                                     {formData.avatar ? (
                                         <img src={formData.avatar} alt="Profile" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                     ) : (
@@ -312,7 +317,7 @@ const Profile = () => {
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-[2.5rem] z-10"
                                             title="Change Profile Picture"
                                         />
-                                        <div className="absolute bottom-2 right-2 p-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl hover:scale-110 transition-all shadow-xl shadow-blue-900/40">
+                                        <div className="absolute bottom-2 right-2 p-2 sm:p-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl sm:rounded-2xl hover:scale-110 transition-all shadow-xl shadow-blue-900/40">
                                             {uploading ? (
                                                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                                             ) : (
@@ -325,14 +330,14 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    <div className="pt-24 pb-12 px-12">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+                    <div className="pt-20 sm:pt-24 pb-8 sm:pb-12 px-5 sm:px-12">
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6 mb-8 sm:mb-12">
                             <div>
-                                <h1 className="text-4xl font-black text-white tracking-tight mb-2 uppercase">{formData.name}</h1>
-                                <div className="flex items-center gap-3">
-                                    <span className="text-gray-400 font-bold uppercase tracking-widest text-xs">@{formData.username}</span>
+                                <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight mb-2 uppercase">{formData.name}</h1>
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                                    <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px] sm:text-xs">@{formData.username}</span>
                                     <div className="h-1 w-1 rounded-full bg-gray-600" />
-                                    <span className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-widest border border-blue-500/20">
+                                    <span className="px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest border border-blue-500/20">
                                         {formData.role}
                                     </span>
                                 </div>
@@ -340,19 +345,19 @@ const Profile = () => {
                             {!isEditing ? (
                                 <button
                                     onClick={() => setIsEditing(true)}
-                                    className="group flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-white hover:bg-white/10 transition-all shadow-xl font-black uppercase tracking-widest text-[10px]"
+                                    className="group flex items-center gap-3 px-5 sm:px-8 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl text-white hover:bg-white/10 transition-all shadow-xl font-black uppercase tracking-widest text-[9px] sm:text-[10px]"
                                 >
                                     <FiEdit2 className="w-4 h-4 text-purple-400 group-hover:rotate-12 transition-transform" />
                                     Edit Profile
                                 </button>
                             ) : (
-                                <div className="flex gap-4">
+                                <div className="flex flex-wrap gap-3 sm:gap-4">
                                     <button
                                         onClick={() => {
                                             setIsEditing(false);
                                             fetchProfile(); // Reset changes
                                         }}
-                                        className="flex items-center gap-3 px-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-gray-400 hover:text-white transition-all font-black uppercase tracking-widest text-[10px]"
+                                        className="flex items-center gap-3 px-5 sm:px-8 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl text-gray-400 hover:text-white transition-all font-black uppercase tracking-widest text-[9px] sm:text-[10px]"
                                     >
                                         <FiX className="w-4 h-4" />
                                         Cancel
@@ -360,7 +365,7 @@ const Profile = () => {
                                     <button
                                         onClick={handleSubmit}
                                         disabled={loading}
-                                        className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl hover:from-blue-500 hover:to-purple-500 transition-all shadow-xl shadow-blue-900/40 font-black uppercase tracking-widest text-[10px] disabled:opacity-50"
+                                        className="flex items-center gap-3 px-5 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl sm:rounded-2xl hover:from-blue-500 hover:to-purple-500 transition-all shadow-xl shadow-blue-900/40 font-black uppercase tracking-widest text-[9px] sm:text-[10px] disabled:opacity-50"
                                     >
                                         <FiSave className="w-4 h-4" />
                                         {loading ? "Syncing..." : "Save Changes"}
@@ -390,16 +395,16 @@ const Profile = () => {
                         )}
 
                         {/* Profile Details Form */}
-                        <form className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                        <form className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
                             {/* Left Column */}
-                            <div className="space-y-8">
-                                <h3 className="text-sm font-black text-gray-500 uppercase tracking-[0.2em] border-b border-white/10 pb-4 flex items-center gap-3">
+                            <div className="space-y-6 sm:space-y-8">
+                                <h3 className="text-xs sm:text-sm font-black text-gray-500 uppercase tracking-[0.2em] border-b border-white/10 pb-3 sm:pb-4 flex items-center gap-3">
                                     <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
                                     Identity Details
                                 </h3>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Full Name</label>
+                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Full Name</label>
                                     <div className="relative group/input">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                             <FiUser className="text-gray-500 group-focus-within/input:text-blue-400 transition-colors" />
@@ -410,13 +415,13 @@ const Profile = () => {
                                             value={formData.name}
                                             onChange={handleInputChange}
                                             disabled={!isEditing}
-                                            className={`pl-11 w-full rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-blue-500/50' : 'border-transparent bg-white/[0.02]'} py-4 transition-all outline-none text-white font-medium`}
+                                            className={`pl-11 w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-blue-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 transition-all outline-none text-white font-medium text-sm`}
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Email Address</label>
+                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Email Address</label>
                                     <div className="relative group/input">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                             <FiMail className="text-gray-500 group-focus-within/input:text-purple-400 transition-colors" />
@@ -427,13 +432,13 @@ const Profile = () => {
                                             value={formData.email}
                                             onChange={handleInputChange}
                                             disabled={!isEditing}
-                                            className={`pl-11 w-full rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-purple-500/50' : 'border-transparent bg-white/[0.02]'} py-4 transition-all outline-none text-white font-medium`}
+                                            className={`pl-11 w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-purple-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 transition-all outline-none text-white font-medium text-sm`}
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Phone Number</label>
+                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Phone Number</label>
                                     <div className="relative group/input">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                             <FiPhone className="text-gray-500 group-focus-within/input:text-pink-400 transition-colors" />
@@ -444,21 +449,21 @@ const Profile = () => {
                                             value={formData.phone}
                                             onChange={handleInputChange}
                                             disabled={!isEditing}
-                                            className={`pl-11 w-full rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-pink-500/50' : 'border-transparent bg-white/[0.02]'} py-4 transition-all outline-none text-white font-medium`}
+                                            className={`pl-11 w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-pink-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 transition-all outline-none text-white font-medium text-sm`}
                                         />
                                     </div>
                                 </div>
                             </div>
 
                             {/* Right Column - Account Info / System Info */}
-                            <div className="space-y-8">
-                                <h3 className="text-sm font-black text-gray-500 uppercase tracking-[0.2em] border-b border-white/10 pb-4 flex items-center gap-3">
+                            <div className="space-y-6 sm:space-y-8">
+                                <h3 className="text-xs sm:text-sm font-black text-gray-500 uppercase tracking-[0.2em] border-b border-white/10 pb-3 sm:pb-4 flex items-center gap-3">
                                     <div className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
                                     Access Control
                                 </h3>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Unique ID (Username)</label>
+                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Unique ID (Username)</label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                             <FiShield className="text-gray-600" />
@@ -467,22 +472,22 @@ const Profile = () => {
                                             type="text"
                                             value={formData.username}
                                             disabled
-                                            className="pl-11 w-full rounded-2xl border border-transparent bg-white/[0.01] text-gray-600 py-4 cursor-not-allowed font-black"
+                                            className="pl-11 w-full rounded-xl sm:rounded-2xl border border-transparent bg-white/[0.01] text-gray-600 py-3 sm:py-4 cursor-not-allowed font-black text-sm"
                                             title="Username cannot be changed"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Global Role</label>
-                                    <div className="w-full rounded-2xl border border-transparent bg-white/[0.01] text-gray-600 py-4 px-6 cursor-not-allowed font-black uppercase tracking-widest">
+                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Global Role</label>
+                                    <div className="w-full rounded-xl sm:rounded-2xl border border-transparent bg-white/[0.01] text-gray-600 py-3 sm:py-4 px-4 sm:px-6 cursor-not-allowed font-black uppercase tracking-widest text-xs sm:text-sm">
                                         {formData.role}
                                     </div>
                                 </div>
 
                                 {isEditing && (
-                                    <div className="pt-6">
-                                        <button type="button" className="text-xs font-black uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-8">
+                                    <div className="pt-4 sm:pt-6">
+                                        <button type="button" className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-8">
                                             Update Security Credentials
                                         </button>
                                     </div>
@@ -490,8 +495,8 @@ const Profile = () => {
                             </div>
 
                             {/* Roommate Profile Section */}
-                            <div className="space-y-8">
-                                <h3 className="text-sm font-black text-gray-500 uppercase tracking-[0.2em] border-b border-white/10 pb-4 flex items-center justify-between">
+                            <div className="space-y-6 sm:space-y-8">
+                                <h3 className="text-xs sm:text-sm font-black text-gray-500 uppercase tracking-[0.2em] border-b border-white/10 pb-3 sm:pb-4 flex flex-wrap items-center justify-between gap-2">
                                     <div className="flex items-center gap-3">
                                         <div className={`w-2 h-2 rounded-full ${isProfileDisabled ? 'bg-red-500' : 'bg-green-500'} shadow-[0_0_10px_rgba(34,197,94,0.5)]`}></div>
                                         Roommate Profile
@@ -537,7 +542,7 @@ const Profile = () => {
                                 </h3>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Age</label>
+                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Age</label>
                                     <input
                                         type="number"
                                         name="age"
@@ -545,18 +550,18 @@ const Profile = () => {
                                         onChange={handleInputChange}
                                         disabled={!isEditing}
                                         min="18"
-                                        className={`w-full rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-4 px-6 transition-all outline-none text-white font-medium`}
+                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm`}
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Gender</label>
+                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Gender</label>
                                     <select
                                         name="gender"
                                         value={formData.gender}
                                         onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
                                         disabled={!isEditing}
-                                        className={`w-full rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-4 px-6 transition-all outline-none text-white font-medium appearance-none cursor-pointer`}
+                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm appearance-none cursor-pointer`}
                                         style={{
                                             backgroundImage: isEditing ? `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")` : 'none',
                                             backgroundPosition: 'right 12px center',
@@ -573,7 +578,29 @@ const Profile = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Occupation</label>
+                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Housing Status</label>
+                                    <select
+                                        name="housingStatus"
+                                        value={formData.housingStatus}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, housingStatus: e.target.value }))}
+                                        disabled={!isEditing}
+                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm appearance-none cursor-pointer`}
+                                        style={{
+                                            backgroundImage: isEditing ? `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")` : 'none',
+                                            backgroundPosition: 'right 12px center',
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundSize: '20px'
+                                        }}
+                                    >
+                                        <option value="" className="bg-midnight text-gray-400">Select Status</option>
+                                        <option value="has-room" className="bg-midnight text-white">Has Room</option>
+                                        <option value="seeking-room" className="bg-midnight text-white">Seeking Room</option>
+                                        <option value="has-roommate" className="bg-midnight text-white">Has Roommate</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Occupation</label>
                                     <input
                                         type="text"
                                         name="occupation"
@@ -581,12 +608,12 @@ const Profile = () => {
                                         onChange={handleInputChange}
                                         disabled={!isEditing}
                                         placeholder="e.g. Software Developer, Student"
-                                        className={`w-full rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-4 px-6 transition-all outline-none text-white font-medium`}
+                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm`}
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Location</label>
+                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Location</label>
                                     <input
                                         type="text"
                                         name="location"
@@ -594,12 +621,12 @@ const Profile = () => {
                                         onChange={handleInputChange}
                                         disabled={!isEditing}
                                         placeholder="e.g. Koramangala, Bangalore"
-                                        className={`w-full rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-4 px-6 transition-all outline-none text-white font-medium`}
+                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm`}
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Budget Range</label>
+                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Budget Range</label>
                                     <input
                                         type="text"
                                         name="budget"
@@ -607,36 +634,36 @@ const Profile = () => {
                                         onChange={handleInputChange}
                                         disabled={!isEditing}
                                         placeholder="e.g. ₹15,000 - ₹20,000"
-                                        className={`w-full rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-4 px-6 transition-all outline-none text-white font-medium`}
+                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm`}
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Lifestyle (comma-separated)</label>
+                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Lifestyle (comma-separated)</label>
                                     <input
                                         type="text"
                                         value={formData.lifestyle.join(', ')}
                                         onChange={(e) => handleArrayInputChange('lifestyle', e.target.value)}
                                         disabled={!isEditing}
                                         placeholder="e.g. Quiet, Social, Active"
-                                        className={`w-full rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-4 px-6 transition-all outline-none text-white font-medium`}
+                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm`}
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Interests (comma-separated)</label>
+                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Interests (comma-separated)</label>
                                     <input
                                         type="text"
                                         value={formData.interests.join(', ')}
                                         onChange={(e) => handleArrayInputChange('interests', e.target.value)}
                                         disabled={!isEditing}
                                         placeholder="e.g. Music, Travel, Reading"
-                                        className={`w-full rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-4 px-6 transition-all outline-none text-white font-medium`}
+                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm`}
                                     />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Bio</label>
+                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Bio</label>
                                     <textarea
                                         name="bio"
                                         value={formData.bio}
@@ -644,7 +671,7 @@ const Profile = () => {
                                         disabled={!isEditing}
                                         placeholder="Tell potential roommates about yourself..."
                                         rows={4}
-                                        className={`w-full rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-4 px-6 transition-all outline-none text-white font-medium resize-none`}
+                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm resize-none`}
                                     />
                                 </div>
                             </div>

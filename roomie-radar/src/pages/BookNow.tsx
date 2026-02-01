@@ -177,18 +177,18 @@ const BookNow: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen pt-24 bg-[#0c0c1d] pb-20 relative overflow-hidden">
+    <div className="min-h-screen pt-20 sm:pt-24 bg-[#0c0c1d] pb-20 relative overflow-hidden">
       {/* Background blobs for depth */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
         <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob" />
         <div className="absolute top-[40%] -right-[10%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob animation-delay-2000" />
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 relative z-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-16"
+          className="mb-8 sm:mb-16"
         >
           <button
             onClick={handleGoBack}
@@ -201,7 +201,7 @@ const BookNow: React.FC = () => {
             </div>
             Back to Space
           </button>
-          <h1 className="text-5xl md:text-6xl font-black text-white tracking-tight uppercase leading-none">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight uppercase leading-none">
             Finalize <span className="text-gradient">Booking</span>
           </h1>
         </motion.div>
@@ -211,32 +211,32 @@ const BookNow: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="glass-card p-10 rounded-[3rem] border-white/5 mb-10 group overflow-hidden relative shadow-2xl"
+          className="glass-card p-5 sm:p-10 rounded-2xl sm:rounded-[3rem] border-white/5 mb-6 sm:mb-10 group overflow-hidden relative shadow-2xl"
         >
           <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-500 opacity-20" />
 
-          <div className="flex flex-col md:flex-row items-center gap-10">
+          <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-10">
             {room.images && room.images.length > 0 && (
-              <div className="w-full md:w-56 h-56 flex-shrink-0">
+              <div className="w-full md:w-56 h-40 sm:h-56 flex-shrink-0">
                 <img
                   src={room.images[0]}
                   alt={room.title}
-                  className="w-full h-full rounded-[2.5rem] object-cover border-2 border-white/5 shadow-2xl group-hover:scale-105 transition-transform duration-700"
+                  className="w-full h-full rounded-2xl sm:rounded-[2.5rem] object-cover border-2 border-white/5 shadow-2xl group-hover:scale-105 transition-transform duration-700"
                 />
               </div>
             )}
             <div className="flex-1 space-y-4">
-              <h2 className="text-3xl font-black text-white tracking-tight uppercase group-hover:text-blue-400 transition-colors">
+              <h2 className="text-xl sm:text-3xl font-black text-white tracking-tight uppercase group-hover:text-blue-400 transition-colors">
                 {room.title}
               </h2>
-              <div className="flex flex-wrap gap-3">
-                <span className="px-4 py-2 glass-card rounded-full text-[10px] font-black uppercase tracking-widest text-pink-400 border-none">{room.location}</span>
-                <span className="px-4 py-2 glass-card rounded-full text-[10px] font-black uppercase tracking-widest text-blue-400 border-none">{room.bedrooms} BHK</span>
-                <span className="px-4 py-2 glass-card rounded-full text-[10px] font-black uppercase tracking-widest text-purple-400 border-none">{room.type}</span>
+              <div className="flex flex-wrap gap-2 sm:gap-3">
+                <span className="px-3 py-1.5 glass-card rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-pink-400 border-none">{room.location}</span>
+                <span className="px-3 py-1.5 glass-card rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-blue-400 border-none">{room.bedrooms} BHK</span>
+                <span className="px-3 py-1.5 glass-card rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-purple-400 border-none">{room.type}</span>
               </div>
-              <div className="text-4xl font-black text-white tracking-tighter pt-2">
+              <div className="text-2xl sm:text-4xl font-black text-white tracking-tighter pt-1 sm:pt-2">
                 {formatPrice(room.price)}
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-3">
+                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-gray-500 ml-2 sm:ml-3">
                   / {room.type === "Hostel" ? "Year" : "Month"}
                 </span>
               </div>
@@ -249,18 +249,18 @@ const BookNow: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="glass-card p-12 rounded-[3.5rem] border-white/5 shadow-2xl"
+          className="glass-card p-6 sm:p-12 rounded-2xl sm:rounded-[3.5rem] border-white/5 shadow-2xl"
         >
           {/* Informational Message */}
-          <div className="mb-8 p-6 glass-card bg-blue-500/5 border border-blue-500/20 rounded-2xl">
+          <div className="mb-6 sm:mb-8 p-4 sm:p-6 glass-card bg-blue-500/5 border border-blue-500/20 rounded-2xl">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                 <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div>
-                <p className="text-white font-medium mb-2">
+                <p className="text-sm sm:text-base text-white font-medium mb-1 sm:mb-2">
                   Booking requests help owners respond faster and do not require payment.
                 </p>
               </div>
@@ -309,14 +309,14 @@ const BookNow: React.FC = () => {
             </motion.div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-10" noValidate>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 sm:space-y-10" noValidate>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-10">
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Identity Confirmation</label>
                 <div className="relative group/input">
                   <input
                     type="text"
-                    className="w-full p-5 rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all outline-none text-white font-bold"
+                    className="w-full p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all outline-none text-white font-bold text-sm"
                     placeholder="Candidate Full Name"
                     {...register('name', { required: 'Name is required' })}
                   />
@@ -328,7 +328,7 @@ const BookNow: React.FC = () => {
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Contact Protocol (Email)</label>
                 <input
                   type="email"
-                  className="w-full p-5 rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all outline-none text-white font-bold"
+                  className="w-full p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all outline-none text-white font-bold text-sm"
                   placeholder="name@domain.com"
                   {...register('email', { required: 'Email is required' })}
                 />
@@ -336,12 +336,12 @@ const BookNow: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-10">
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Comms Frequency (Phone)</label>
                 <input
                   type="tel"
-                  className="w-full p-5 rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all outline-none text-white font-bold"
+                  className="w-full p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all outline-none text-white font-bold text-sm"
                   placeholder="+91 XXXXX XXXXX"
                   {...register('phone')}
                 />
@@ -351,7 +351,7 @@ const BookNow: React.FC = () => {
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Activation Date</label>
                 <input
                   type="date"
-                  className="w-full p-5 rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-orange-500/50 focus:border-transparent transition-all outline-none text-white font-bold"
+                  className="w-full p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-orange-500/50 focus:border-transparent transition-all outline-none text-white font-bold text-sm"
                   {...register('checkInDate', { required: 'Check-in date is required' })}
                 />
                 {errors.checkInDate && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest ml-1">{errors.checkInDate.message}</p>}
@@ -362,7 +362,7 @@ const BookNow: React.FC = () => {
               <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Direct Signal Message</label>
               <textarea
                 rows={4}
-                className="w-full p-6 rounded-3xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all outline-none text-white font-medium resize-none leading-relaxed"
+                className="w-full p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all outline-none text-white font-medium resize-none leading-relaxed text-sm"
                 placeholder="Declare your intent and any special requirements for this elite space..."
                 {...register('message', { maxLength: { value: 500, message: 'Message cannot exceed 500 characters' } })}
               />
@@ -371,7 +371,7 @@ const BookNow: React.FC = () => {
 
             {/* Email Confirmation Checkbox */}
             <div className="space-y-3">
-              <div className="flex items-start gap-4 p-6 glass-card bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.04] transition-all">
+              <div className="flex items-start gap-4 p-4 sm:p-6 glass-card bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.04] transition-all">
                 <div className="flex items-center justify-center mt-1">
                   <input
                     type="checkbox"
@@ -381,31 +381,31 @@ const BookNow: React.FC = () => {
                   />
                 </div>
                 <div className="flex-1">
-                  <label htmlFor="sendEmailConfirmation" className="text-white font-medium cursor-pointer flex items-center gap-2">
+                  <label htmlFor="sendEmailConfirmation" className="text-sm sm:text-base text-white font-medium cursor-pointer flex items-center gap-2">
                     Send email confirmation
                     <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </label>
-                  <p className="text-gray-500 text-sm mt-1">
+                  <p className="text-gray-500 text-xs sm:text-sm mt-1">
                     Receive a confirmation email with your booking details and tracking information
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-6 pt-6">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 pt-4 sm:pt-6">
               <button
                 type="button"
                 onClick={handleGoBack}
-                className="flex-1 h-20 glass-card bg-white/5 border-white/10 text-gray-400 hover:text-white rounded-[2rem] font-black uppercase tracking-[0.3em] text-[10px] transition-all"
+                className="flex-1 h-16 sm:h-20 glass-card bg-white/5 border-white/10 text-gray-400 hover:text-white rounded-xl sm:rounded-[2rem] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] transition-all"
               >
                 Abort Protocol
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-[2] h-20 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white rounded-[2rem] font-black uppercase tracking-[0.3em] text-[10px] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-purple-900/40 disabled:opacity-50"
+                className="flex-[2] h-16 sm:h-20 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white rounded-xl sm:rounded-[2rem] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-purple-900/40 disabled:opacity-50"
               >
                 {isSubmitting ? 'Transmitting...' : 'Initiate Secure Booking'}
               </button>

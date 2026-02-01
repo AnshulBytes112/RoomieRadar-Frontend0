@@ -137,27 +137,33 @@ const Register = () => {
       </div>
 
       {/* Right Side - Register Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-8 sm:px-12 lg:px-24 z-10">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-8 lg:px-24 py-10 sm:py-16 z-10">
         <motion.div
           className="max-w-md w-full"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
         >
+          <div className="lg:hidden flex items-center justify-center gap-3 mb-6">
+            <div className="w-10 h-10 glass-card rounded-xl flex items-center justify-center shadow-xl">
+              <FiHome className="text-blue-400 text-xl" />
+            </div>
+            <span className="text-2xl font-black text-white tracking-tight">Roomie<span className="text-gradient">Radar</span></span>
+          </div>
           {/* Main Container */}
-          <div className="glass-card p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+          <div className="glass-card p-6 sm:p-10 rounded-2xl sm:rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
 
-            <div className="text-center mb-10">
-              <h2 className="text-4xl font-black text-white mb-3 tracking-tight">Join Us</h2>
-              <p className="text-gray-400 font-light">Create your RoomieRadar account</p>
+            <div className="text-center mb-6 sm:mb-10">
+              <h2 className="text-2xl sm:text-4xl font-black text-white mb-2 sm:mb-3 tracking-tight">Join Us</h2>
+              <p className="text-sm sm:text-base text-gray-400 font-light">Create your RoomieRadar account</p>
             </div>
 
             <motion.form
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="space-y-4"
+              className="space-y-4 sm:space-y-5"
               onSubmit={handleRegister}
             >
               {error && (
@@ -170,30 +176,30 @@ const Register = () => {
                 </motion.div>
               )}
 
-              <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
+              <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-gray-300 ml-1 uppercase tracking-wider">Username</label>
+                  <label className="text-[10px] sm:text-xs font-semibold text-gray-300 ml-1 uppercase tracking-wider">Username</label>
                   <div className="relative group/input">
-                    <FiUser className="absolute left-3 top-3.5 text-gray-400 group-focus-within/input:text-blue-400 transition-colors w-4 h-4" />
+                    <FiUser className="absolute left-3 top-3 text-gray-400 group-focus-within/input:text-blue-400 transition-colors w-4 h-4" />
                     <input
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="w-full pl-9 pr-3 py-3 glass-card rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all bg-white/5 text-white text-sm placeholder-gray-500"
+                      className="w-full pl-9 pr-3 py-2.5 sm:py-3 glass-card rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all bg-white/5 text-white text-sm placeholder-gray-500"
                       placeholder="Username"
                       required
                     />
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-gray-300 ml-1 uppercase tracking-wider">Full Name</label>
+                  <label className="text-[10px] sm:text-xs font-semibold text-gray-300 ml-1 uppercase tracking-wider">Full Name</label>
                   <div className="relative group/input">
-                    <FiUser className="absolute left-3 top-3.5 text-gray-400 group-focus-within/input:text-blue-400 transition-colors w-4 h-4" />
+                    <FiUser className="absolute left-3 top-3 text-gray-400 group-focus-within/input:text-blue-400 transition-colors w-4 h-4" />
                     <input
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-9 pr-3 py-3 glass-card rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all bg-white/5 text-white text-sm placeholder-gray-500"
+                      className="w-full pl-9 pr-3 py-2.5 sm:py-3 glass-card rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all bg-white/5 text-white text-sm placeholder-gray-500"
                       placeholder="Full Name"
                       required
                     />
@@ -202,14 +208,14 @@ const Register = () => {
               </motion.div>
 
               <motion.div variants={itemVariants} className="space-y-1">
-                <label className="text-xs font-semibold text-gray-300 ml-1 uppercase tracking-wider">Email Address</label>
+                <label className="text-[10px] sm:text-xs font-semibold text-gray-300 ml-1 uppercase tracking-wider">Email Address</label>
                 <div className="relative group/input">
-                  <FiMail className="absolute left-4 top-4 text-gray-400 group-focus-within/input:text-purple-400 transition-colors w-4 h-4" />
+                  <FiMail className="absolute left-4 top-3.5 text-gray-400 group-focus-within/input:text-purple-400 transition-colors w-4 h-4" />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 glass-card rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all bg-white/5 text-white placeholder-gray-500"
+                    className="w-full pl-11 pr-4 py-3 sm:py-3.5 glass-card rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all bg-white/5 text-white placeholder-gray-500 text-sm"
                     placeholder="Enter your email"
                     required
                   />
@@ -217,38 +223,38 @@ const Register = () => {
               </motion.div>
 
               <motion.div variants={itemVariants} className="space-y-1">
-                <label className="text-xs font-semibold text-gray-300 ml-1 uppercase tracking-wider">Phone Number</label>
+                <label className="text-[10px] sm:text-xs font-semibold text-gray-300 ml-1 uppercase tracking-wider">Phone Number</label>
                 <div className="relative group/input">
-                  <FiPhone className="absolute left-4 top-4 text-gray-400 group-focus-within/input:text-pink-400 transition-colors w-4 h-4" />
+                  <FiPhone className="absolute left-4 top-3.5 text-gray-400 group-focus-within/input:text-pink-400 transition-colors w-4 h-4" />
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 glass-card rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all bg-white/5 text-white placeholder-gray-500"
+                    className="w-full pl-11 pr-4 py-3 sm:py-3.5 glass-card rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all bg-white/5 text-white placeholder-gray-500 text-sm"
                     placeholder="Enter your phone"
                   />
                 </div>
               </motion.div>
 
               <motion.div variants={itemVariants} className="space-y-1">
-                <label className="text-xs font-semibold text-gray-300 ml-1 uppercase tracking-wider">Password</label>
+                <label className="text-[10px] sm:text-xs font-semibold text-gray-300 ml-1 uppercase tracking-wider">Password</label>
                 <div className="relative group/input">
-                  <FiLock className="absolute left-4 top-4 text-gray-400 group-focus-within/input:text-blue-400 transition-colors w-4 h-4" />
+                  <FiLock className="absolute left-4 top-3.5 text-gray-400 group-focus-within/input:text-blue-400 transition-colors w-4 h-4" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 glass-card rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all bg-white/5 text-white placeholder-gray-500"
+                    className="w-full pl-11 pr-4 py-3 sm:py-3.5 glass-card rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all bg-white/5 text-white placeholder-gray-500 text-sm"
                     placeholder="Create password"
                     required
                   />
                 </div>
               </motion.div>
 
-              <motion.div variants={itemVariants} className="pt-4">
+              <motion.div variants={itemVariants} className="pt-2 sm:pt-4">
                 <motion.button
                   type="submit"
-                  className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-lg shadow-xl shadow-blue-900/40 transition-all duration-300 flex items-center justify-center space-x-2"
+                  className="w-full h-12 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-sm sm:text-lg shadow-xl shadow-blue-900/40 transition-all duration-300 flex items-center justify-center space-x-2"
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -258,8 +264,8 @@ const Register = () => {
               </motion.div>
             </motion.form>
 
-            <div className="mt-8 text-center">
-              <p className="text-gray-400 font-light">
+            <div className="mt-6 sm:mt-8 text-center">
+              <p className="text-sm sm:text-base text-gray-400 font-light">
                 Already have an account?{' '}
                 <Link to="/login" className="text-white font-bold hover:text-blue-400 transition-colors underline underline-offset-8">
                   Sign in
@@ -269,7 +275,7 @@ const Register = () => {
           </div>
 
           {/* Trust Badges */}
-          <div className="mt-10 flex items-center justify-center space-x-8 text-gray-500">
+          <div className="mt-8 sm:mt-10 flex items-center justify-center space-x-6 sm:space-x-8 text-gray-500">
             <div className="flex items-center space-x-2 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-500 cursor-default">
               <FiShield className="w-5 h-5" />
               <span className="text-xs font-bold uppercase tracking-widest">Secure</span>

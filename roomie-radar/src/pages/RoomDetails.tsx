@@ -252,7 +252,7 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
   ] as const;
 
   return (
-    <div className="min-h-screen pt-20 bg-[#0c0c1d] pb-16 relative overflow-hidden">
+    <div className="min-h-screen pt-20 bg-[#0c0c1d] pb-24 sm:pb-16 relative overflow-hidden">
       {/* Background blobs for depth - softer */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
         <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[150px] mix-blend-screen animate-blob" />
@@ -260,8 +260,8 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
       </div>
 
       {/* Header */}
-      <div className="relative z-10 border-b border-white/5 mb-8">
-        <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="relative z-10 border-b border-white/5 mb-6 sm:mb-8">
+        <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
           <button
             onClick={() => navigate('/find-room')}
             className="flex items-center gap-3 text-gray-500 hover:text-white mb-8 transition-colors group font-black uppercase tracking-widest text-[10px]"
@@ -274,32 +274,32 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
             Back to Collection
           </button>
 
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 sm:gap-8">
             <div className="space-y-4">
-              <h1 className="text-5xl md:text-6xl font-black text-white tracking-tight uppercase leading-none">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl font-black text-white tracking-tight uppercase leading-none">
                 {room.title || 'Elite Space'}
               </h1>
-              <div className="flex items-center gap-4 text-gray-400">
-                <div className="w-10 h-10 glass-card rounded-xl flex items-center justify-center border-none">
+              <div className="flex items-center gap-3 sm:gap-4 text-gray-400">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 glass-card rounded-xl flex items-center justify-center border-none">
                   <svg className="w-5 h-5 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   </svg>
                 </div>
-                <span className="text-xl font-bold uppercase tracking-widest">{room.location || 'Unknown Coordinates'}</span>
+                <span className="text-sm sm:text-xl font-bold uppercase tracking-widest">{room.location || 'Unknown Coordinates'}</span>
               </div>
             </div>
 
             <div className="lg:text-right">
-              <div className="text-6xl font-black text-white tracking-tighter mb-2">
+              <div className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tighter mb-2">
                 {displayPrice(room.price, room.type).split('/')[0]}
-                <span className="text-lg font-black text-gray-500 uppercase tracking-widest ml-4">
+                <span className="text-xs sm:text-lg font-black text-gray-500 uppercase tracking-widest ml-2 sm:ml-4">
                   / {room.type === 'Hostel' ? 'Year' : 'Month'}
                 </span>
               </div>
-              <div className="flex flex-wrap lg:justify-end gap-3">
-                <span className="px-4 py-2 glass-card rounded-full text-[10px] font-black uppercase tracking-widest text-blue-400 border-none">{room.bedrooms} BHK</span>
-                <span className="px-4 py-2 glass-card rounded-full text-[10px] font-black uppercase tracking-widest text-purple-400 border-none">{room.area}</span>
-                <span className="px-4 py-2 glass-card rounded-full text-[10px] font-black uppercase tracking-widest text-pink-400 border-none">{room.type}</span>
+              <div className="flex flex-wrap lg:justify-end gap-2 sm:gap-3">
+                <span className="px-3 py-1.5 glass-card rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-blue-400 border-none">{room.bedrooms} BHK</span>
+                <span className="px-3 py-1.5 glass-card rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-purple-400 border-none">{room.area}</span>
+                <span className="px-3 py-1.5 glass-card rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-pink-400 border-none">{room.type}</span>
               </div>
             </div>
           </div>
@@ -307,16 +307,16 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-12">
           {/* Left Column - Images and Basic Info */}
           <div className="lg:col-span-2 space-y-12">
             {/* Main Image Section */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              className="glass-card rounded-[2rem] overflow-hidden shadow-lg border-white/5 group"
+              className="glass-card rounded-2xl sm:rounded-[2rem] overflow-hidden shadow-lg border-white/5 group"
             >
-              <div className="relative aspect-[16/10] w-full overflow-hidden">
+              <div className="relative aspect-[16/9] w-full overflow-hidden">
                 <img
                   src={room.images && room.images.length > 0 ? room.images[currentImageIndex] : '/placeholder.jpg'}
                   alt={room.title || 'Room Image'}
@@ -325,16 +325,16 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c1d]/50 to-transparent" />
 
-                <div className="absolute top-6 right-6 flex gap-3">
+                <div className="absolute top-4 right-4 sm:top-6 sm:right-6 flex gap-2 sm:gap-3">
                   {/* Photo counter */}
                   {room.images && room.images.length > 1 && (
-                    <div className="px-3 py-2 glass-card rounded-full text-xs font-medium text-white/80 backdrop-blur-sm border-white/10">
+                    <div className="px-2 py-1 sm:px-3 sm:py-2 glass-card rounded-full text-[10px] sm:text-xs font-medium text-white/80 backdrop-blur-sm border-white/10">
                       {currentImageIndex + 1} / {room.images.length}
                     </div>
                   )}
                   <button
                     onClick={toggleWishlist}
-                    className="p-3 glass-card rounded-xl hover:bg-white/10 transition-all group/wish border-none shadow-lg"
+                    className="p-2 sm:p-3 glass-card rounded-xl hover:bg-white/10 transition-all group/wish border-none shadow-lg"
                   >
                     <svg className={`w-5 h-5 ${isInWishlist ? 'fill-red-500 stroke-red-500' : 'stroke-white group-hover/wish:stroke-red-500'} transition-colors`} fill="none" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -347,7 +347,7 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
                   <>
                     <button
                       onClick={() => setCurrentImageIndex((prev) => (prev - 1 + room.images!.length) % room.images!.length)}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 p-2 glass-card rounded-full bg-black/30 hover:bg-black/50 transition-all border-white/10 text-white"
+                      className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 p-2 glass-card rounded-full bg-black/30 hover:bg-black/50 transition-all border-white/10 text-white"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -355,7 +355,7 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
                     </button>
                     <button
                       onClick={() => setCurrentImageIndex((prev) => (prev + 1) % room.images!.length)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2 glass-card rounded-full bg-black/30 hover:bg-black/50 transition-all border-white/10 text-white"
+                      className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 p-2 glass-card rounded-full bg-black/30 hover:bg-black/50 transition-all border-white/10 text-white"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -403,12 +403,12 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
               transition={{ delay: 0.1 }}
               className="glass-card rounded-[2rem] overflow-hidden border-white/5"
             >
-              <div className="flex px-8 border-b border-white/5 bg-white/[0.02]">
+              <div className="flex px-4 sm:px-8 border-b border-white/5 bg-white/[0.02] overflow-x-auto">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`px-6 py-6 text-[10px] font-medium uppercase tracking-[0.15em] transition-all relative ${activeTab === tab.id ? 'text-blue-400' : 'text-gray-500 hover:text-white'
+                    className={`px-4 sm:px-6 py-4 sm:py-6 text-[10px] font-medium uppercase tracking-[0.15em] transition-all relative ${activeTab === tab.id ? 'text-blue-400' : 'text-gray-500 hover:text-white'
                       }`}
                   >
                     {tab.label}
@@ -422,21 +422,21 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
                 ))}
               </div>
 
-              <div className="p-10">
+              <div className="p-5 sm:p-10">
                 {activeTab === 'overview' && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="space-y-12"
                   >
-                    <div className="p-8 glass-card bg-white/5 border-none rounded-[2rem]">
+                    <div className="p-5 sm:p-8 glass-card bg-white/5 border-none rounded-2xl sm:rounded-[2rem]">
                       <h4 className="text-[10px] font-medium text-gray-500 uppercase tracking-[0.2em] mb-4">About This Home</h4>
-                      <p className="text-lg text-white leading-relaxed">
+                      <p className="text-sm sm:text-lg text-white leading-relaxed">
                         {room.description || 'A comfortable and well-maintained space perfect for your next home. This property offers everything you need for a pleasant living experience.'}
                       </p>
                       
                       {/* Emotional appeal */}
-                      <div className="mt-6 p-4 glass-card bg-blue-500/5 border-blue-500/10 rounded-xl">
+                      <div className="mt-4 sm:mt-6 p-4 glass-card bg-blue-500/5 border-blue-500/10 rounded-xl">
                         <div className="flex items-center gap-3 mb-2">
                           <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
                             <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -451,14 +451,14 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
 
                     <div>
                       <h4 className="text-[10px] font-medium text-gray-500 uppercase tracking-[0.2em] mb-6 ml-2">Property Details</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                         {[
                           { val: room.bedrooms, label: 'Bedrooms', color: 'text-blue-400', icon: '🛏️' },
                           { val: room.bathrooms, label: 'Bathrooms', color: 'text-purple-400', icon: '🚿' },
                           { val: room.area, label: 'Area', color: 'text-pink-400', icon: '📏' },
                           { val: room.type, label: 'Type', color: 'text-orange-400', icon: '🏠' }
                         ].map((stat, i) => (
-                          <div key={i} className="p-6 glass-card bg-white/5 border-none rounded-2xl text-center hover:bg-white/10 transition-colors">
+                          <div key={i} className="p-4 sm:p-6 glass-card bg-white/5 border-none rounded-2xl text-center hover:bg-white/10 transition-colors">
                             <div className="text-2xl mb-2">{stat.icon}</div>
                             <div className={`text-lg font-bold mb-1 ${stat.color}`}>{stat.val || 'N/A'}</div>
                             <div className="text-[9px] font-medium text-gray-500 uppercase tracking-wider">{stat.label}</div>
@@ -628,13 +628,13 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
           </div>
 
           {/* Right Column - Pricing and Quick Info */}
-          <div className="lg:col-span-1 space-y-10">
+          <div className="lg:col-span-1 space-y-6 sm:space-y-10">
             {/* Action Panel */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="glass-card p-8 rounded-[2rem] border-white/10 shadow-lg bg-gradient-to-b from-white/[0.03] to-transparent sticky top-32"
+              className="glass-card p-6 sm:p-8 rounded-2xl sm:rounded-[2rem] border-white/10 shadow-lg bg-gradient-to-b from-white/[0.03] to-transparent lg:sticky lg:top-32"
             >
               <div className="mb-8">
                 <h4 className="text-[10px] font-medium text-gray-500 uppercase tracking-[0.2em] mb-4">Pricing Details</h4>
@@ -742,14 +742,24 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
         </div>
       </div>
 
-      {/* Gallery Modal */}
-      {isGalleryOpen && room.images && room.images.length > 0 && (
-        <GalleryModal
-          images={room.images}
-          startIndex={currentImageIndex}
-          onClose={() => setIsGalleryOpen(false)}
-        />
-      )}
+      {/* Mobile Fixed CTA */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 sm:hidden bg-[#0c0c1d]/90 backdrop-blur-xl border-t border-white/10 px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Monthly Rent</p>
+            <p className="text-lg font-black text-white leading-none">
+              {displayPrice(room.price, room.type).split('/')[0]}
+            </p>
+          </div>
+          <button
+            onClick={handleBookNow}
+            className="flex-1 max-w-[180px] h-11 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-900/30"
+          >
+            Book Now
+          </button>
+        </div>
+      </div>
+
       {/* Gallery Modal */}
       {isGalleryOpen && room.images && room.images.length > 0 && (
         <GalleryModal
