@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../contexts/AuthContext';
 import { getPendingConnections, getSentRequests, acceptConnectionRequest, rejectConnectionRequest } from '../api';
+import { PixelGrid } from '../components/ui';
+import { Radio, Send, Check, X, Clock, Wifi } from 'lucide-react';
 
 const Connections = () => {
-    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState<'inbox' | 'sent'>('inbox');
     const [inboxRequests, setInboxRequests] = useState<any[]>([]);
     const [sentRequests, setSentRequests] = useState<any[]>([]);
@@ -30,22 +30,15 @@ const Connections = () => {
 
     useEffect(() => {
         fetchData();
-
-        // Setup polling
-        pollingRef.current = setInterval(() => {
-            fetchData(true);
-        }, 5000);
-
-        return () => {
-            if (pollingRef.current) clearInterval(pollingRef.current);
-        };
+        pollingRef.current = setInterval(() => fetchData(true), 5000);
+        return () => { if (pollingRef.current) clearInterval(pollingRef.current); };
     }, []);
 
     const handleAccept = async (id: number) => {
         try {
             setActionLoading(id);
             await acceptConnectionRequest(id);
-            await fetchData(); // Refresh
+            await fetchData();
         } catch (error) {
             console.error('Failed to accept request:', error);
         } finally {
@@ -57,7 +50,7 @@ const Connections = () => {
         try {
             setActionLoading(id);
             await rejectConnectionRequest(id);
-            await fetchData(); // Refresh
+            await fetchData();
         } catch (error) {
             console.error('Failed to reject request:', error);
         } finally {
@@ -66,73 +59,61 @@ const Connections = () => {
     };
 
     const tabs = [
-        { id: 'inbox', label: 'Incoming Signals', count: inboxRequests.length },
-        { id: 'sent', label: 'Transmitted Requests', count: sentRequests.length },
+        { id: 'inbox', label: 'Incoming Requests', count: inboxRequests.length, icon: Radio },
+        { id: 'sent', label: 'Sent Requests', count: sentRequests.length, icon: Send },
     ];
 
     return (
-        <div className="min-h-screen bg-[#0c0c1d] pb-24 relative overflow-hidden">
-            {/* Background blobs for depth */}
-            <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-                <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob" />
-                <div className="absolute top-[40%] -right-[10%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob animation-delay-2000" />
-            </div>
+        <div className="min-h-screen bg-[#050505] pt-16 sm:pt-28 pb-20 px-6 relative overflow-hidden font-sans text-white">
+            <PixelGrid />
 
-            <div className="max-w-5xl mx-auto px-6 pt-32 relative z-10">
+            <div className="max-w-[900px] mx-auto relative z-10">
                 <motion.div
-                    initial={{ opacity: 0, y: -20 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mb-8 md:mb-12"
+                    className="mb-12"
                 >
-                    <h1 className="text-3xl md:text-6xl font-black text-white tracking-tight uppercase mb-4">
-                        Connection <span className="text-gradient">Matrix</span>
+                    <div className="text-trae-green font-mono text-xs mb-3 uppercase tracking-[0.2em] font-bold">Connection Management</div>
+                    <h1 className="text-4xl md:text-6xl font-black mb-5 tracking-tighter leading-tight">
+                        My <span className="text-trae-green">Connections.</span>
                     </h1>
-                    <p className="text-gray-500 font-black uppercase tracking-[0.2em] text-[10px] md:text-xs">Manage your synchronization requests</p>
+                    <p className="text-sm text-gray-500 font-medium max-w-xl">
+                        Manage your connection requests and connect with potential roommates.
+                    </p>
                 </motion.div>
 
-                {/* Tab Switcher */}
-                <div className="flex gap-4 mb-8 md:mb-10 overflow-x-auto pb-4 no-scrollbar">
+                <div className="flex gap-4 mb-10 overflow-x-auto scrollbar-hide pb-2">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id as any)}
-                            className={`relative px-6 md:px-8 py-3 md:py-4 rounded-2xl font-black uppercase tracking-widest text-[9px] md:text-[10px] transition-all whitespace-nowrap overflow-hidden ${activeTab === tab.id
-                                ? 'text-white'
-                                : 'text-gray-500 hover:text-gray-300'
-                                }`}
+                            className={`flex items-center gap-3.5 px-6 py-3.5 rounded-xl font-black uppercase tracking-widest text-[9px] transition-all relative whitespace-nowrap overflow-hidden ${activeTab === tab.id ? 'text-black bg-trae-green shadow-[0_0_20px_rgba(16,185,129,0.3)]' : 'text-gray-500 bg-white/5 border border-white/5 hover:border-white/10 hover:text-white'}`}
                         >
-                            {activeTab === tab.id && (
-                                <motion.div
-                                    layoutId="activeTab"
-                                    className="absolute inset-0 bg-white/5 border border-white/10 rounded-2xl -z-10"
-                                />
-                            )}
-                            <span className="relative z-10 flex items-center gap-2 md:gap-3">
-                                {tab.label}
-                                <span className={`px-2 py-0.5 rounded-md text-[8px] ${activeTab === tab.id ? 'bg-blue-600 text-white' : 'bg-white/5 text-gray-500'}`}>
-                                    {tab.count}
-                                </span>
+                            <tab.icon className="w-3.5 h-3.5" />
+                            {tab.label}
+                            <span className={`px-2 py-0.5 rounded-lg text-[7px] ${activeTab === tab.id ? 'bg-black text-trae-green' : 'bg-white/5 text-gray-600'}`}>
+                                {tab.count}
                             </span>
                         </button>
                     ))}
                 </div>
 
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <div className="w-16 h-16 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 animate-pulse">Scanning frequencies...</p>
+                    <div className="flex flex-col items-center justify-center py-32">
+                        <div className="w-12 h-12 border-2 border-trae-green border-t-transparent rounded-full animate-spin mb-6"></div>
+                        <p className="text-[9px] font-mono font-black uppercase tracking-[0.3em] text-gray-600 animate-pulse">Loading...</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 gap-6">
+                    <div className="space-y-4">
                         <AnimatePresence mode="wait">
                             {(activeTab === 'inbox' ? inboxRequests : sentRequests).length === 0 ? (
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="glass-card p-20 rounded-[3rem] text-center border-white/5"
+                                    className="bg-[#0a0a0a] border border-white/5 p-16 sm:p-24 rounded-[2rem] text-center shadow-2xl"
                                 >
-                                    <p className="text-gray-500 font-black uppercase tracking-[0.3em] text-[10px]">No active signals in this sector.</p>
+                                    <Wifi className="w-12 h-12 text-gray-800 mx-auto mb-6 opacity-20" />
+                                    <p className="text-gray-600 font-mono font-black uppercase tracking-[0.3em] text-[10px]">No active connection requests.</p>
                                 </motion.div>
                             ) : (
                                 (activeTab === 'inbox' ? inboxRequests : sentRequests).map((request, idx) => (
@@ -141,30 +122,36 @@ const Connections = () => {
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: idx * 0.05 }}
-                                        className="glass-card p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border-white/5 hover:border-white/10 transition-all flex flex-col md:flex-row items-center gap-6 md:gap-8 group"
+                                        className="bg-[#0a0a0a] border border-white/5 p-6 rounded-[1.5rem] flex flex-col sm:flex-row items-center gap-6 group hover:border-trae-green/30 transition-all duration-500 shadow-2xl"
                                     >
-                                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 p-0.5 shadow-2xl group-hover:scale-105 transition-transform">
-                                            <div className="w-full h-full rounded-full bg-[#0c0c1d] flex items-center justify-center overflow-hidden">
-                                                <span className="text-2xl font-black text-white">{(activeTab === 'inbox' ? (request.fromName || request.fromUsername) : (request.toName || request.toUsername))?.[0]?.toUpperCase()}</span>
-                                            </div>
+                                        <div className="w-12 h-12 rounded-xl bg-[#0a0a0a] border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:border-trae-green/50 transition-all duration-500">
+                                            {(activeTab === 'inbox' ? request.fromAvatar : request.toAvatar) ? (
+                                                <img
+                                                    src={activeTab === 'inbox' ? request.fromAvatar : request.toAvatar}
+                                                    alt="Avatar"
+                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                />
+                                            ) : (
+                                                <span className="text-xl font-black text-white uppercase group-hover:text-trae-green transition-colors">
+                                                    {(activeTab === 'inbox' ? (request.fromName || request.fromUsername) : (request.toName || request.toUsername))?.[0]?.toUpperCase()}
+                                                </span>
+                                            )}
                                         </div>
 
-                                        <div className="flex-1 text-center md:text-left">
-                                            <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-2">
+                                        <div className="flex-1 text-center sm:text-left min-w-0">
+                                            <h3 className="text-xl font-black text-white uppercase tracking-tight mb-1 group-hover:text-trae-green transition-colors truncate">
                                                 {activeTab === 'inbox' ? (request.fromName || request.fromUsername) : (request.toName || request.toUsername)}
                                             </h3>
-                                            <p className="text-gray-400 text-sm italic font-medium leading-relaxed max-w-xl">
-                                                "{request.message || 'Transmission initiated without data payload.'}"
+                                            <p className="text-gray-500 text-[13px] font-medium leading-relaxed italic truncate">
+                                                "{request.message || 'Wants to connect with you.'}"
                                             </p>
-                                            <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-4">
-                                                <span className="text-[8px] font-black uppercase tracking-widest text-blue-400 bg-blue-400/10 px-2 py-1 rounded border border-blue-400/20">
+                                            <div className="mt-3 flex flex-wrap justify-center sm:justify-start gap-3">
+                                                <div className="flex items-center gap-2 text-[7px] font-black uppercase tracking-widest text-gray-600">
+                                                    <Clock className="w-2.5 h-2.5" />
                                                     {new Date(request.createdAt).toLocaleDateString()}
-                                                </span>
+                                                </div>
                                                 {activeTab === 'sent' && (
-                                                    <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded border ${request.status === 'PENDING' ? 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' :
-                                                        request.status === 'ACCEPTED' ? 'text-green-400 bg-green-400/10 border-green-400/20' :
-                                                            'text-red-400 bg-red-400/10 border-red-400/20'
-                                                        }`}>
+                                                    <span className={`text-[7px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border ${request.status === 'PENDING' ? 'text-yellow-400 bg-yellow-400/5 border-yellow-400/20' : request.status === 'ACCEPTED' ? 'text-trae-green bg-trae-green/5 border-trae-green/20' : 'text-red-500 bg-red-500/5 border-red-500/20'}`}>
                                                         {request.status}
                                                     </span>
                                                 )}
@@ -172,20 +159,20 @@ const Connections = () => {
                                         </div>
 
                                         {activeTab === 'inbox' && (
-                                            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                                            <div className="flex gap-3 w-full sm:w-auto mt-4 sm:mt-0">
                                                 <button
                                                     onClick={() => handleReject(request.id)}
                                                     disabled={actionLoading === request.id}
-                                                    className="h-12 md:h-14 px-6 md:px-8 rounded-xl md:rounded-2xl bg-white/5 hover:bg-red-500/10 text-gray-500 hover:text-red-400 font-black uppercase tracking-widest text-[9px] md:text-[10px] transition-all border border-transparent hover:border-red-500/20 disabled:opacity-50 flex-1 md:flex-none"
+                                                    className="w-12 h-12 rounded-xl bg-white/5 border border-white/5 text-gray-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center flex-shrink-0"
                                                 >
-                                                    Decline
+                                                    <X className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleAccept(request.id)}
                                                     disabled={actionLoading === request.id}
-                                                    className="h-12 md:h-14 px-6 md:px-8 rounded-xl md:rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black uppercase tracking-widest text-[9px] md:text-[10px] transition-all hover:scale-105 active:scale-95 shadow-xl md:shadow-2xl shadow-purple-900/40 disabled:opacity-50 flex-1 md:flex-none"
+                                                    className="h-12 px-6 rounded-xl bg-trae-green text-black font-black uppercase tracking-widest text-[8px] hover:bg-emerald-400 transition-all flex items-center justify-center gap-2 shadow-xl flex-1 sm:flex-none"
                                                 >
-                                                    Accept signal
+                                                    <Check className="w-3.5 h-3.5" /> Accept Request
                                                 </button>
                                             </div>
                                         )}

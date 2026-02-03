@@ -21,6 +21,8 @@ import MyListings from "./pages/MyListings"
 import Profile from "./pages/Profile"
 import Messages from "./pages/Messages"
 import Connections from "./pages/Connections"
+import RoommateProfile from "./pages/RoommateProfile"
+import UserProfile from "./pages/UserProfile"
 function App() {
   const location = useLocation();
   const hideNavbarRoutes = ['/login', '/register', '/unauthorized'];
@@ -33,7 +35,7 @@ function App() {
 
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-[#0c0c1d]">
+      <div className="min-h-screen bg-[#050505]">
         {showNavbar && <Navbar />}
         <AnimatePresence mode="wait">
           <Routes>
@@ -62,7 +64,7 @@ function App() {
             <Route path="/my-listings" element={<ProtectedRoute requiredRoles={['student', 'admin']}><PageWrapper><MyListings /></PageWrapper></ProtectedRoute>} />
             <Route path="/add-listing" element={<ProtectedRoute requiredRoles={['student', 'admin']}><PageWrapper><AddListingModal isOpen={false} onClose={function (): void {
               throw new Error("Function not implemented.")
-            }} onSubmit={function (listing: NewListingInput): Promise<void> {
+            }} onSubmit={function (_listing: NewListingInput): Promise<void> {
               throw new Error("Function not implemented.")
             }} /></PageWrapper></ProtectedRoute>} />
             {/* Protected Routes */}
@@ -87,6 +89,22 @@ function App() {
               element={
                 <ProtectedRoute requiredRoles={['student', 'admin']}>
                   <PageWrapper><FindRoommate /></PageWrapper>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/roommate/:id"
+              element={
+                <ProtectedRoute requiredRoles={['student', 'admin']}>
+                  <PageWrapper><RoommateProfile /></PageWrapper>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/user/:userId"
+              element={
+                <ProtectedRoute requiredRoles={['student', 'admin']}>
+                  <PageWrapper><UserProfile /></PageWrapper>
                 </ProtectedRoute>
               }
             />

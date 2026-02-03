@@ -1,149 +1,157 @@
-import { motion } from "framer-motion";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React from 'react';
+import { MapPin, Bath, BedDouble, Maximize, Heart, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
-type RoomCardProps = {
+interface RoomCardProps {
   room: {
     id: number;
     title: string;
     location: string;
-    price: string;
+    price: number;
     area: string;
     bedrooms: number;
     bathrooms: number;
     images: string[];
     tags: string[];
+    type: string;
+    postedBy?: {
+      id: number;
+      name: string;
+      avatar?: string;
+    };
   };
-  onOpenGallery: (startIndex: number) => void;
-  canManage?: boolean;
-  onDelete?: () => void;
-};
+  onOpenGallery?: (id: number) => void;
+  onBooking?: (id: number) => void;
+  onFavorite?: (id: number) => void;
+  isFavorited?: boolean;
+}
 
-const RoomCard = ({ room, onOpenGallery, canManage, onDelete }: RoomCardProps) => {
-  const [hoveredIndex, setHoveredIndex] = useState(0);
+const RoomCard: React.FC<RoomCardProps> = ({
+  room,
+  onOpenGallery,
+  onFavorite,
+  isFavorited = false
+}) => {
   const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    if (onOpenGallery) {
+      onOpenGallery(room.id);
+    } else {
+      navigate(`/room/${room.id}`);
+    }
+  };
 
   return (
     <motion.div
-      layout
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-      className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-200 overflow-hidden"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="bg-[#0a0a0a] border border-white/5 rounded-[1.5rem] overflow-hidden group hover:border-trae-green/30 transition-all duration-500 shadow-xl flex flex-col h-full"
     >
-      <div className="relative">
-        <div className="aspect-[4/3] w-full overflow-hidden">
-          <img
-            src={room.images[hoveredIndex]}
-            alt={room.title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-          />
-        </div>
-
-        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-          <div className="flex gap-2">
-            {room.images.slice(0, 4).map((img, idx) => (
-              <button
-                key={img}
-                className={`w-10 h-10 rounded-lg overflow-hidden border ${idx === hoveredIndex ? 'border-white ring-2 ring-white/80' : 'border-white/50'}`}
-                onMouseEnter={() => setHoveredIndex(idx)}
-                onFocus={() => setHoveredIndex(idx)}
-                onClick={() => onOpenGallery(idx)}
-                aria-label={`Preview image ${idx + 1}`}
-              >
-                <img src={img} alt="thumb" className="w-full h-full object-cover" />
-              </button>
-            ))}
+      {room.postedBy && (
+        <div
+          className="bg-[#050505] px-4 py-3 border-b border-white/5 flex items-center gap-3 cursor-pointer hover:bg-white/5 transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/user/${room.postedBy?.id}`);
+          }}
+        >
+          {room.postedBy.avatar ? (
+            <img
+              src={room.postedBy.avatar}
+              alt={room.postedBy.name}
+              className="w-7 h-7 rounded-lg object-cover border border-white/10"
+            />
+          ) : (
+            <div className="w-7 h-7 rounded-lg bg-trae-green/10 flex items-center justify-center text-[10px] font-black text-trae-green uppercase border border-trae-green/20">
+              {room.postedBy.name.charAt(0)}
+            </div>
+          )}
+          <div className="flex flex-col">
+            <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest leading-none mb-0.5">Posted by</span>
+            <span className="text-[11px] font-black text-white uppercase tracking-tighter group-hover:text-trae-green transition-colors">{room.postedBy.name}</span>
           </div>
-          <button
-            onClick={() => onOpenGallery(hoveredIndex)}
-            className="px-3 py-1.5 rounded-lg bg-black/60 text-white text-xs font-medium backdrop-blur hover:bg-black/70"
-          >
-            View Gallery
-          </button>
         </div>
+      )}
+
+      {/* Image Section */}
+      <div
+        className="relative h-48 sm:h-56 bg-white/5 overflow-hidden cursor-pointer"
+        onClick={handleCardClick}
+      >
+        <img
+          src={room.images[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500"}
+          alt={room.title}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/80 via-transparent to-transparent pointer-events-none" />
 
         <div className="absolute top-3 left-3">
-          <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-white/90 text-gray-800 border border-gray-200">{room.bedrooms} BHK</span>
+          <span className="px-3 py-1.5 bg-trae-green rounded-lg text-black text-[10px] font-black uppercase tracking-widest shadow-lg">
+            {room.type}
+          </span>
         </div>
 
-        <div className="absolute top-3 right-3 flex items-center gap-2">
-          <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500 text-white">Featured</span>
-          {canManage && (
-            <button
-              onClick={onDelete}
-              className="px-2 py-1 rounded-lg bg-red-600/90 text-white text-xs font-semibold hover:bg-red-600"
-              aria-label="Delete listing"
-            >
-              Delete
-            </button>
-          )}
-        </div>
+        {onFavorite && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onFavorite(room.id);
+            }}
+            className={`absolute top-3 right-3 p-2.5 backdrop-blur-md border border-white/10 rounded-xl transition-all group/fav active:scale-90 ${isFavorited
+                ? 'bg-trae-green text-black border-trae-green'
+                : 'bg-black/40 text-white hover:bg-trae-green hover:text-black hover:border-trae-green'
+              }`}
+          >
+            <Heart className={`w-4 h-4 ${isFavorited ? 'fill-current' : 'group-hover/fav:fill-current'}`} />
+          </button>
+        )}
       </div>
 
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900">{room.title}</h3>
-            <p className="text-sm text-gray-600 flex items-center gap-1">
-              <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(room.location)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline hover:text-blue-800"
-              >
-                {room.location}
-              </a>
-            </p>
-          </div>
-          <div className="text-right">
-            <div className="text-indigo-600 font-extrabold">{room.price}</div>
-            <div className="text-xs text-gray-500">{room.area}</div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-3 my-4 text-sm">
-          <div className="flex items-center gap-2 text-gray-700">
-            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-            <span>{room.bedrooms} Beds</span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-700">
-            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" /></svg>
-            <span>{room.bathrooms} Bath</span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-700">
-            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" /></svg>
-            <span>{room.price}</span>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {room.tags.map(tag => (
-            <span key={tag} className="px-2.5 py-1 rounded-full text-xs bg-gray-100 text-gray-700 border border-gray-200">{tag}</span>
-          ))}
-        </div>
-
-        <div className="mt-5 flex gap-3">
-          <button 
-            onClick={() => navigate(`/room/${room.id}`)}
-            className="flex-1 py-2.5 rounded-xl border border-indigo-300 bg-indigo-50 text-indigo-700 font-semibold hover:bg-indigo-100 transition"
+      {/* Content Section */}
+      <div className="p-6 flex-grow flex flex-col">
+        <div className="flex justify-between items-start mb-4">
+          <h3
+            className="text-xl font-black text-white leading-tight tracking-tight group-hover:text-trae-green transition-colors truncate cursor-pointer pr-2"
+            onClick={handleCardClick}
           >
-            View Details
-          </button>
-          <button 
-            onClick={() => {
-              // Navigate to room details page to see contact information
-              navigate(`/room/${room.id}`);
-            }}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-semibold shadow hover:from-indigo-600 hover:to-pink-600 transition"
-          >
-            Contact
-          </button>
+            {room.title}
+          </h3>
+          <div className="text-xl font-black text-white tracking-tighter flex-shrink-0">
+            ₹{room.price.toLocaleString()}
+            <span className="text-[10px] text-gray-500 font-bold uppercase ml-1">/Mo</span>
+          </div>
         </div>
+
+        <div className="flex items-center gap-2 text-gray-500 text-[11px] mb-6">
+          <MapPin className="w-3.5 h-3.5 text-trae-green" />
+          <span className="uppercase tracking-widest font-bold truncate">{room.location}</span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2.5 mb-8">
+          <div className="flex flex-col gap-1.5 p-3 bg-white/5 rounded-xl border border-white/5 group-hover:border-white/10 transition-colors">
+            <BedDouble className="w-4 h-4 text-trae-green/80" />
+            <span className="text-[8px] font-mono font-bold text-gray-500 uppercase tracking-widest">{room.bedrooms} Bed</span>
+          </div>
+          <div className="flex flex-col gap-1.5 p-3 bg-white/5 rounded-xl border border-white/5 group-hover:border-white/10 transition-colors">
+            <Bath className="w-4 h-4 text-blue-400/80" />
+            <span className="text-[8px] font-mono font-bold text-gray-500 uppercase tracking-widest">{room.bathrooms} Bath</span>
+          </div>
+          <div className="flex flex-col gap-1.5 p-3 bg-white/5 rounded-xl border border-white/5 group-hover:border-white/10 transition-colors">
+            <Maximize className="w-4 h-4 text-purple-400/80" />
+            <span className="text-[8px] font-mono font-bold text-gray-500 uppercase tracking-widest truncate">{room.area}</span>
+          </div>
+        </div>
+
+        <button
+          onClick={handleCardClick}
+          className="w-full h-12 bg-white/5 border border-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:bg-white hover:text-black hover:border-white active:scale-95 flex items-center justify-center gap-2 group/btn"
+        >
+          <Eye className="w-4 h-4" />
+          View Details
+        </button>
       </div>
     </motion.div>
   );

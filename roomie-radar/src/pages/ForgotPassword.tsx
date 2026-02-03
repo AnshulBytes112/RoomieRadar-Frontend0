@@ -1,6 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { forgotPassword } from "../api";
+import { motion } from "framer-motion";
+import { FiMail, FiArrowRight, FiCheck } from "react-icons/fi";
+import { PixelGrid } from "../components/ui";
+import { Rocket } from "lucide-react";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -19,10 +23,10 @@ const ForgotPassword = () => {
     try {
       const result = await forgotPassword(email);
       if (result && result.success) {
-        setMessage("Password reset instructions have been sent to your email address.");
+        setMessage("Password reset email sent successfully.");
         setIsSubmitted(true);
       } else {
-        setError(result?.message || "Failed to send reset email. Please try again.");
+        setError(result?.message || "Failed to send email. Please try again.");
       }
     } catch (err) {
       setError("Something went wrong. Please try again later.");
@@ -36,109 +40,131 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0c0c1d] relative overflow-hidden px-6">
-      {/* Background blobs for depth */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-        <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob" />
-        <div className="absolute top-[40%] -right-[10%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob animation-delay-2000" />
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-[#050505] relative overflow-hidden px-6 font-sans">
+      <PixelGrid />
 
-      <div className="glass-card shadow-2xl rounded-[3rem] p-12 w-full max-w-md flex flex-col items-center relative z-10 border-white/5">
-        <h2 className="text-4xl font-black text-white mb-8 tracking-tight uppercase text-center">
-          {isSubmitted ? "Signal Sent" : "Reset Key"}
-        </h2>
+      {/* Decorative background blobs */}
+      <div className="absolute top-[20%] left-[10%] w-[350px] h-[350px] bg-trae-green/5 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
+      <div className="absolute bottom-[20%] right-[10%] w-[350px] h-[350px] bg-blue-600/5 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
 
-        {!isSubmitted ? (
-          <form className="w-full flex flex-col gap-6" onSubmit={handleSubmit}>
-            <div className="text-center text-gray-500 text-sm font-medium tracking-wide uppercase px-4 leading-relaxed">
-              Enter email to transmit reset instructions.
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-md z-10"
+      >
+        <div className="text-center mb-10">
+          <Link to="/" className="inline-flex items-center gap-2.5 mb-8 group">
+            <div className="w-9 h-9 bg-trae-green rounded-lg flex items-center justify-center transition-transform group-hover:rotate-12">
+              <Rocket className="w-5 h-5 text-black fill-current" />
             </div>
+            <span className="text-xl font-black text-white tracking-tighter">RoomieRadar</span>
+          </Link>
+        </div>
 
-            <input
-              type="email"
-              placeholder="ADDRESS@DOMAIN.COM"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              className="w-full px-6 py-5 rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all outline-none text-white font-bold placeholder-gray-600 text-center uppercase tracking-widest text-xs"
-              required
-              disabled={loading}
-            />
+        <div className="bg-[#0a0a0a] border border-white/5 p-8 sm:p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-trae-green/20 to-transparent" />
 
-            {error && (
-              <div className="text-red-400 text-[10px] font-black uppercase tracking-widest text-center bg-red-500/10 p-4 rounded-2xl border border-red-500/20">
-                {error}
-              </div>
-            )}
+          <h2 className="text-2xl font-black text-white mb-3 tracking-tighter text-center uppercase">
+            {isSubmitted ? "Email Sent" : "Reset Password"}
+          </h2>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className={`group relative h-16 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black uppercase tracking-[0.3em] transition-all duration-300 shadow-2xl shadow-purple-900/40 ${loading
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:scale-105 active:scale-95"
-                } text-[10px]`}
-            >
-              {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Transmitting...
+          {!isSubmitted ? (
+            <form className="flex flex-col gap-5 mt-6" onSubmit={handleSubmit}>
+              <p className="text-center text-gray-600 text-[11px] font-medium leading-relaxed px-4 uppercase tracking-widest">
+                Enter your email address to reset your password.
+              </p>
+
+              <div className="space-y-2">
+                <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black ml-1">Email Address</label>
+                <div className="relative group/input">
+                  <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-trae-green transition-colors w-4.5 h-4.5" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3.5 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white placeholder-gray-700 text-[13px] font-medium"
+                    placeholder="Enter email"
+                    required
+                    disabled={loading}
+                  />
                 </div>
-              ) : (
-                "Send Reset Key"
-              )}
-            </button>
-
-            <div className="mt-8 text-center">
-              <button
-                type="button"
-                onClick={handleBackToLogin}
-                className="text-gray-500 hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors duration-200"
-              >
-                ← Back to Login
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="w-full flex flex-col items-center gap-8">
-            <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mb-4 border border-green-500/20 shadow-2xl shadow-green-500/10">
-              <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-              </svg>
-            </div>
-
-            {message && (
-              <div className="text-green-400 text-center font-bold uppercase tracking-widest text-[10px] leading-relaxed px-4">
-                {message}
               </div>
-            )}
 
-            <div className="text-center text-gray-500 text-[10px] font-black uppercase tracking-widest leading-relaxed">
-              Check spam folder if signal is not detected.
-            </div>
+              {error && (
+                <div className="text-red-500 text-[11px] font-black uppercase tracking-widest text-center bg-red-500/5 p-3.5 rounded-xl border border-red-500/20">
+                  {error}
+                </div>
+              )}
 
-            <div className="flex flex-col gap-4 w-full">
-              <button
-                onClick={() => {
-                  setIsSubmitted(false);
-                  setEmail("");
-                  setMessage("");
-                  setError("");
-                }}
-                className="h-16 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] text-white font-black uppercase tracking-[0.3em] text-[10px] transition-all duration-200"
+              <motion.button
+                type="submit"
+                disabled={loading}
+                className={`w-full h-14 rounded-xl bg-trae-green text-black font-black uppercase tracking-widest text-[11px] shadow-xl shadow-trae-green/5 flex items-center justify-center gap-2 mt-2 transition-all duration-300 ${loading
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-emerald-400"
+                  }`}
+                whileHover={!loading ? { scale: 1.01 } : {}}
+                whileTap={!loading ? { scale: 0.99 } : {}}
               >
-                Re-transmit
-              </button>
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-3.5 h-3.5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
+                    Transmitting...
+                  </div>
+                ) : (
+                  <>
+                    <span>Reset Password</span>
+                    <FiArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </motion.button>
 
-              <button
-                onClick={handleBackToLogin}
-                className="h-16 rounded-2xl border-2 border-white/5 text-gray-400 hover:text-white font-black uppercase tracking-[0.3em] text-[10px] transition-all duration-200"
-              >
-                Target: Login
-              </button>
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={handleBackToLogin}
+                  className="text-gray-600 hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors duration-200"
+                >
+                  ← Back to Login
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="flex flex-col items-center gap-6 mt-6">
+              <div className="w-14 h-14 bg-trae-green/5 rounded-2xl flex items-center justify-center border border-trae-green/10">
+                <FiCheck className="w-7 h-7 text-trae-green" />
+              </div>
+
+              <div className="space-y-4 text-center">
+                <p className="text-trae-green font-black uppercase tracking-widest text-xs px-2">
+                  {message}
+                </p>
+
+                <p className="text-gray-600 text-[10px] uppercase font-bold tracking-widest leading-relaxed">
+                  Monitor your inbox for the recovery packet. Check isolation zones (Spam).
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 w-full mt-4">
+                <button
+                  onClick={() => setIsSubmitted(false)}
+                  className="h-12 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] text-white font-black uppercase tracking-widest text-[9px] transition-all duration-200"
+                >
+                  Re-transmit_Signal
+                </button>
+
+                <button
+                  onClick={handleBackToLogin}
+                  className="h-12 rounded-xl border border-white/10 text-gray-700 hover:text-white font-black uppercase tracking-widest text-[9px] transition-all duration-200"
+                >
+                  Return_To_Login
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </motion.div>
     </div>
   );
 };

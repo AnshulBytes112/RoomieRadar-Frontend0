@@ -1,26 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { FiUser, FiMail, FiPhone, FiEdit2, FiSave, FiX, FiShield, FiCamera } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion";
+import { User, Mail, Phone, Edit2, Save, LogOut, Heart, Zap, Camera, Trash2, Settings, Layout } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { getCurrentUser, updateUserProfile, uploadImage, updateRoommateProfile, createRoommateProfile, deleteRoommateProfile } from "../api";
+import { PixelGrid } from "../components/ui";
 
 const Profile = () => {
-    const { } = useAuth();
+    const { logout } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [showDisableModal, setShowDisableModal] = useState(false);
     const [isProfileDisabled, setIsProfileDisabled] = useState(false);
 
-    // Auto-hide success messages
     useEffect(() => {
         if (success) {
-            const timer = setTimeout(() => {
-                setSuccess("");
-            }, 3000); // Hide after 3 seconds
+            const timer = setTimeout(() => setSuccess(""), 3000);
             return () => clearTimeout(timer);
         }
     }, [success]);
@@ -33,7 +30,6 @@ const Profile = () => {
         role: "",
         avatar: "",
         roommateProfileId: null as number | null,
-        // Roommate profile fields
         age: 18,
         occupation: "",
         lifestyle: [] as string[],
@@ -56,7 +52,7 @@ const Profile = () => {
             if (userData) {
                 const isDisabled = userData.roomateProfile?.occupation === "[DISABLED]";
                 setIsProfileDisabled(isDisabled || false);
-                
+
                 setFormData({
                     name: userData.name || "",
                     email: userData.email || "",
@@ -65,7 +61,6 @@ const Profile = () => {
                     role: userData.role || "",
                     avatar: userData.roomateProfile?.avatar || "",
                     roommateProfileId: userData.roomateProfile?.id || null,
-                    // Roommate profile data
                     age: userData.roomateProfile?.age || 18,
                     occupation: userData.roomateProfile?.occupation || "",
                     lifestyle: userData.roomateProfile?.lifestyle || [],
@@ -78,14 +73,13 @@ const Profile = () => {
                 });
             }
         } catch (err) {
-            console.error("Failed to fetch profile", err);
             setError("Could not load profile data.");
         } finally {
             setLoading(false);
         }
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
@@ -101,128 +95,27 @@ const Profile = () => {
         }));
     };
 
-    const handleDeleteRoommateProfile = async () => {
-        if (!formData.roommateProfileId) return;
-        
-        try {
-            setLoading(true);
-            await deleteRoommateProfile(formData.roommateProfileId);
-            setSuccess("Roommate profile deleted successfully!");
-            setShowDeleteModal(false);
-            // Reset roommate profile fields
-            setFormData(prev => ({
-                ...prev,
-                roommateProfileId: null,
-                age: 18,
-                occupation: "",
-                lifestyle: [],
-                budget: "",
-                location: "",
-                bio: "",
-                interests: [],
-                avatar: "",
-                housingStatus: ""
-            }));
-        } catch (err: any) {
-            setError(err.message || "Failed to delete roommate profile.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleDisableRoommateProfile = async () => {
-        // For now, we'll just hide the profile by clearing key fields
-        // In a real implementation, you'd add an 'active' field to the backend
-        try {
-            setLoading(true);
-            if (formData.roommateProfileId) {
-                await updateRoommateProfile(formData.roommateProfileId, {
-                    name: formData.name,
-                    age: formData.age,
-                    occupation: "[DISABLED]",
-                    lifestyle: [],
-                    budget: "",
-                    location: "",
-                    bio: "Profile temporarily disabled",
-                    interests: [],
-                    avatar: formData.avatar
-                });
-            }
-            setIsProfileDisabled(true);
-            setSuccess("Roommate profile disabled successfully!");
-            setShowDisableModal(false);
-            fetchProfile();
-        } catch (err: any) {
-            setError(err.message || "Failed to disable roommate profile.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleEnableRoommateProfile = async () => {
-        try {
-            setLoading(true);
-            if (formData.roommateProfileId) {
-                await updateRoommateProfile(formData.roommateProfileId, {
-                    name: formData.name,
-                    age: formData.age,
-                    occupation: "Student", // Default occupation when enabling
-                    lifestyle: ["Quiet"], // Default lifestyle
-                    budget: "₹15,000 - ₹20,000", // Default budget
-                    location: "Bangalore", // Default location
-                    bio: "Profile re-enabled - please update your information",
-                    interests: ["Music"], // Default interests
-                    avatar: formData.avatar,
-                    housingStatus: formData.housingStatus
-                });
-            }
-            setIsProfileDisabled(false);
-            setSuccess("Roommate profile enabled successfully!");
-            fetchProfile();
-        } catch (err: any) {
-            setError(err.message || "Failed to enable roommate profile.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
-
         try {
             setUploading(true);
             const file = e.target.files[0];
             const response = await uploadImage(file);
-
-            // Assuming response contains the URL in 'url' field, adapt based on API response
-            // api.ts uploadImage returns json. If Backend returns directly the url string or object
-            // Let's assume response.url or response (if it's the url string).
-            // Checking Backend: UploadController usually returns url. 
-            // If ambiguous, console.log first. But for now assuming standard.
-            // If the backend returns { url: "..." }
             const imageUrl = response.url || response;
-
-            setFormData(prev => ({
-                ...prev,
-                avatar: imageUrl
-            }));
-            setSuccess("Image uploaded! Click Save to apply changes.");
+            setFormData(prev => ({ ...prev, avatar: imageUrl }));
+            setSuccess("Image uploaded!");
         } catch (err) {
-            console.error("Image upload failed", err);
-            setError("Failed to upload image. Please try again.");
+            setError("Failed to upload image.");
         } finally {
             setUploading(false);
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
         setError("");
         setSuccess("");
         setLoading(true);
-
         try {
-            // 1. Update User Basic Info
             await updateUserProfile({
                 name: formData.name,
                 email: formData.email,
@@ -230,7 +123,6 @@ const Profile = () => {
                 username: formData.username
             });
 
-            // 2. Update/Create Roommate Profile
             const roommateData = {
                 name: formData.name,
                 age: formData.age,
@@ -246,17 +138,15 @@ const Profile = () => {
             };
 
             if (formData.roommateProfileId) {
-                // Update existing roommate profile
                 await updateRoommateProfile(formData.roommateProfileId, roommateData);
-            } else if (formData.occupation || formData.bio || formData.interests.length > 0) {
-                // Create new roommate profile only if user has filled some fields
+            } else if (formData.occupation || formData.bio) {
                 const newProfile = await createRoommateProfile(roommateData);
                 setFormData(prev => ({ ...prev, roommateProfileId: newProfile.id }));
             }
 
             setSuccess("Profile updated successfully!");
             setIsEditing(false);
-            fetchProfile(); // Refresh data
+            fetchProfile();
         } catch (err: any) {
             setError(err.message || "Failed to update profile.");
         } finally {
@@ -264,499 +154,327 @@ const Profile = () => {
         }
     };
 
-    const containerVariants = {
-        hidden: { opacity: 0, y: 20 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+    const handleDeleteProfile = async () => {
+        if (!formData.roommateProfileId) return;
+        try {
+            setLoading(true);
+            await deleteRoommateProfile(formData.roommateProfileId);
+            setSuccess("Deleted successfully!");
+            setShowDeleteModal(false);
+            fetchProfile();
+        } catch (err: any) {
+            setError("Delete failed.");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    return (
-        <>
-        <div className="min-h-screen bg-[#0c0c1d] pt-20 pb-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-            {/* Background blobs for depth */}
-            <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-                <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob" />
-                <div className="absolute top-[20%] -right-[10%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob animation-delay-2000" />
+    if (loading && !formData.name) {
+        return (
+            <div className="min-h-screen pt-16 flex flex-col items-center justify-center bg-[#050505]">
+                <div className="w-10 h-10 border-2 border-trae-green border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-[10px] font-mono font-black text-gray-600 tracking-[0.3em] uppercase animate-pulse">Loading Profile...</p>
             </div>
+        );
+    }
 
-            <div className="max-w-5xl mx-auto relative z-10">
+    return (
+        <div className="min-h-screen bg-[#050505] pt-16 sm:pt-28 pb-20 px-6 relative overflow-hidden font-sans text-white">
+            <PixelGrid />
+
+            <div className="max-w-[1000px] mx-auto relative z-10">
                 <motion.div
-                    initial="hidden"
-                    animate="visible"
-                    variants={containerVariants}
-                    className="glass-card rounded-2xl sm:rounded-[2.5rem] shadow-2xl border-white/5"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12"
                 >
-                    {/* Header / Banner */}
-                    <div className="relative h-48 sm:h-64 bg-gray-900">
-                        {/* Abstract Gradient Pattern */}
-                        <div className="absolute inset-0 bg-gradient-premium opacity-80"></div>
-                        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, rgba(255,255,255,0.1) 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
-                        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0c0c1d] to-transparent"></div>
+                    <div>
+                        <div className="text-trae-green font-mono text-[10px] mb-2 uppercase tracking-[0.2em] font-bold">Account Profile</div>
+                        <h1 className="text-4xl md:text-6xl font-black mb-4 tracking-tighter leading-tight">
+                            {isEditing ? 'Edit' : 'My'} <span className="text-trae-green">Profile.</span>
+                        </h1>
+                        <p className="text-sm text-gray-500 font-medium max-w-xl">
+                            {isEditing ? 'Update your personal information and profile details.' : 'Manage your account and roommate profile details.'}
+                        </p>
+                    </div>
 
-                        <div className="absolute -bottom-12 sm:-bottom-16 left-6 sm:left-12 z-50">
-                            <div className="relative group">
-                                <div className="w-28 h-28 sm:w-40 sm:h-40 rounded-2xl sm:rounded-[2.5rem] border-4 border-[#0c0c1d] bg-midnight-light flex items-center justify-center text-3xl sm:text-5xl font-black text-white overflow-hidden shadow-2xl relative">
+                    <div className="flex gap-3">
+                        {!isEditing ? (
+                            <button
+                                onClick={() => setIsEditing(true)}
+                                className="px-6 py-3.5 bg-white/5 border border-white/10 text-white rounded-xl font-black uppercase tracking-widest text-[9px] hover:bg-white hover:text-black transition-all active:scale-95 flex items-center gap-2"
+                            >
+                                <Edit2 className="w-3.5 h-3.5" />
+                                Edit Profile
+                            </button>
+                        ) : (
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => { setIsEditing(false); fetchProfile(); }}
+                                    className="px-6 py-3.5 bg-white/5 border border-white/10 text-gray-600 rounded-xl font-black uppercase tracking-widest text-[9px] hover:text-white transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={loading}
+                                    className="px-6 py-3.5 bg-trae-green text-black rounded-xl font-black uppercase tracking-widest text-[9px] hover:bg-emerald-400 transition-all active:scale-95 flex items-center gap-2 shadow-xl"
+                                >
+                                    <Save className="w-3.5 h-3.5" />
+                                    Save Changes
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </motion.div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Left Sidebar */}
+                    <div className="lg:col-span-4 space-y-6">
+                        <div className="bg-[#0a0a0a] border border-white/5 p-8 rounded-[2rem] shadow-xl relative overflow-hidden group text-center">
+                            <div className="relative inline-block mb-6">
+                                <div className="w-36 h-36 rounded-3xl bg-white/5 border-2 border-white/10 overflow-hidden shadow-xl relative group/avatar mx-auto">
                                     {formData.avatar ? (
-                                        <img src={formData.avatar} alt="Profile" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                        <img src={formData.avatar} alt="Profile" className="w-full h-full object-cover transition-transform duration-700 group-hover/avatar:scale-110" />
                                     ) : (
-                                        <span className="uppercase text-gradient">{formData.name?.charAt(0) || "U"}</span>
+                                        <div className="w-full h-full flex items-center justify-center text-5xl font-black text-gray-800 uppercase">{formData.name?.charAt(0)}</div>
                                     )}
 
-                                    {/* Overlay for upload hint */}
                                     {isEditing && (
-                                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                                            <FiCamera className="text-white w-10 h-10" />
+                                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer">
+                                            <Camera className="w-8 h-8 text-trae-green" />
+                                            <input type="file" onChange={handleImageUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
                                         </div>
                                     )}
                                 </div>
-                                {isEditing && (
-                                    <>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleImageUpload}
-                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-[2.5rem] z-10"
-                                            title="Change Profile Picture"
-                                        />
-                                        <div className="absolute bottom-2 right-2 p-2 sm:p-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl sm:rounded-2xl hover:scale-110 transition-all shadow-xl shadow-blue-900/40">
-                                            {uploading ? (
-                                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                            ) : (
-                                                <FiCamera className="w-5 h-5" />
-                                            )}
-                                        </div>
-                                    </>
+
+                                {uploading && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-3xl">
+                                        <div className="w-8 h-8 border-2 border-trae-green border-t-transparent rounded-full animate-spin" />
+                                    </div>
                                 )}
+                            </div>
+
+                            <h3 className="text-2xl font-black text-white tracking-tighter mb-1 uppercase truncate">{formData.name}</h3>
+                            <p className="text-trae-green font-mono text-[9px] font-bold uppercase tracking-[0.2em] mb-6">@{formData.username}</p>
+
+                            <div className="flex flex-wrap justify-center gap-2 mb-8">
+                                <span className="px-2.5 py-1 bg-white/5 border border-white/5 rounded-lg text-[8px] font-black uppercase tracking-widest text-blue-400">{formData.role}</span>
+                                {formData.roommateProfileId && !isProfileDisabled && (
+                                    <span className="px-2.5 py-1 bg-trae-green/10 border border-trae-green/20 rounded-lg text-[8px] font-black uppercase tracking-widest text-trae-green">Verified Profile</span>
+                                )}
+                            </div>
+
+                            <div className="space-y-2.5">
+                                <button className="w-full h-12 bg-white/5 text-gray-600 rounded-xl font-black uppercase tracking-widest text-[8px] flex items-center justify-center gap-2 hover:bg-white/10 hover:text-white transition-all">
+                                    <Settings className="w-3.5 h-3.5" /> Security
+                                </button>
+                                <button onClick={() => logout()} className="w-full h-12 bg-red-500/10 text-red-500 rounded-xl font-black uppercase tracking-widest text-[8px] flex items-center justify-center gap-2 hover:bg-red-500 hover:text-white transition-all">
+                                    <LogOut className="w-3.5 h-3.5" /> Log Out
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="p-6 bg-white/[0.02] border border-white/5 rounded-[2rem] shadow-lg">
+                            <h4 className="text-[9px] font-mono text-gray-600 font-black uppercase tracking-[0.3em] mb-5">Account Activity</h4>
+                            <div className="space-y-3.5">
+                                {[
+                                    { label: 'Connections', val: '24 Nodes', icon: Layout },
+                                    { label: 'Favorites', val: '12 Items', icon: Heart },
+                                    { label: 'Last Active', val: '2m ago', icon: Zap }
+                                ].map((item, i) => (
+                                    <div key={i} className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2.5">
+                                            <item.icon className="w-3.5 h-3.5 text-trae-green opacity-40" />
+                                            <span className="text-[9px] font-bold text-gray-700 uppercase tracking-widest">{item.label}</span>
+                                        </div>
+                                        <span className="text-[9px] font-black text-white uppercase tracking-widest">{item.val}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
 
-                    <div className="pt-20 sm:pt-24 pb-8 sm:pb-12 px-5 sm:px-12">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6 mb-8 sm:mb-12">
-                            <div>
-                                <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight mb-2 uppercase">{formData.name}</h1>
-                                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                                    <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px] sm:text-xs">@{formData.username}</span>
-                                    <div className="h-1 w-1 rounded-full bg-gray-600" />
-                                    <span className="px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest border border-blue-500/20">
-                                        {formData.role}
-                                    </span>
-                                </div>
+                    {/* Main Content */}
+                    <div className="lg:col-span-8 space-y-8">
+                        {/* Section 1: Core Metadata */}
+                        <div className="bg-[#0a0a0a] border border-white/5 p-8 md:p-10 rounded-[2.5rem] shadow-xl">
+                            <h4 className="text-[9px] font-mono text-gray-600 font-black uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.3)]" />
+                                Account Information
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {[
+                                    { label: 'Full Name', name: 'name', val: formData.name, icon: User },
+                                    { label: 'Email Address', name: 'email', val: formData.email, icon: Mail },
+                                    { label: 'Phone Number', name: 'phone', val: formData.phone, icon: Phone }
+                                ].map((field) => (
+                                    <div key={field.name} className="space-y-2">
+                                        <label className="text-[9px] font-mono text-gray-700 font-black uppercase tracking-widest ml-1">{field.label}</label>
+                                        <div className={`relative flex items-center ${!isEditing && 'opacity-60'}`}>
+                                            <field.icon className="absolute left-4.5 w-4.5 h-4.5 text-trae-green opacity-30" />
+                                            <input
+                                                type="text"
+                                                name={field.name}
+                                                value={field.val}
+                                                onChange={handleInputChange}
+                                                disabled={!isEditing}
+                                                className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-trae-green/50 outline-none transition-all font-bold text-white tracking-widest text-[13px]"
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                            {!isEditing ? (
-                                <button
-                                    onClick={() => setIsEditing(true)}
-                                    className="group flex items-center gap-3 px-5 sm:px-8 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl text-white hover:bg-white/10 transition-all shadow-xl font-black uppercase tracking-widest text-[9px] sm:text-[10px]"
-                                >
-                                    <FiEdit2 className="w-4 h-4 text-purple-400 group-hover:rotate-12 transition-transform" />
-                                    Edit Profile
-                                </button>
-                            ) : (
-                                <div className="flex flex-wrap gap-3 sm:gap-4">
-                                    <button
-                                        onClick={() => {
-                                            setIsEditing(false);
-                                            fetchProfile(); // Reset changes
-                                        }}
-                                        className="flex items-center gap-3 px-5 sm:px-8 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl text-gray-400 hover:text-white transition-all font-black uppercase tracking-widest text-[9px] sm:text-[10px]"
-                                    >
-                                        <FiX className="w-4 h-4" />
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={handleSubmit}
-                                        disabled={loading}
-                                        className="flex items-center gap-3 px-5 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl sm:rounded-2xl hover:from-blue-500 hover:to-purple-500 transition-all shadow-xl shadow-blue-900/40 font-black uppercase tracking-widest text-[9px] sm:text-[10px] disabled:opacity-50"
-                                    >
-                                        <FiSave className="w-4 h-4" />
-                                        {loading ? "Syncing..." : "Save Changes"}
-                                    </button>
-                                </div>
-                            )}
                         </div>
 
-                        {error && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="mb-8 p-5 bg-red-500/10 text-red-400 rounded-2xl border border-red-500/20 text-sm font-medium"
-                            >
-                                {error}
-                            </motion.div>
-                        )}
+                        {/* Section 2: Persona Module */}
+                        <div className="bg-[#0a0a0a] border border-white/5 p-8 md:p-10 rounded-[2.5rem] shadow-xl relative">
+                            {formData.roommateProfileId && (
+                                <button onClick={() => setShowDeleteModal(true)} className="absolute top-8 right-8 w-10 h-10 bg-red-500/5 text-red-500/40 rounded-xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all">
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            )}
 
-                        {success && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="mb-8 p-5 bg-green-500/10 text-green-400 rounded-2xl border border-green-500/20 text-sm font-medium"
-                            >
-                                {success}
-                            </motion.div>
-                        )}
+                            <h4 className="text-[9px] font-mono text-gray-600 font-black uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
+                                <div className="w-1.5 h-1.5 rounded-full bg-trae-green shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
+                                Roommate Profile
+                            </h4>
 
-                        {/* Profile Details Form */}
-                        <form className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
-                            {/* Left Column */}
-                            <div className="space-y-6 sm:space-y-8">
-                                <h3 className="text-xs sm:text-sm font-black text-gray-500 uppercase tracking-[0.2em] border-b border-white/10 pb-3 sm:pb-4 flex items-center gap-3">
-                                    <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-                                    Identity Details
-                                </h3>
-
+                            <div className="grid grid-cols-2 md:grid-cols-2 gap-6 mb-8">
                                 <div className="space-y-2">
-                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Full Name</label>
-                                    <div className="relative group/input">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <FiUser className="text-gray-500 group-focus-within/input:text-blue-400 transition-colors" />
-                                        </div>
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleInputChange}
-                                            disabled={!isEditing}
-                                            className={`pl-11 w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-blue-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 transition-all outline-none text-white font-medium text-sm`}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Email Address</label>
-                                    <div className="relative group/input">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <FiMail className="text-gray-500 group-focus-within/input:text-purple-400 transition-colors" />
-                                        </div>
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleInputChange}
-                                            disabled={!isEditing}
-                                            className={`pl-11 w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-purple-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 transition-all outline-none text-white font-medium text-sm`}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Phone Number</label>
-                                    <div className="relative group/input">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <FiPhone className="text-gray-500 group-focus-within/input:text-pink-400 transition-colors" />
-                                        </div>
-                                        <input
-                                            type="text"
-                                            name="phone"
-                                            value={formData.phone}
-                                            onChange={handleInputChange}
-                                            disabled={!isEditing}
-                                            className={`pl-11 w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-pink-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 transition-all outline-none text-white font-medium text-sm`}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Right Column - Account Info / System Info */}
-                            <div className="space-y-6 sm:space-y-8">
-                                <h3 className="text-xs sm:text-sm font-black text-gray-500 uppercase tracking-[0.2em] border-b border-white/10 pb-3 sm:pb-4 flex items-center gap-3">
-                                    <div className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
-                                    Access Control
-                                </h3>
-
-                                <div className="space-y-2">
-                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Unique ID (Username)</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <FiShield className="text-gray-600" />
-                                        </div>
-                                        <input
-                                            type="text"
-                                            value={formData.username}
-                                            disabled
-                                            className="pl-11 w-full rounded-xl sm:rounded-2xl border border-transparent bg-white/[0.01] text-gray-600 py-3 sm:py-4 cursor-not-allowed font-black text-sm"
-                                            title="Username cannot be changed"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Global Role</label>
-                                    <div className="w-full rounded-xl sm:rounded-2xl border border-transparent bg-white/[0.01] text-gray-600 py-3 sm:py-4 px-4 sm:px-6 cursor-not-allowed font-black uppercase tracking-widest text-xs sm:text-sm">
-                                        {formData.role}
-                                    </div>
-                                </div>
-
-                                {isEditing && (
-                                    <div className="pt-4 sm:pt-6">
-                                        <button type="button" className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-8">
-                                            Update Security Credentials
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Roommate Profile Section */}
-                            <div className="space-y-6 sm:space-y-8">
-                                <h3 className="text-xs sm:text-sm font-black text-gray-500 uppercase tracking-[0.2em] border-b border-white/10 pb-3 sm:pb-4 flex flex-wrap items-center justify-between gap-2">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-2 h-2 rounded-full ${isProfileDisabled ? 'bg-red-500' : 'bg-green-500'} shadow-[0_0_10px_rgba(34,197,94,0.5)]`}></div>
-                                        Roommate Profile
-                                        {isProfileDisabled && (
-                                            <span className="px-2 py-1 bg-red-500/10 text-red-400 text-[8px] font-black uppercase tracking-widest rounded-full border border-red-500/20">
-                                                Disabled
-                                            </span>
-                                        )}
-                                        {(!formData.roommateProfileId || (!formData.occupation && !formData.bio && formData.interests.length === 0)) && !isProfileDisabled && (
-                                            <span className="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-[8px] font-black uppercase tracking-widest rounded-full border border-yellow-500/20">
-                                                Not Created
-                                            </span>
-                                        )}
-                                    </div>
-                                    {formData.roommateProfileId && (
-                                        <div className="flex gap-2">
-                                            {isProfileDisabled ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={handleEnableRoommateProfile}
-                                                    className="px-3 py-1 bg-green-500/10 text-green-400 text-[8px] font-black uppercase tracking-widest rounded-lg border border-green-500/20 hover:bg-green-500/20 transition-all"
-                                                >
-                                                    Enable
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowDisableModal(true)}
-                                                    className="px-3 py-1 bg-yellow-500/10 text-yellow-400 text-[8px] font-black uppercase tracking-widest rounded-lg border border-yellow-500/20 hover:bg-yellow-500/20 transition-all"
-                                                >
-                                                    Disable
-                                                </button>
-                                            )}
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowDeleteModal(true)}
-                                                className="px-3 py-1 bg-red-500/10 text-red-400 text-[8px] font-black uppercase tracking-widest rounded-lg border border-red-500/20 hover:bg-red-500/20 transition-all"
-                                            >
-                                                Delete
-                                            </button>
-                                        </div>
-                                    )}
-                                </h3>
-
-                                <div className="space-y-2">
-                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Age</label>
+                                    <label className="text-[9px] font-mono text-gray-700 font-black uppercase tracking-widest ml-1">Age</label>
                                     <input
                                         type="number"
                                         name="age"
                                         value={formData.age}
                                         onChange={handleInputChange}
                                         disabled={!isEditing}
-                                        min="18"
-                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm`}
+                                        className="w-full px-4.5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-trae-green/50 outline-none transition-all font-black text-white text-[13px]"
                                     />
                                 </div>
-
                                 <div className="space-y-2">
-                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Gender</label>
-                                    <select
-                                        name="gender"
-                                        value={formData.gender}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
-                                        disabled={!isEditing}
-                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm appearance-none cursor-pointer`}
-                                        style={{
-                                            backgroundImage: isEditing ? `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")` : 'none',
-                                            backgroundPosition: 'right 12px center',
-                                            backgroundRepeat: 'no-repeat',
-                                            backgroundSize: '20px'
-                                        }}
-                                    >
-                                        <option value="" className="bg-midnight text-gray-400">Select Gender</option>
-                                        <option value="male" className="bg-midnight text-white">Male</option>
-                                        <option value="female" className="bg-midnight text-white">Female</option>
-                                        <option value="other" className="bg-midnight text-white">Other</option>
-                                        <option value="prefer-not-to-say" className="bg-midnight text-white">Prefer not to say</option>
-                                    </select>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Housing Status</label>
+                                    <label className="text-[9px] font-mono text-gray-700 font-black uppercase tracking-widest ml-1">Current Status</label>
                                     <select
                                         name="housingStatus"
                                         value={formData.housingStatus}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, housingStatus: e.target.value }))}
+                                        onChange={handleInputChange}
                                         disabled={!isEditing}
-                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm appearance-none cursor-pointer`}
-                                        style={{
-                                            backgroundImage: isEditing ? `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")` : 'none',
-                                            backgroundPosition: 'right 12px center',
-                                            backgroundRepeat: 'no-repeat',
-                                            backgroundSize: '20px'
-                                        }}
+                                        className="w-full px-4.5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-trae-green/50 outline-none transition-all font-bold text-white appearance-none text-[13px]"
                                     >
-                                        <option value="" className="bg-midnight text-gray-400">Select Status</option>
-                                        <option value="has-room" className="bg-midnight text-white">Has Room</option>
-                                        <option value="seeking-room" className="bg-midnight text-white">Seeking Room</option>
-                                        <option value="has-roommate" className="bg-midnight text-white">Has Roommate</option>
+                                        <option value="" className="bg-[#0a0a0a]">Select...</option>
+                                        <option value="has-room" className="bg-[#0a0a0a]">Has Space</option>
+                                        <option value="seeking-room" className="bg-[#0a0a0a]">Seeking Space</option>
                                     </select>
                                 </div>
-
                                 <div className="space-y-2">
-                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Occupation</label>
+                                    <label className="text-[9px] font-mono text-gray-700 font-black uppercase tracking-widest ml-1">Occupation</label>
                                     <input
                                         type="text"
                                         name="occupation"
                                         value={formData.occupation}
                                         onChange={handleInputChange}
                                         disabled={!isEditing}
-                                        placeholder="e.g. Software Developer, Student"
-                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm`}
+                                        className="w-full px-4.5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-trae-green/50 outline-none transition-all font-bold text-white tracking-widest uppercase text-[12px]"
                                     />
                                 </div>
-
                                 <div className="space-y-2">
-                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Location</label>
+                                    <label className="text-[9px] font-mono text-gray-700 font-black uppercase tracking-widest ml-1">Preferred Location</label>
                                     <input
                                         type="text"
                                         name="location"
                                         value={formData.location}
                                         onChange={handleInputChange}
                                         disabled={!isEditing}
-                                        placeholder="e.g. Koramangala, Bangalore"
-                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm`}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Budget Range</label>
-                                    <input
-                                        type="text"
-                                        name="budget"
-                                        value={formData.budget}
-                                        onChange={handleInputChange}
-                                        disabled={!isEditing}
-                                        placeholder="e.g. ₹15,000 - ₹20,000"
-                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm`}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Lifestyle (comma-separated)</label>
-                                    <input
-                                        type="text"
-                                        value={formData.lifestyle.join(', ')}
-                                        onChange={(e) => handleArrayInputChange('lifestyle', e.target.value)}
-                                        disabled={!isEditing}
-                                        placeholder="e.g. Quiet, Social, Active"
-                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm`}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Interests (comma-separated)</label>
-                                    <input
-                                        type="text"
-                                        value={formData.interests.join(', ')}
-                                        onChange={(e) => handleArrayInputChange('interests', e.target.value)}
-                                        disabled={!isEditing}
-                                        placeholder="e.g. Music, Travel, Reading"
-                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm`}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[9px] sm:text-[10px] font-black text-gray-400 ml-1 uppercase tracking-widest">Bio</label>
-                                    <textarea
-                                        name="bio"
-                                        value={formData.bio}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                                        disabled={!isEditing}
-                                        placeholder="Tell potential roommates about yourself..."
-                                        rows={4}
-                                        className={`w-full rounded-xl sm:rounded-2xl border ${isEditing ? 'border-white/10 bg-white/5 focus:ring-2 focus:ring-green-500/50' : 'border-transparent bg-white/[0.02]'} py-3 sm:py-4 px-4 sm:px-6 transition-all outline-none text-white font-medium text-sm resize-none`}
+                                        className="w-full px-4.5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-trae-green/50 outline-none transition-all font-bold text-white tracking-widest uppercase text-[12px]"
                                     />
                                 </div>
                             </div>
-                        </form>
+
+                            <div className="space-y-2 mb-8">
+                                <label className="text-[9px] font-mono text-gray-700 font-black uppercase tracking-widest ml-1">About Me</label>
+                                <textarea
+                                    name="bio"
+                                    value={formData.bio}
+                                    onChange={handleInputChange}
+                                    disabled={!isEditing}
+                                    rows={4}
+                                    className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl focus:border-trae-green/50 outline-none transition-all font-medium text-gray-300 leading-relaxed resize-none text-[13px] italic"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[9px] font-mono text-gray-700 font-black uppercase tracking-widest ml-1">Lifestyle</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Quiet, Social..."
+                                        value={formData.lifestyle.join(', ')}
+                                        onChange={(e) => handleArrayInputChange('lifestyle', e.target.value)}
+                                        disabled={!isEditing}
+                                        className="w-full px-4.5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-trae-green/50 outline-none transition-all font-bold text-white text-[12px]"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[9px] font-mono text-gray-700 font-black uppercase tracking-widest ml-1">Interests</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Tech, Art..."
+                                        value={formData.interests.join(', ')}
+                                        onChange={(e) => handleArrayInputChange('interests', e.target.value)}
+                                        disabled={!isEditing}
+                                        className="w-full px-4.5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-trae-green/50 outline-none transition-all font-bold text-white text-[12px]"
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </motion.div>
+                </div>
             </div>
-        </div>
 
-        {/* Delete Confirmation Modal */}
-        {showDeleteModal && (
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="fixed inset-0 bg-midnight/95 backdrop-blur-2xl flex items-center justify-center p-4 z-[100]"
-                onClick={() => setShowDeleteModal(false)}
-            >
-                <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="glass-card rounded-2xl p-8 max-w-md w-full border-white/10"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <h3 className="text-2xl font-black text-white mb-4">Delete Roommate Profile</h3>
-                    <p className="text-gray-400 mb-6">
-                        Are you sure you want to delete your roommate profile? This action cannot be undone and you'll need to create a new profile if you want to be visible to others.
-                    </p>
-                    <div className="flex gap-4">
-                        <button
+            <AnimatePresence>
+                {(error || success) && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 30 }}
+                        className={`fixed bottom-8 right-8 px-6 py-3 rounded-xl border font-black uppercase tracking-widest text-[9px] z-[200] shadow-2xl ${error ? 'bg-red-500/10 border-red-500/30 text-red-500' : 'bg-trae-green/10 border-trae-green/30 text-trae-green'}`}
+                    >
+                        {error || success}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {showDeleteModal && (
+                    <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-[#050505]/95 backdrop-blur-xl"
                             onClick={() => setShowDeleteModal(false)}
-                            className="flex-1 py-3 glass-card text-gray-400 rounded-xl border-white/10 hover:text-white transition-all"
+                        />
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            className="bg-[#0a0a0a] border border-white/10 p-10 rounded-[2.5rem] max-w-sm w-full shadow-2xl relative text-center"
+                            onClick={(e) => e.stopPropagation()}
                         >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleDeleteRoommateProfile}
-                            disabled={loading}
-                            className="flex-1 py-3 bg-red-600 text-white rounded-xl font-black uppercase tracking-widest text-sm hover:bg-red-500 transition-all disabled:opacity-50"
-                        >
-                            {loading ? "Deleting..." : "Delete Profile"}
-                        </button>
+                            <Trash2 className="w-12 h-12 text-red-500 mx-auto mb-6" />
+                            <h3 className="text-2xl font-black text-white mb-3 uppercase tracking-tighter">Delete Profile?</h3>
+                            <p className="text-[13px] text-gray-600 font-medium mb-10 leading-relaxed">This action will permanently delete your roommate profile and remove you from searches.</p>
+                            <div className="flex gap-3">
+                                <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-4 bg-white/5 text-gray-700 rounded-xl font-black uppercase tracking-widest text-[9px] hover:text-white transition-all">Cancel</button>
+                                <button onClick={handleDeleteProfile} className="flex-1 py-4 bg-red-500 text-white rounded-xl font-black uppercase tracking-widest text-[9px] hover:bg-red-600 transition-all">Delete Profile</button>
+                            </div>
+                        </motion.div>
                     </div>
-                </motion.div>
-            </motion.div>
-        )}
-
-        {/* Disable Confirmation Modal */}
-        {showDisableModal && (
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="fixed inset-0 bg-midnight/95 backdrop-blur-2xl flex items-center justify-center p-4 z-[100]"
-                onClick={() => setShowDisableModal(false)}
-            >
-                <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="glass-card rounded-2xl p-8 max-w-md w-full border-white/10"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <h3 className="text-2xl font-black text-white mb-4">Disable Roommate Profile</h3>
-                    <p className="text-gray-400 mb-6">
-                        Are you sure you want to disable your roommate profile? This will temporarily hide your profile from other users. You can enable it again later.
-                    </p>
-                    <div className="flex gap-4">
-                        <button
-                            onClick={() => setShowDisableModal(false)}
-                            className="flex-1 py-3 glass-card text-gray-400 rounded-xl border-white/10 hover:text-white transition-all"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleDisableRoommateProfile}
-                            disabled={loading}
-                            className="flex-1 py-3 bg-yellow-600 text-white rounded-xl font-black uppercase tracking-widest text-sm hover:bg-yellow-500 transition-all disabled:opacity-50"
-                        >
-                            {loading ? "Disabling..." : "Disable Profile"}
-                        </button>
-                    </div>
-                </motion.div>
-            </motion.div>
-        )}
-        </>
+                )}
+            </AnimatePresence>
+        </div>
     );
-
 };
 
 export default Profile;

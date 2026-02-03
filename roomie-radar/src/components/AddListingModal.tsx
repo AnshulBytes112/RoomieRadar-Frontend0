@@ -1,6 +1,7 @@
-
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { X, Upload, Plus, Trash2, MapPin, DollarSign, Home, Key, Shield, Image as ImageIcon } from 'lucide-react';
+import { createPortal } from "react-dom";
 
 export type NewListingInput = {
   title: string;
@@ -22,15 +23,17 @@ export type NewListingInput = {
   furnished?: boolean;
   contactNumber?: string;
   contactEmail?: string;
-  id?: number; // Added for edit mode
+  houseRules?: string;
+  houseDetails?: string;
+  id?: number;
 };
 
 type AddListingModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (listing: NewListingInput) => Promise<void>;
-  initialData?: NewListingInput | null; // Added prop
-  isEditing?: boolean; // Added prop
+  initialData?: NewListingInput | null;
+  isEditing?: boolean;
 };
 
 const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = false }: AddListingModalProps) => {
@@ -55,22 +58,20 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
   const [furnished, setFurnished] = useState<boolean>(false);
   const [contactNumber, setContactNumber] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const [houseRules, setHouseRules] = useState("");
+  const [houseDetails, setHouseDetails] = useState("");
 
   useEffect(() => {
     if (isOpen) {
       if (initialData && isEditing) {
-        // Populate form
         setTitle(initialData.title || "");
         setLocation(initialData.location || "");
         setPrice(initialData.price?.toString() || "");
         setArea(initialData.area || "");
         setBedrooms(initialData.bedrooms?.toString() || "1");
         setBathrooms(initialData.bathrooms?.toString() || "1");
-
-        // Handle Images
         setUploadedImages(initialData.images || []);
-        setImageUrls(""); // Clear URL input as images are in uploaded list now for display
-
+        setImageUrls("");
         setTags(initialData.tags?.join(", ") || "");
         setType(initialData.type || "Private");
         setDescription(initialData.description || "");
@@ -83,6 +84,8 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
         setFurnished(initialData.furnished || false);
         setContactNumber(initialData.contactNumber || "");
         setContactEmail(initialData.contactEmail || "");
+        setHouseRules(initialData.houseRules || "");
+        setHouseDetails(initialData.houseDetails || "");
       } else {
         resetForm();
       }
@@ -95,7 +98,6 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
-    // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';
     return () => {
       window.removeEventListener("keydown", onKey);
@@ -113,27 +115,16 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
             const reader = new FileReader();
             reader.onload = (ev) => {
               const result = ev.target?.result;
-              if (typeof result === "string") {
-                resolve(result);
-              } else {
-                reject(new Error(`Failed to read file: ${file.name}`));
-              }
+              if (typeof result === "string") resolve(result);
+              else reject(new Error(`Failed to read file: ${file.name}`));
             };
-            reader.onerror = () => {
-              reject(new Error(`Error reading file: ${file.name}`));
-            };
+            reader.onerror = () => reject(new Error(`Error reading file: ${file.name}`));
             reader.readAsDataURL(file);
           })
       );
-
       Promise.all(imagePromises)
-        .then((newImages: string[]) => {
-          setUploadedImages((prev) => [...prev, ...newImages]);
-        })
-        .catch((error) => {
-          console.error("Image upload error:", error);
-          alert(`Failed to upload one or more images: ${error.message}`);
-        });
+        .then((newImages: string[]) => setUploadedImages((prev) => [...prev, ...newImages]))
+        .catch((error) => alert(`Upload error: ${error.message}`));
     }
   };
 
@@ -141,22 +132,17 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
     setUploadedImages((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  const resetForm = () => {
+    setTitle(""); setLocation(""); setPrice(""); setArea(""); setBedrooms("1"); setBathrooms("1");
+    setImageUrls(""); setTags(""); setType("Private"); setUploadedImages([]); setDescription("");
+    setAmenities(""); setAvailableFrom(""); setDeposit(""); setMaintenance(""); setParking(false);
+    setPetFriendly(false); setFurnished(false); setContactNumber(""); setContactEmail("");
+    setHouseRules(""); setHouseDetails("");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
-    // Validation for contact fields
-    if (contactNumber.trim() && !/^\+?\d{10,15}$/.test(contactNumber.trim())) {
-      alert("Please enter a valid phone number (10-15 digits, optional '+' prefix)");
-      setIsLoading(false);
-      return;
-    }
-    if (contactEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail.trim())) {
-      alert("Please enter a valid email address");
-      setIsLoading(false);
-      return;
-    }
-
     try {
       const priceNum = parseInt(price, 10) || 0;
       const imagesFromUrls = imageUrls.split(",").map((s) => s.trim()).filter(Boolean);
@@ -165,23 +151,17 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
       const allImages = [...uploadedImages, ...imagesFromUrls];
 
       const listingData: NewListingInput = {
-        title,
-        location,
-        price: priceNum,
+        title, location, price: priceNum,
         bedrooms: parseInt(bedrooms, 10) || 1,
         bathrooms: parseInt(bathrooms, 10) || 1,
-        images: allImages.length
-          ? allImages
-          : ["https://images.unsplash.com/photo-1505691938895-1758d7feb511?q=80&w=1470&auto=format&fit=crop"],
-        tags: tagList,
-        type,
-        parking,
-        petFriendly,
-        furnished,
+        images: allImages.length ? allImages : ["https://images.unsplash.com/photo-1505691938895-1758d7feb511?q=80&w=1470&auto=format&fit=crop"],
+        tags: tagList, type, parking, petFriendly, furnished,
         deposit: deposit.trim() || undefined,
         maintenance: maintenance.trim() || undefined,
         contactNumber: contactNumber.trim() || undefined,
         contactEmail: contactEmail.trim() || undefined,
+        houseRules: houseRules.trim() || undefined,
+        houseDetails: houseDetails.trim() || undefined,
       };
 
       if (area.trim()) listingData.area = area.trim();
@@ -189,401 +169,203 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
       if (amenitiesList.length > 0) listingData.amenities = amenitiesList;
       if (availableFrom) listingData.availableFrom = availableFrom;
 
-      console.log("=== FORM SUBMISSION DEBUG ===");
-      console.log("Raw form data:", {
-        title,
-        location,
-        price,
-        bedrooms,
-        bathrooms,
-        area,
-        description,
-        amenities,
-        availableFrom,
-        deposit,
-        maintenance,
-        parking,
-        petFriendly,
-        furnished,
-        contactNumber,
-        contactEmail,
-        images: allImages,
-        tags: tagList,
-        type,
-      });
-      console.log("Processed listing data:", JSON.stringify(listingData, null, 2));
       await onSubmit(listingData);
-      console.log("Listing submitted successfully");
-
       resetForm();
       onClose();
     } catch (error) {
-      console.error("Submission error:", error);
-      alert(`Failed to create listing: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      alert(`Submission error: ${error instanceof Error ? error.message : 'Unknown'}`);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setTitle("");
-    setLocation("");
-    setPrice("");
-    setArea("");
-    setBedrooms("1");
-    setBathrooms("1");
-    setImageUrls("");
-    setTags("");
-    setType("Private");
-    setUploadedImages([]);
-    setDescription("");
-    setAmenities("");
-    setAvailableFrom("");
-    setDeposit("");
-    setMaintenance("");
-    setParking(false);
-    setPetFriendly(false);
-    setFurnished(false);
-    setContactNumber("");
-    setContactEmail("");
-  };
+  const inputClasses = "w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-trae-green/50 outline-none transition-all font-bold text-white tracking-widest text-[13px] placeholder:text-gray-700";
+  const labelClasses = "flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-gray-500 mb-1.5 ml-1";
 
-  return (
+  if (!isOpen) return null;
+
+  return createPortal(
     <AnimatePresence>
-      {isOpen && (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pt-20 sm:p-6 overflow-hidden">
         <motion.div
-          className="fixed inset-0 z-[120] bg-black/60 backdrop-blur"
+          className="absolute inset-0 bg-[#050505]/80 backdrop-blur-xl"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
+        />
+        <motion.div
+          className="w-full max-w-4xl bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
+          initial={{ y: 50, opacity: 0, scale: 0.98 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          exit={{ y: 50, opacity: 0, scale: 0.98 }}
         >
-          <div
-            className="absolute inset-0 flex items-center justify-center p-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <motion.div
-              className="w-full max-w-4xl glass-card rounded-2xl shadow-2xl border-white/10 p-6 max-h-[90vh] overflow-y-auto bg-[#0c0c1d]"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 20, opacity: 0 }}
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-white">{isEditing ? "Edit Listing" : "Add New Listing"}</h3>
-                <button
-                  onClick={onClose}
-                  className="text-gray-400 hover:text-white text-2xl transition-colors"
-                  aria-label="Close"
-                >
-                  ✕
-                </button>
-              </div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-trae-green/50 via-emerald-400 to-blue-500/50 opacity-40" />
 
-              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    Title <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500"
-                    placeholder="Spacious 2BHK in Downtown"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    Location <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500"
-                    placeholder="Area, City"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    Price (₹/month) <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500"
-                    placeholder="25000"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    Bedrooms <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={bedrooms}
-                    onChange={(e) => setBedrooms(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    Bathrooms <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={bathrooms}
-                    onChange={(e) => setBathrooms(e.target.value)}
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    Area
-                  </label>
-                  <input
-                    value={area}
-                    onChange={(e) => setArea(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white placeholder-gray-500"
-                    placeholder="1200 sq ft"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    Type <span className="text-red-400">*</span>
-                  </label>
-                  <select
-                    value={type}
-                    onChange={(e) =>
-                      setType(e.target.value as "Private" | "Shared" | "Studio" | "Hostel")
-                    }
-                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-white"
-                  >
-                    <option value="Private" className="bg-[#0c0c1d]">Private Room</option>
-                    <option value="Shared" className="bg-[#0c0c1d]">Shared Room</option>
-                    <option value="Studio" className="bg-[#0c0c1d]">Studio Apartment</option>
-                    <option value="Hostel" className="bg-[#0c0c1d]">Hostel</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    Security Deposit (₹)
-                  </label>
-                  <input
-                    type="text"
-                    value={deposit}
-                    onChange={(e) => setDeposit(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    placeholder="50000"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Maintenance (₹/month)
-                  </label>
-                  <input
-                    type="text"
-                    value={maintenance}
-                    onChange={(e) => setMaintenance(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    placeholder="2000"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Available From
-                  </label>
-                  <input
-                    type="date"
-                    value={availableFrom}
-                    onChange={(e) => setAvailableFrom(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Description
-                  </label>
-                  <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    rows={3}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    placeholder="Describe your room, neighborhood, and any special features..."
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Property Features
-                  </label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <label className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={parking}
-                        onChange={(e) => setParking(e.target.checked)}
-                        className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500"
-                      />
-                      <span className="text-sm font-medium text-gray-700">Parking Available</span>
-                    </label>
-                    <label className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={petFriendly}
-                        onChange={(e) => setPetFriendly(e.target.checked)}
-                        className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500"
-                      />
-                      <span className="text-sm font-medium text-gray-700">Pet Friendly</span>
-                    </label>
-                    <label className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={furnished}
-                        onChange={(e) => setFurnished(e.target.checked)}
-                        className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500"
-                      />
-                      <span className="text-sm font-medium text-gray-700">Furnished</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Property Images
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageUpload}
-                    className="mb-3 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                  />
-                  {uploadedImages.length > 0 && (
-                    <div className="flex flex-wrap gap-3 mb-3">
-                      {uploadedImages.map((img, idx) => (
-                        <div key={idx} className="relative group">
-                          <img
-                            src={img}
-                            alt={`upload-${idx}`}
-                            className="w-24 h-24 object-cover rounded-lg border border-gray-200 shadow-sm"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveUploadedImage(idx)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Or paste Image URLs (comma separated)
-                  </label>
-                  <textarea
-                    value={imageUrls}
-                    onChange={(e) => setImageUrls(e.target.value)}
-                    rows={2}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Tags (comma separated)
-                  </label>
-                  <input
-                    value={tags}
-                    onChange={(e) => setTags(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    placeholder="Balcony, Near Metro, Quiet Area"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Additional Amenities (comma separated)
-                  </label>
-                  <input
-                    value={amenities}
-                    onChange={(e) => setAmenities(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    placeholder="AC, WiFi, Kitchen, Washing Machine"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Contact Number (Optional)
-                  </label>
-                  <input
-                    type="tel"
-                    value={contactNumber}
-                    onChange={(e) => setContactNumber(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    placeholder="+91 123 456 7890"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Contact Email (Optional)
-                  </label>
-                  <input
-                    type="email"
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    placeholder="example@domain.com"
-                  />
-                </div>
-
-                <div className="md:col-span-2 flex justify-end gap-4 pt-6 border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      resetForm();
-                      onClose();
-                    }}
-                    className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className={`px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-semibold hover:from-indigo-600 hover:to-pink-600 transition-all duration-200 ${isLoading ? "opacity-50 cursor-not-allowed" : ""
-                      }`}
-                  >
-                    {isLoading ? (isEditing ? "Saving..." : "Creating...") : (isEditing ? "Save Changes" : "Create Listing")}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
+          <div className="flex items-center justify-between p-6 sm:px-10 border-b border-white/5 bg-[#0a0a0a]/50">
+            <div>
+              <div className="text-trae-green font-mono text-[9px] uppercase font-black tracking-widest mb-1">Listing Details</div>
+              <h3 className="text-2xl font-black text-white uppercase tracking-tighter">
+                {isEditing ? "Edit Property" : "List a New Room"}
+              </h3>
+            </div>
+            <button onClick={onClose} className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 hover:text-white transition-all">
+              <X className="w-5 h-5" />
+            </button>
           </div>
+
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 sm:px-10 scrollbar-hide space-y-10">
+            {/* Basic Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2 space-y-1.5">
+                <label className={labelClasses}><Home className="w-3 h-3" /> Property Title</label>
+                <input value={title} onChange={(e) => setTitle(e.target.value)} required className={inputClasses} placeholder="e.g. Modern 2BHK Apartment" />
+              </div>
+              <div className="space-y-1.5">
+                <label className={labelClasses}><MapPin className="w-3 h-3" /> Area / Location</label>
+                <input value={location} onChange={(e) => setLocation(e.target.value)} required className={inputClasses} placeholder="e.g. Koramangala, Bangalore" />
+              </div>
+              <div className="space-y-1.5">
+                <label className={labelClasses}><DollarSign className="w-3 h-3" /> Monthly Rent (₹)</label>
+                <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required className={inputClasses} placeholder="25000" />
+              </div>
+            </div>
+
+            {/* Property Mechanics */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { label: 'Bedrooms', val: bedrooms, set: setBedrooms, icon: 'B' },
+                { label: 'Bathrooms', val: bathrooms, set: setBathrooms, icon: 'T' },
+                { label: 'Area (Sqft)', val: area, set: setArea, type: 'text' },
+                { label: 'Property Type', val: type, set: setType, isSelect: true }
+              ].map((field) => (
+                <div key={field.label} className="space-y-1.5">
+                  <label className={labelClasses}>{field.label}</label>
+                  {field.isSelect ? (
+                    <select value={type} onChange={(e) => setType(e.target.value as any)} className={inputClasses}>
+                      <option value="Private" className="bg-[#0a0a0a]">PRIVATE</option>
+                      <option value="Shared" className="bg-[#0a0a0a]">SHARED</option>
+                      <option value="Studio" className="bg-[#0a0a0a]">STUDIO</option>
+                      <option value="Hostel" className="bg-[#0a0a0a]">HOSTEL</option>
+                    </select>
+                  ) : (
+                    <input type={field.type || 'number'} value={field.val} onChange={(e) => (field.set as any)(e.target.value)} className={inputClasses} />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Advanced Logistics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-1.5">
+                <label className={labelClasses}><Key className="w-3 h-3" /> Security Deposit</label>
+                <input value={deposit} onChange={(e) => setDeposit(e.target.value)} className={inputClasses} placeholder="50000" />
+              </div>
+              <div className="space-y-1.5">
+                <label className={labelClasses}><Shield className="w-3 h-3" /> Maintenance Fee (Monthly)</label>
+                <input value={maintenance} onChange={(e) => setMaintenance(e.target.value)} className={inputClasses} placeholder="2000" />
+              </div>
+              <div className="space-y-1.5">
+                <label className={labelClasses}>Available From</label>
+                <input type="date" value={availableFrom} onChange={(e) => setAvailableFrom(e.target.value)} className={inputClasses} />
+              </div>
+            </div>
+
+            {/* Characteristics */}
+            <div className="space-y-5">
+              <label className={labelClasses}>Property Features</label>
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  { label: 'Parking Available', state: parking, set: setParking },
+                  { label: 'Pet Friendly', state: petFriendly, set: setPetFriendly },
+                  { label: 'Fully Furnished', state: furnished, set: setFurnished }
+                ].map((feat) => (
+                  <button key={feat.label} type="button" onClick={() => feat.set(!feat.state)} className={`flex items-center gap-3.5 p-4 rounded-xl border transition-all ${feat.state ? 'bg-trae-green text-black border-trae-green' : 'bg-white/5 border-white/10 text-gray-500 hover:text-white hover:border-white/20'}`}>
+                    <div className={`w-2.5 h-2.5 rounded-full ${feat.state ? 'bg-black' : 'bg-gray-700'}`} />
+                    <span className="text-[9px] font-black uppercase tracking-widest">{feat.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Data Payloads */}
+            <div className="space-y-7">
+              <div className="space-y-3">
+                <label className={labelClasses}>About this Property (Description)</label>
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={`${inputClasses} min-h-[100px] resize-none pt-3`} placeholder="Enter a detailed description of your room..." />
+              </div>
+              <div className="space-y-3">
+                <label className={labelClasses}>Detailed Property Info</label>
+                <textarea value={houseDetails} onChange={(e) => setHouseDetails(e.target.value)} rows={3} className={`${inputClasses} min-h-[100px] resize-none pt-3`} placeholder="Add any specific details about the house..." />
+              </div>
+              <div className="space-y-3">
+                <label className={labelClasses}>House Rules</label>
+                <textarea value={houseRules} onChange={(e) => setHouseRules(e.target.value)} rows={3} className={`${inputClasses} min-h-[100px] resize-none pt-3`} placeholder="e.g. No smoking, no loud music..." />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <label className={labelClasses}>General Tags</label>
+                  <input value={tags} onChange={(e) => setTags(e.target.value)} className={inputClasses} placeholder="Balcony, Metro Nearby, Quiet..." />
+                </div>
+                <div className="space-y-3">
+                  <label className={labelClasses}>Amenities</label>
+                  <input value={amenities} onChange={(e) => setAmenities(e.target.value)} className={inputClasses} placeholder="WiFi, A/C, Laundry..." />
+                </div>
+              </div>
+            </div>
+
+            {/* Visual Archives */}
+            <div className="space-y-5">
+              <label className={labelClasses}><ImageIcon className="w-3 h-3" /> Property Photos</label>
+              <div className="flex flex-col gap-5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                  {uploadedImages.map((img, idx) => (
+                    <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-white/10 group">
+                      <img src={img} alt="archive" className="w-full h-full object-cover" />
+                      <button type="button" onClick={() => handleRemoveUploadedImage(idx)} className="absolute inset-0 bg-red-600/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity">
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
+                  <label className="aspect-square rounded-xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center gap-1.5 hover:border-trae-green/30 hover:bg-trae-green/5 cursor-pointer transition-all">
+                    <Upload className="w-5 h-5 text-gray-600" />
+                    <span className="text-[7px] font-black uppercase tracking-widest text-gray-700">UPLOAD</span>
+                    <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
+                  </label>
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest ml-1 opacity-50">Or paste image links (comma-separated)</p>
+                  <input value={imageUrls} onChange={(e) => setImageUrls(e.target.value)} className={inputClasses} placeholder="https://example.com/image.jpg, ..." />
+                </div>
+              </div>
+            </div>
+
+            {/* Comms Protocol */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-1.5">
+                <label className={labelClasses}>Contact Number</label>
+                <input type="tel" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className={inputClasses} placeholder="+91 XXXXX XXXXX" />
+              </div>
+              <div className="space-y-1.5">
+                <label className={labelClasses}>Contact Email</label>
+                <input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} className={inputClasses} placeholder="owner@email.com" />
+              </div>
+            </div>
+
+            {/* Action System */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-6 pb-4 border-t border-white/5">
+              <button type="button" onClick={onClose} className="flex-1 h-16 sm:h-14 rounded-xl bg-white/5 border border-white/10 text-gray-600 font-black uppercase tracking-[0.3em] text-[11px] sm:text-[9px] hover:text-white transition-all">
+                Cancel
+              </button>
+              <button type="submit" disabled={isLoading} className="flex-[1.5] h-16 sm:h-14 rounded-xl bg-trae-green text-black font-black uppercase tracking-[0.3em] text-[11px] sm:text-[9px] hover:bg-emerald-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3">
+                {isLoading ? 'Saving...' : <><Plus className="w-5 h-5 sm:w-4 sm:h-4" /> {isEditing ? "Save Changes" : "Create Listing"}</>}
+              </button>
+            </div>
+          </form>
         </motion.div>
-      )}
-    </AnimatePresence>
+      </div>
+    </AnimatePresence>,
+    document.body
   );
 };
 

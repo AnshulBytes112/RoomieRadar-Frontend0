@@ -11,6 +11,11 @@ export interface User {
   email: string;
   role: UserRole;
   phone?: string;
+  roomateProfile?: {
+    id: number;
+    avatar?: string;
+    occupation?: string;
+  };
 }
 
 interface AuthContextType {

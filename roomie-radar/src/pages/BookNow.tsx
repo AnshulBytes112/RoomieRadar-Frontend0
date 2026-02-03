@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { fetchRoomDetails, bookRoom } from '../api';
+import { PixelGrid } from '../components/ui';
+import { ChevronLeft, Info, Send, Calendar, User, Mail, Phone, MessageSquare, CheckCircle2, Lock } from 'lucide-react';
 
 interface FormData {
   name: string;
@@ -44,14 +46,26 @@ const BookNow: React.FC = () => {
     defaultValues: {
       name: user?.name || '',
       email: user?.email || '',
-      phone: '',
+      phone: user?.phone || '',
       message: '',
       checkInDate: '',
       sendEmailConfirmation: true
     }
   });
 
-  // Fetch room details on component mount
+  useEffect(() => {
+    if (user) {
+      reset({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        message: '',
+        checkInDate: '',
+        sendEmailConfirmation: true
+      });
+    }
+  }, [user, reset]);
+
   useEffect(() => {
     const fetchRoom = async () => {
       if (!roomId) {
@@ -59,47 +73,33 @@ const BookNow: React.FC = () => {
         setLoading(false);
         return;
       }
-
       try {
         setLoading(true);
         setError(null);
         const roomData = await fetchRoomDetails(parseInt(roomId, 10));
         setRoom(roomData);
       } catch (err) {
-        console.error('Error fetching room details:', err);
-        setError('Failed to load room details. Please try again.');
+        setError('Failed to load room details.');
       } finally {
         setLoading(false);
       }
     };
-
     fetchRoom();
   }, [roomId]);
 
-  // Format price for display
   const formatPrice = (price: string | number | undefined): string => {
-    if (!price && price !== 0) return "0";
+    if (!price && price !== 0) return "N/A";
     const numPrice = typeof price === "number" ? price : parseInt(String(price).replace(/[^\d]/g, ""), 10);
-    if (isNaN(numPrice)) return "0";
+    if (isNaN(numPrice)) return "N/A";
     return `₹${numPrice.toLocaleString()}`;
   };
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-
-    if (!room) {
-      setError('Room data not available');
-      return;
-    }
-
+    if (!user) { navigate('/login'); return; }
+    if (!room) { setError('Room data not available'); return; }
     setIsSubmitting(true);
     setSubmitStatus('idle');
-
     try {
-      // Call the booking API
       await bookRoom({
         roomId: room.id,
         name: data.name,
@@ -109,309 +109,187 @@ const BookNow: React.FC = () => {
         message: data.message,
         sendEmailConfirmation: data.sendEmailConfirmation
       });
-
       setSubmitStatus('success');
       reset();
-
-      // Redirect to bookings page after 2 seconds
-      setTimeout(() => {
-        navigate('/my-bookings');
-      }, 2000);
+      setTimeout(() => navigate('/my-bookings'), 2000);
     } catch (error) {
-      console.error('Error sending booking request:', error);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleGoBack = () => {
-    if (room) {
-      navigate(`/room/${room.id}`);
-    } else {
-      navigate('/find-room');
-    }
-  };
-
-  // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen pt-20 flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading room details...</p>
-        </motion.div>
+      <div className="min-h-screen pt-16 flex flex-col items-center justify-center bg-[#050505] font-sans">
+        <div className="w-12 h-12 border-2 border-trae-green border-t-transparent rounded-full animate-spin mb-6"></div>
+        <p className="text-sm text-gray-500 font-mono uppercase tracking-[0.3em] font-bold animate-pulse">Loading Booking Details...</p>
       </div>
     );
   }
 
-  // Error state
   if (error || !room) {
     return (
-      <div className="min-h-screen pt-20 flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center max-w-md mx-auto p-8"
-        >
-          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Room Not Found</h1>
-          <p className="text-gray-600 mb-6">{error || 'The room you\'re looking for doesn\'t exist or has been removed.'}</p>
-          <button
-            onClick={() => navigate('/find-room')}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-          >
-            Back to Rooms
-          </button>
-        </motion.div>
+      <div className="min-h-screen pt-16 flex items-center justify-center bg-[#050505]">
+        <div className="text-center bg-[#0a0a0a] border border-red-500/20 p-8 rounded-[2rem] max-w-lg mx-auto">
+          <h3 className="text-2xl font-black text-white mb-3 uppercase tracking-tighter">Room Not Found</h3>
+          <p className="text-sm text-gray-500 mb-8 font-medium">{error || 'The room you are looking for is unavailable.'}</p>
+          <button onClick={() => navigate('/find-room')} className="px-8 py-3.5 bg-white/5 border border-white/10 text-white rounded-xl font-black uppercase tracking-widest text-[9px]">Back to Search</button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pt-20 sm:pt-24 bg-[#0c0c1d] pb-20 relative overflow-hidden">
-      {/* Background blobs for depth */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-        <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob" />
-        <div className="absolute top-[40%] -right-[10%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob animation-delay-2000" />
-      </div>
+    <div className="min-h-screen bg-[#050505] pt-16 sm:pt-28 pb-20 px-6 relative overflow-hidden font-sans text-white">
+      <PixelGrid />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10">
+      <div className="max-w-[800px] mx-auto relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 sm:mb-16"
+          className="mb-10"
         >
           <button
-            onClick={handleGoBack}
-            className="flex items-center gap-3 text-gray-500 hover:text-white mb-8 transition-colors group font-black uppercase tracking-widest text-[10px]"
+            onClick={() => navigate(`/room/${room.id}`)}
+            className="flex items-center gap-2.5 text-gray-600 hover:text-trae-green mb-8 transition-all group font-black uppercase tracking-widest text-[9px]"
           >
-            <div className="w-8 h-8 glass-card rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-all border-none">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </div>
-            Back to Space
+            <ChevronLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
+            Cancel
           </button>
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight uppercase leading-none">
-            Finalize <span className="text-gradient">Booking</span>
+          <div className="text-trae-green font-mono text-xs mb-3 uppercase tracking-[0.2em] font-bold">Booking Request</div>
+          <h1 className="text-4xl md:text-5xl font-black mb-5 tracking-tighter leading-tight">
+            Confirm your <span className="text-trae-green">Stay.</span>
           </h1>
         </motion.div>
 
-        {/* Room Preview Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="glass-card p-5 sm:p-10 rounded-2xl sm:rounded-[3rem] border-white/5 mb-6 sm:mb-10 group overflow-hidden relative shadow-2xl"
-        >
-          <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-500 opacity-20" />
-
-          <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-10">
-            {room.images && room.images.length > 0 && (
-              <div className="w-full md:w-56 h-40 sm:h-56 flex-shrink-0">
-                <img
-                  src={room.images[0]}
-                  alt={room.title}
-                  className="w-full h-full rounded-2xl sm:rounded-[2.5rem] object-cover border-2 border-white/5 shadow-2xl group-hover:scale-105 transition-transform duration-700"
-                />
+        <div className="space-y-8">
+          {/* Room Summary Header */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-[#0a0a0a] border border-white/5 p-6 sm:p-8 rounded-[2rem] shadow-xl relative overflow-hidden group"
+          >
+            <div className="flex flex-col sm:flex-row gap-8 items-center">
+              <div className="w-full sm:w-48 aspect-square rounded-[1.5rem] overflow-hidden border border-white/10 flex-shrink-0">
+                <img src={room.images[0]} alt={room.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
               </div>
-            )}
-            <div className="flex-1 space-y-4">
-              <h2 className="text-xl sm:text-3xl font-black text-white tracking-tight uppercase group-hover:text-blue-400 transition-colors">
-                {room.title}
-              </h2>
-              <div className="flex flex-wrap gap-2 sm:gap-3">
-                <span className="px-3 py-1.5 glass-card rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-pink-400 border-none">{room.location}</span>
-                <span className="px-3 py-1.5 glass-card rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-blue-400 border-none">{room.bedrooms} BHK</span>
-                <span className="px-3 py-1.5 glass-card rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-purple-400 border-none">{room.type}</span>
-              </div>
-              <div className="text-2xl sm:text-4xl font-black text-white tracking-tighter pt-1 sm:pt-2">
-                {formatPrice(room.price)}
-                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-gray-500 ml-2 sm:ml-3">
-                  / {room.type === "Hostel" ? "Year" : "Month"}
-                </span>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Booking Form */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="glass-card p-6 sm:p-12 rounded-2xl sm:rounded-[3.5rem] border-white/5 shadow-2xl"
-        >
-          {/* Informational Message */}
-          <div className="mb-6 sm:mb-8 p-4 sm:p-6 glass-card bg-blue-500/5 border border-blue-500/20 rounded-2xl">
-            <div className="flex items-start gap-4">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm sm:text-base text-white font-medium mb-1 sm:mb-2">
-                  Booking requests help owners respond faster and do not require payment.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {submitStatus === 'success' && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="mb-10 bg-green-500/10 border border-green-500/20 p-8 rounded-[2.5rem] text-center"
-            >
-              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-green-500/20">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <h3 className="text-2xl font-black text-white uppercase">Booking Request Sent</h3>
-                <span className="px-3 py-1 bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-bold uppercase rounded-full">
-                  Pending
-                </span>
-              </div>
-              <p className="text-gray-400 font-medium tracking-wide mb-4">
-                The owner usually responds within 24 hours.
-              </p>
-              <p className="text-gray-500 text-sm">
-                You can track your request in "My Bookings".
-              </p>
-            </motion.div>
-          )}
-
-          {submitStatus === 'error' && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="mb-10 bg-red-500/10 border border-red-500/20 p-8 rounded-[2.5rem] text-center"
-            >
-              <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 9v2m0 4h.01" />
-                </svg>
-              </div>
-              <p className="text-red-400 font-black uppercase tracking-widest text-xs">Signal Failed</p>
-              <p className="text-gray-400 mt-2">Could not establish booking link. Re-attempt required.</p>
-            </motion.div>
-          )}
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 sm:space-y-10" noValidate>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-10">
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Identity Confirmation</label>
-                <div className="relative group/input">
-                  <input
-                    type="text"
-                    className="w-full p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all outline-none text-white font-bold text-sm"
-                    placeholder="Candidate Full Name"
-                    {...register('name', { required: 'Name is required' })}
-                  />
+              <div className="flex-1 text-center sm:text-left">
+                <div className="text-trae-green font-mono text-[9px] uppercase tracking-widest mb-1.5 font-black">Room ID // #RM-{room.id}</div>
+                <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-3">{room.title}</h2>
+                <div className="flex flex-wrap justify-center sm:justify-start gap-2.5 mb-5">
+                  <span className="px-3 py-1 bg-white/5 border border-white/5 rounded-lg text-[8px] font-black uppercase tracking-widest text-blue-400">{room.location}</span>
+                  <span className="px-3 py-1 bg-white/5 border border-white/5 rounded-lg text-[8px] font-black uppercase tracking-widest text-purple-400">{room.type}</span>
                 </div>
-                {errors.name && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest ml-1">{errors.name.message}</p>}
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Contact Protocol (Email)</label>
-                <input
-                  type="email"
-                  className="w-full p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-purple-500/50 focus:border-transparent transition-all outline-none text-white font-bold text-sm"
-                  placeholder="name@domain.com"
-                  {...register('email', { required: 'Email is required' })}
-                />
-                {errors.email && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest ml-1">{errors.email.message}</p>}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-10">
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Comms Frequency (Phone)</label>
-                <input
-                  type="tel"
-                  className="w-full p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-pink-500/50 focus:border-transparent transition-all outline-none text-white font-bold text-sm"
-                  placeholder="+91 XXXXX XXXXX"
-                  {...register('phone')}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Activation Date</label>
-                <input
-                  type="date"
-                  className="w-full p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-orange-500/50 focus:border-transparent transition-all outline-none text-white font-bold text-sm"
-                  {...register('checkInDate', { required: 'Check-in date is required' })}
-                />
-                {errors.checkInDate && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest ml-1">{errors.checkInDate.message}</p>}
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Direct Signal Message</label>
-              <textarea
-                rows={4}
-                className="w-full p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white/[0.02] border border-white/5 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all outline-none text-white font-medium resize-none leading-relaxed text-sm"
-                placeholder="Declare your intent and any special requirements for this elite space..."
-                {...register('message', { maxLength: { value: 500, message: 'Message cannot exceed 500 characters' } })}
-              />
-              {errors.message && <p className="text-red-500 text-[10px] font-black uppercase tracking-widest ml-1">{errors.message.message}</p>}
-            </div>
-
-            {/* Email Confirmation Checkbox */}
-            <div className="space-y-3">
-              <div className="flex items-start gap-4 p-4 sm:p-6 glass-card bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.04] transition-all">
-                <div className="flex items-center justify-center mt-1">
-                  <input
-                    type="checkbox"
-                    id="sendEmailConfirmation"
-                    className="w-5 h-5 rounded border-white/20 bg-white/10 text-blue-500 focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-0 focus:ring-offset-[#0c0c1d] cursor-pointer"
-                    {...register('sendEmailConfirmation')}
-                  />
+                <div className="text-3xl font-black text-white tracking-tighter flex items-end gap-2 justify-center sm:justify-start">
+                  {formatPrice(room.price)}
+                  <span className="text-[10px] font-mono text-gray-600 font-bold mb-1">/ {room.type === 'Hostel' ? 'Year' : 'Month'}</span>
                 </div>
-                <div className="flex-1">
-                  <label htmlFor="sendEmailConfirmation" className="text-sm sm:text-base text-white font-medium cursor-pointer flex items-center gap-2">
-                    Send email confirmation
-                    <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                  </label>
-                  <p className="text-gray-500 text-xs sm:text-sm mt-1">
-                    Receive a confirmation email with your booking details and tracking information
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Form Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-[#0a0a0a] border border-white/5 p-8 sm:p-10 rounded-[2.5rem] shadow-xl"
+          >
+            {submitStatus === 'success' ? (
+              <div className="text-center py-12">
+                <div className="w-20 h-20 bg-trae-green/10 rounded-2xl flex items-center justify-center mx-auto mb-8 border border-trae-green/20">
+                  <CheckCircle2 className="w-10 h-10 text-trae-green" />
+                </div>
+                <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-3">Request Sent!</h3>
+                <p className="text-sm text-gray-500 font-medium mb-10">Success. Redirecting to your bookings...</p>
+                <div className="w-48 h-1.5 bg-white/5 rounded-full mx-auto overflow-hidden">
+                  <motion.div initial={{ x: '-100%' }} animate={{ x: '0%' }} transition={{ duration: 2 }} className="h-full bg-trae-green" />
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
+                <div className="p-5 bg-blue-400/5 border border-blue-400/10 rounded-2xl flex items-start gap-4">
+                  <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-[11px] font-medium text-blue-400/80 leading-relaxed uppercase tracking-wider italic">
+                    Great choice! The owner will be notified to review your booking request.
                   </p>
                 </div>
-              </div>
-            </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 pt-4 sm:pt-6">
-              <button
-                type="button"
-                onClick={handleGoBack}
-                className="flex-1 h-16 sm:h-20 glass-card bg-white/5 border-white/10 text-gray-400 hover:text-white rounded-xl sm:rounded-[2rem] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] transition-all"
-              >
-                Abort Protocol
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-[2] h-16 sm:h-20 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white rounded-xl sm:rounded-[2rem] font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] text-[10px] hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-purple-900/40 disabled:opacity-50"
-              >
-                {isSubmitting ? 'Transmitting...' : 'Initiate Secure Booking'}
-              </button>
-            </div>
-          </form>
-        </motion.div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                  {[
+                    { name: 'name', label: 'Full Name', icon: User, type: 'text' },
+                    { name: 'email', label: 'Email Address', icon: Mail, type: 'email' },
+                    { name: 'phone', label: 'Phone Number', icon: Phone, type: 'tel' },
+                    { name: 'checkInDate', label: 'Preferred Check-in Date', icon: Calendar, type: 'date' }
+                  ].map((field) => {
+                    const isPreFilled = (field.name === 'name' && !!user?.name) ||
+                      (field.name === 'email' && !!user?.email) ||
+                      (field.name === 'phone' && !!user?.phone);
+                    return (
+                      <div key={field.name} className="space-y-2.5">
+                        <label className="text-[9px] font-mono font-black text-gray-600 uppercase tracking-widest ml-1">{field.label}</label>
+                        <div className="relative flex items-center group">
+                          <field.icon className={`absolute left-5 w-4.5 h-4.5 transition-colors ${isPreFilled ? 'text-trae-green' : 'text-gray-700 group-focus-within:text-trae-green'}`} />
+                          <input
+                            type={field.type}
+                            readOnly={isPreFilled}
+                            {...register(field.name as any, { required: field.name !== 'phone' ? `${field.label} is required` : false })}
+                            className={`w-full pl-14 pr-12 py-4 bg-white/5 border border-white/10 rounded-xl focus:border-trae-green/50 outline-none transition-all font-bold text-white text-[13px] tracking-widest ${isPreFilled ? 'opacity-60 cursor-not-allowed' : ''}`}
+                          />
+                          {isPreFilled && <Lock className="absolute right-5 w-3.5 h-3.5 text-gray-700/50" />}
+                        </div>
+                        {(errors as any)[field.name] && <p className="text-[7px] font-black text-red-500 uppercase tracking-widest ml-1">{(errors as any)[field.name].message}</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="space-y-2.5">
+                  <label className="text-[9px] font-mono font-black text-gray-600 uppercase tracking-widest ml-1">Add a Message (Optional)</label>
+                  <div className="relative">
+                    <MessageSquare className="absolute left-5 top-5 w-4.5 h-4.5 text-gray-700" />
+                    <textarea
+                      rows={3}
+                      {...register('message')}
+                      className="w-full pl-14 pr-6 py-5 bg-white/5 border border-white/10 rounded-2xl focus:border-trae-green/50 outline-none transition-all font-medium text-white text-[13px] leading-relaxed resize-none"
+                      placeholder="Tell the owner a bit about yourself..."
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 p-5 bg-white/5 border border-white/10 rounded-2xl cursor-pointer hover:bg-white/[0.06] transition-all">
+                  <input
+                    type="checkbox"
+                    {...register('sendEmailConfirmation')}
+                    className="w-5 h-5 rounded bg-white/5 border-white/10 text-trae-green focus:ring-trae-green/50"
+                  />
+                  <div>
+                    <p className="text-[10px] font-black text-white uppercase tracking-widest">Email Confirmation</p>
+                    <p className="text-[8px] text-gray-700 font-medium uppercase tracking-widest mt-0.5">Send a copy of this request to my email</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/room/${room.id}`)}
+                    className="flex-1 h-16 sm:h-14 bg-white/5 border border-white/10 text-gray-600 hover:text-white rounded-xl font-black uppercase tracking-[0.3em] text-[11px] sm:text-[9px] transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-[1.5] h-16 sm:h-14 bg-trae-green text-black rounded-xl font-black uppercase tracking-[0.3em] text-[11px] sm:text-[9px] hover:bg-emerald-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
+                  >
+                    {isSubmitting ? 'Sending...' : <><Send className="w-5 h-5 sm:w-4 sm:h-4" /> Confirm Booking</>}
+                  </button>
+                </div>
+              </form>
+            )}
+          </motion.div>
+        </div>
       </div>
     </div>
   );

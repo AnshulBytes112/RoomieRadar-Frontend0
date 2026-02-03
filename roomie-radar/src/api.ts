@@ -101,8 +101,8 @@ export async function searchRooms(filters: {
   location?: string;
   budget?: string;
   roomType?: string;
-  bedrooms?: number;
-  bathrooms?: number;
+  bedrooms?: string | number;
+  bathrooms?: string | number;
   page?: number;
   size?: number;
 }) {
@@ -139,6 +139,8 @@ export async function createRoomListing(roomData: {
   furnished?: boolean;
   contactNumber?: string;
   contactEmail?: string;
+  houseRules?: string;
+  houseDetails?: string;
 }) {
   // POST /api/rooms
   return authFetch('/api/rooms', {
@@ -173,6 +175,8 @@ export interface Room {
   furnished?: boolean;
   contactNumber?: string;
   contactEmail?: string;
+  houseRules?: string;
+  houseDetails?: string;
   postedBy?: {
     id: number;
     name: string;
@@ -212,6 +216,15 @@ export async function fetchUserListings() {
   return response.json();
 }
 
+export async function fetchRoomsByUserId(userId: number) {
+  // GET /api/rooms/user/{userId}
+  const response = await authFetch(`/api/rooms/user/${userId}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch rooms by user ID');
+  }
+  return response.json();
+}
+
 // ===== ROOMMATE MANAGEMENT =====
 export async function searchRoommates(filters?: {
   ageRange?: string;
@@ -240,6 +253,16 @@ export async function getAllRoommates(page = 0, size = 10) {
 export async function getUserProfile() {
   // GET /api/roommates/me
   return authFetch('/api/roommates/me').then(res => res.json());
+}
+
+export async function getRoommateProfileById(profileId: number) {
+  // GET /api/roommates/{id}
+  return authFetch(`/api/roommates/${profileId}`).then(res => res.json());
+}
+
+export async function getProfileByUserId(userId: number) {
+  // GET /api/users/{userId}/profile
+  return authFetch(`/api/users/${userId}/profile`).then(res => res.json());
 }
 
 export async function createRoommateProfile(profileData: {

@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { userLogin } from "../api";
 import { useAuth } from "../contexts/AuthContext";
-import { FiUser, FiLock, FiHome, FiCheckCircle, FiUsers, FiShield, FiMapPin } from "react-icons/fi";
+import { FiUser, FiLock, FiUsers, FiShield, FiMapPin, FiArrowRight } from "react-icons/fi";
 import { motion } from "framer-motion";
+import { PixelGrid } from "../components/ui";
+import { Rocket } from "lucide-react";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -39,114 +41,104 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#0c0c1d] overflow-hidden">
-      {/* Background blobs for depth */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-        <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px] mix-blend-screen animate-blob" />
-        <div className="absolute top-[20%] -right-[10%] w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-[120px] mix-blend-screen animate-blob animation-delay-2000" />
-      </div>
+    <div className="min-h-screen flex bg-[#050505] overflow-hidden font-sans">
+      <PixelGrid />
 
       {/* Left Side - Hero/Info */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col justify-center px-24 z-10 transition-all duration-700">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col justify-center px-16 xl:px-24 z-10 border-r border-white/5 bg-[#050505]/50 backdrop-blur-3xl">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
+          className="max-w-xl"
         >
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3 mb-16 group">
-            <div className="w-14 h-14 glass-card rounded-2xl flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300">
-              <FiHome className="text-blue-400 text-3xl" />
+          <Link to="/" className="flex items-center space-x-2.5 mb-12 group">
+            <div className="w-10 h-10 bg-trae-green rounded-xl flex items-center justify-center transition-transform group-hover:rotate-12">
+              <Rocket className="w-5.5 h-5.5 text-black fill-current" />
             </div>
-            <span className="text-4xl font-black text-white tracking-tight">Roomie<span className="text-gradient">Radar</span></span>
+            <span className="text-2xl font-black text-white tracking-tighter">RoomieRadar</span>
           </Link>
 
           {/* Main Content */}
-          <div className="space-y-12">
+          <div className="space-y-10">
             <div>
-              <h1 className="text-6xl font-black mb-6 leading-tight text-white">
-                Welcome <br /> back to the <br /><span className="text-gradient">Circle.</span>
+              <div className="text-trae-green font-mono text-sm mb-3 font-bold uppercase tracking-widest">Secure Login</div>
+              <h1 className="text-5xl xl:text-7xl font-black mb-6 leading-tight tracking-tighter text-white">
+                Back to <br /> <span className="text-trae-green">The Flow.</span>
               </h1>
-              <p className="text-xl text-gray-400 max-w-lg font-light leading-relaxed">
+              <p className="text-base text-gray-500 max-w-md font-medium leading-relaxed">
                 Connect with compatible flatmates through our AI-driven matching and secure platform.
               </p>
             </div>
 
             {/* Features */}
-            <div className="space-y-8">
+            <div className="space-y-6">
               {[
-                { icon: FiUsers, color: 'text-blue-400', title: 'Verified Profiles', desc: 'Secure community with manual verification' },
-                { icon: FiMapPin, color: 'text-purple-400', title: 'Prime Hubs', desc: 'Top rooms in strategic locations' },
-                { icon: FiShield, color: 'text-pink-400', title: 'Deep Trust', desc: 'Enterprise-grade security and privacy' }
+                { icon: FiUsers, color: 'text-trae-green', title: 'Verified Profiles', desc: 'Secure community with manual verification' },
+                { icon: FiMapPin, color: 'text-blue-400', title: 'Prime Hubs', desc: 'Top rooms in strategic locations' },
+                { icon: FiShield, color: 'text-emerald-400', title: 'Deep Trust', desc: 'Enterprise-grade security and privacy' }
               ].map((feat, i) => (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 + i * 0.1 }}
-                  className="flex items-center space-x-6 group"
+                  initial={{ opacity: 0, x: -15 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 + i * 0.1 }}
+                  className="flex items-center space-x-4 group"
                 >
-                  <div className={`w-14 h-14 glass-card rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
-                    <feat.icon className={`${feat.color} text-2xl`} />
+                  <div className={`w-12 h-12 bg-white/[0.03] border border-white/5 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:border-trae-green/30 transition-all duration-300`}>
+                    <feat.icon className={`${feat.color} text-xl`} />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-white mb-1">{feat.title}</h3>
-                    <p className="text-gray-400 font-light">{feat.desc}</p>
+                    <h3 className="text-base font-black text-white mb-0.5 uppercase tracking-tight">{feat.title}</h3>
+                    <p className="text-gray-600 text-[11px] font-medium">{feat.desc}</p>
                   </div>
                 </motion.div>
               ))}
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-12 pt-12 border-t border-white/10">
-              {[
-                { val: '10K+', label: 'Active Users' },
-                { val: '500+', label: 'Properties' },
-                { val: '98%', label: 'Match Rate' }
-              ].map((stat, i) => (
-                <div key={i}>
-                  <div className="text-3xl font-black text-white mb-1 tracking-tight">{stat.val}</div>
-                  <div className="text-gray-500 text-sm font-medium uppercase tracking-wider">{stat.label}</div>
-                </div>
-              ))}
+            {/* Status Indicator */}
+            <div className="pt-10 border-t border-white/5 flex items-center gap-2.5">
+              <div className="w-1.5 h-1.5 bg-trae-green rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+              <span className="text-[9px] font-mono text-gray-600 uppercase tracking-widest font-bold">Status: Ready to connect</span>
             </div>
           </div>
         </motion.div>
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-8 lg:px-24 py-10 sm:py-16 z-10">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 sm:px-12 lg:px-16 z-10">
         <motion.div
           className="max-w-md w-full"
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="lg:hidden flex items-center justify-center gap-3 mb-6">
-            <div className="w-10 h-10 glass-card rounded-xl flex items-center justify-center shadow-xl">
-              <FiHome className="text-blue-400 text-xl" />
+          <div className="lg:hidden flex items-center justify-center gap-2.5 mb-10">
+            <div className="w-9 h-9 bg-trae-green rounded-lg flex items-center justify-center">
+              <Rocket className="w-5 h-5 text-black fill-current" />
             </div>
-            <span className="text-2xl font-black text-white tracking-tight">Roomie<span className="text-gradient">Radar</span></span>
+            <span className="text-xl font-black text-white tracking-tighter">RoomieRadar</span>
           </div>
-          {/* Main Container */}
-          <div className="glass-card p-6 sm:p-10 rounded-2xl sm:rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
 
-            <div className="text-center mb-6 sm:mb-10">
-              <h2 className="text-2xl sm:text-4xl font-black text-white mb-2 sm:mb-3 tracking-tight">Login</h2>
-              <p className="text-sm sm:text-base text-gray-400 font-light">Continue your journey with RoomieRadar</p>
+          <div className="bg-[#0a0a0a] border border-white/5 p-8 sm:p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-trae-green/20 via-teal-400/40 to-blue-500/20" />
+
+            <div className="mb-8 text-left">
+              <h2 className="text-3xl font-black text-white mb-2 tracking-tighter uppercase">Sign In</h2>
+              <p className="text-xs text-gray-600 font-medium">Continue your journey with RoomieRadar</p>
             </div>
 
             <motion.form
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="space-y-4 sm:space-y-6"
+              className="space-y-5"
               onSubmit={handleLogin}
             >
               {error && (
                 <motion.div
-                  className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-2xl text-sm"
+                  className="bg-red-500/5 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
@@ -155,89 +147,70 @@ const Login = () => {
               )}
 
               <motion.div variants={itemVariants} className="space-y-2">
-                <label className="text-xs sm:text-sm font-semibold text-gray-300 ml-1">Username</label>
+                <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black ml-1">Username</label>
                 <div className="relative group/input">
-                  <FiUser className="absolute left-4 top-3.5 sm:top-4 text-gray-400 group-focus-within/input:text-blue-400 transition-colors w-5 h-5" />
+                  <FiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-trae-green transition-colors w-4.5 h-4.5" />
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 sm:py-4 glass-card rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all bg-white/5 text-white placeholder-gray-500 text-sm"
-                    placeholder="e.g. johndoe"
+                    className="w-full pl-11 pr-4 py-3.5 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white placeholder-gray-700 text-[13px] font-medium"
+                    placeholder="Enter your username"
                     required
                   />
                 </div>
               </motion.div>
 
               <motion.div variants={itemVariants} className="space-y-2">
-                <label className="text-xs sm:text-sm font-semibold text-gray-300 ml-1">Password</label>
+                <div className="flex justify-between items-center ml-1">
+                  <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black">Password</label>
+                  <Link to="/forgot-password" className="text-[9px] font-black text-gray-600 hover:text-white transition-colors uppercase tracking-widest">
+                    Forgot?
+                  </Link>
+                </div>
                 <div className="relative group/input">
-                  <FiLock className="absolute left-4 top-3.5 sm:top-4 text-gray-400 group-focus-within/input:text-purple-400 transition-colors w-5 h-5" />
+                  <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-trae-green transition-colors w-4.5 h-4.5" />
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 sm:py-4 glass-card rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all bg-white/5 text-white placeholder-gray-500 text-sm"
+                    className="w-full pl-11 pr-4 py-3.5 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white placeholder-gray-700 text-[13px] font-medium"
                     placeholder="••••••••"
                     required
                   />
                 </div>
               </motion.div>
 
-              <div className="flex items-center justify-between px-1">
-                <label className="flex items-center group cursor-pointer">
-                  <div className="relative">
-                    <input type="checkbox" className="sr-only peer" />
-                    <div className="w-5 h-5 border-2 border-gray-600 rounded-lg peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all" />
-                    <FiCheckCircle className="absolute top-0.5 left-0.5 w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
-                  </div>
-                  <span className="ml-3 text-xs sm:text-sm text-gray-400 group-hover:text-gray-300 transition-colors">Remember me</span>
-                </label>
-                <Link to="/forgot-password" className="text-xs sm:text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors">
-                  Forgot?
-                </Link>
-              </div>
-
               <motion.button
                 type="submit"
-                className="w-full h-12 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-sm sm:text-lg shadow-xl shadow-blue-900/40 transition-all duration-300"
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
+                className="w-full h-14 rounded-xl bg-trae-green text-black font-black uppercase tracking-widest text-[11px] shadow-xl shadow-trae-green/5 hover:bg-emerald-400 transition-all duration-300 flex items-center justify-center gap-2 group/btn mt-4"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
               >
-                Sign In
+                <span>Sign In</span>
+                <FiArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
               </motion.button>
             </motion.form>
 
-            <div className="mt-8 sm:mt-10 text-center">
-              <p className="text-sm sm:text-base text-gray-400 font-light">
-                New to the community?{' '}
-                <Link to="/register" className="text-white font-bold hover:text-blue-400 transition-colors underline underline-offset-8">
-                  Create an account
+            <div className="mt-10 text-center border-t border-white/5 pt-8">
+              <p className="text-gray-600 font-medium text-[11px] uppercase tracking-wider">
+                Don't have an account?{' '}
+                <Link to="/register" className="text-white font-black hover:text-trae-green transition-colors ml-1">
+                  Sign Up
                 </Link>
               </p>
             </div>
           </div>
 
-          {/* Trust Badges */}
-          <div className="mt-8 sm:mt-12 flex items-center justify-center space-x-6 sm:space-x-8 text-gray-500">
-            <div className="flex items-center space-x-2 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-500 cursor-default">
-              <FiShield className="w-5 h-5" />
-              <span className="text-xs font-bold uppercase tracking-widest">Secure</span>
-            </div>
-            <div className="flex items-center space-x-2 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-500 cursor-default">
-              <FiCheckCircle className="w-5 h-5" />
-              <span className="text-xs font-bold uppercase tracking-widest">Verified</span>
-            </div>
-            <div className="flex items-center space-x-2 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all duration-500 cursor-default">
-              <FiUsers className="w-5 h-5" />
-              <span className="text-xs font-bold uppercase tracking-widest">Trusted</span>
-            </div>
+          {/* Bottom links */}
+          <div className="mt-8 flex items-center justify-center gap-6 text-gray-700 font-mono text-[8px] uppercase tracking-widest font-black">
+            <span>© 2026 RoomieRadar</span>
+            <span>Secure & Private</span>
           </div>
         </motion.div>
       </div>
     </div>
   );
-
 };
 
 export default Login;

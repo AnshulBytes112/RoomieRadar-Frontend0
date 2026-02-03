@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Eye } from 'lucide-react';
+import { MapPin, Eye, Search, Filter, RefreshCw, UserPlus, X, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
-import { sendConnectionRequest, searchRoommates, getCurrentUser, getConversations } from "../api";
+import { sendConnectionRequest, searchRoommates, getConversations, getSentRequests, getPendingConnections } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 import Toast from "../components/ui/Toast";
 import type { ToastType } from "../components/ui/Toast";
+import { PixelGrid } from "../components/ui";
 
 interface RoommateProfile {
   id: number;
@@ -43,7 +44,7 @@ const FindRoommate = () => {
   const [roommateProfiles, setRoommateProfiles] = useState<RoommateProfile[]>([]);
   const [pagination, setPagination] = useState({
     page: 0,
-    size: 10,
+    size: 9,
     totalPages: 0,
     totalElements: 0,
   });
@@ -52,8 +53,9 @@ const FindRoommate = () => {
     message: '',
     type: 'success'
   });
-  const [hasRoommateProfile, setHasRoommateProfile] = useState(false);
   const [connectedUserIds, setConnectedUserIds] = useState<Set<number>>(new Set());
+  const [sentRequestUserIds, setSentRequestUserIds] = useState<Set<number>>(new Set());
+  const [pendingReceivedUserIds, setPendingReceivedUserIds] = useState<Set<number>>(new Set());
 
   const fetchRoommates = async (page = 0) => {
     try {
@@ -86,8 +88,7 @@ const FindRoommate = () => {
         setRoommateProfiles([]);
       }
     } catch (err) {
-      console.error('Error fetching roommates:', err);
-      setError('Failed to fetch roommate profiles. Please try again later.');
+      setError('Failed to fetch roommate profiles.');
       setRoommateProfiles([]);
     } finally {
       setLoading(false);
@@ -97,36 +98,38 @@ const FindRoommate = () => {
   useEffect(() => {
     if (user) {
       fetchRoommates(0);
-      checkUserRoommateProfile();
       fetchConnections();
     }
-  }, [user]); // Removed activeFilters and searchQuery from deps to avoid auto-refetch on every keypress
+  }, [user]);
 
   const fetchConnections = async () => {
     try {
-      const conversations = await getConversations();
-      const ids = new Set<number>();
+      const [conversations, sent, inbox] = await Promise.all([
+        getConversations(),
+        getSentRequests(),
+        getPendingConnections()
+      ]);
+
+      const connectedIds = new Set<number>();
       conversations.forEach((convo: any) => {
-        if (convo.otherParticipant?.id) {
-          ids.add(convo.otherParticipant.id);
-        }
+        if (convo.otherParticipant?.id) connectedIds.add(convo.otherParticipant.id);
       });
-      setConnectedUserIds(ids);
-    } catch (err) {
-      console.error('Error fetching conversations:', err);
-    }
+      setConnectedUserIds(connectedIds);
+
+      const sentIds = new Set<number>();
+      sent.forEach((req: any) => {
+        if (req.status === 'PENDING') sentIds.add(req.toUserId);
+      });
+      setSentRequestUserIds(sentIds);
+
+      const incomingIds = new Set<number>();
+      inbox.forEach((req: any) => {
+        if (req.status === 'PENDING') incomingIds.add(req.fromUserId);
+      });
+      setPendingReceivedUserIds(incomingIds);
+    } catch (err) { }
   };
 
-  const checkUserRoommateProfile = async () => {
-    try {
-      const userData = await getCurrentUser();
-      if (userData && userData.roomateProfile) {
-        setHasRoommateProfile(true);
-      }
-    } catch (err) {
-      console.error('Error checking user roommate profile:', err);
-    }
-  };
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 0 && newPage < pagination.totalPages) {
@@ -135,53 +138,24 @@ const FindRoommate = () => {
     }
   };
 
-  // Client-side filtering is replaced by backend search
-  const filteredProfiles = roommateProfiles;
-
   const handleFilterChange = (filterType: string, value: string) => {
-    setActiveFilters(prev => ({
-      ...prev,
-      [filterType]: value
-    }));
+    setActiveFilters(prev => ({ ...prev, [filterType]: value }));
   };
 
   const clearFilters = () => {
-    setActiveFilters({
-      ageRange: "any",
-      lifestyle: "any",
-      budget: "any",
-      location: "any",
-      gender: "any"
-    });
+    setActiveFilters({ ageRange: "any", lifestyle: "any", budget: "any", location: "any", gender: "any" });
     setSearchQuery("");
   };
 
   const handleConnect = async (profile: RoommateProfile) => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-
+    if (!user) { navigate('/login'); return; }
     try {
       await sendConnectionRequest(profile.userId, "Hi! I'd like to connect with you.");
-      setToast({
-        isVisible: true,
-        message: `Connection request sent to ${profile.name}! They'll get back to you soon.`,
-        type: 'success'
-      });
+      setToast({ isVisible: true, message: `Request sent to ${profile.name}`, type: 'success' });
       fetchConnections();
     } catch (err: any) {
-      console.error('Error sending connection request:', err);
-      setToast({
-        isVisible: true,
-        message: err.message || 'Failed to send connection request. Please try again.',
-        type: 'error'
-      });
+      setToast({ isVisible: true, message: err.message || 'Connection failed', type: 'error' });
     }
-  };
-
-  const handleFindRoommates = () => {
-    fetchRoommates(0);
   };
 
   const canViewDetails = (profile?: RoommateProfile | null) => {
@@ -189,139 +163,90 @@ const FindRoommate = () => {
     return connectedUserIds.has(profile.userId);
   };
 
-  const getCompatibilityColor = (score: number) => {
-    if (score >= 90) return "text-green-400 bg-green-400/10";
-    if (score >= 80) return "text-blue-400 bg-blue-400/10";
-    if (score >= 70) return "text-yellow-400 bg-yellow-400/10";
-    return "text-gray-400 bg-white/5";
+  const getConnectionStatus = (userId: number) => {
+    if (connectedUserIds.has(userId)) return 'CONNECTED';
+    if (sentRequestUserIds.has(userId)) return 'SENT';
+    if (pendingReceivedUserIds.has(userId)) return 'INCOMING';
+    return 'NONE';
   };
 
-  const getHousingLabel = (status?: string) => {
-    if (status === 'has-room') return 'Has Room';
-    if (status === 'seeking-room') return 'Seeking Room';
-    if (status === 'has-roommate') return 'Has Roommate';
-    return 'Status Unknown';
+  const getCompatibilityColor = (score: number) => {
+    if (score >= 90) return "text-trae-green border-trae-green/20 bg-trae-green/5";
+    if (score >= 80) return "text-blue-400 border-blue-400/20 bg-blue-400/5";
+    return "text-gray-500 border-white/5 bg-white/5";
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0c1d] pt-20 relative overflow-hidden">
-      {/* Background blobs for depth */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-        <div className="absolute -top-[10%] -left-[10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob" />
-        <div className="absolute top-[40%] -right-[10%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen animate-blob animation-delay-2000" />
-        <div className="absolute bottom-[10%] left-[20%] w-[400px] h-[400px] bg-pink-600/10 rounded-full blur-[100px] mix-blend-screen animate-blob animation-delay-4000" />
-      </div>
+    <div className="min-h-screen bg-[#050505] pt-16 sm:pt-28 relative overflow-hidden font-sans text-white">
+      <PixelGrid />
 
-      <div className="max-w-6xl mx-auto px-4 relative z-10">
-        {/* Header Section */}
+      <div className="max-w-[1200px] mx-auto px-6 relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12 md:mb-20"
+          className="text-left mb-12"
         >
-          <h1 className="text-4xl md:text-7xl font-black mb-6 md:mb-8 tracking-tight px-4">
-            Find Your <span className="text-gradient">Circle.</span>
+          <div className="text-trae-green font-mono text-[10px] mb-3 uppercase tracking-[0.2em] font-bold">Find Roommates</div>
+          <h1 className="text-4xl md:text-6xl font-black mb-5 tracking-tighter leading-tight">
+            Find Your <span className="text-trae-green">Circle.</span>
           </h1>
-          <p className="text-lg md:text-2xl text-gray-400 max-w-3xl mx-auto font-light leading-relaxed px-6">
-            Connect with like-minded individuals and build living relationships that truly matter.
+          <p className="text-[13px] text-gray-500 max-w-xl font-medium leading-relaxed uppercase tracking-widest">
+            Connect with like-minded individuals and build living relations.
           </p>
         </motion.div>
 
-        {/* Loading & Error States scaled to theme */}
-        {loading && (
-          <div className="text-center py-32">
-            <div className="w-20 h-20 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-8 shadow-2xl shadow-blue-500/20"></div>
-            <p className="text-2xl text-gray-400 font-light animate-pulse tracking-wide">Scanning for compatibility...</p>
-          </div>
-        )}
-
-        {error && !loading && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-20"
-          >
-            <div className="glass-card border-red-500/20 px-10 py-12 rounded-[2.5rem] max-w-xl mx-auto shadow-2xl">
-              <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-8">
-                <div className="w-4 h-4 bg-red-500 rounded-full animate-ping" />
-              </div>
-              <h3 className="text-2xl font-black text-white mb-4">Connection interrupted</h3>
-              <p className="text-gray-400 mb-10 font-light leading-relaxed">{error}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="px-10 py-4 bg-red-600/20 border border-red-500/30 text-red-100 rounded-2xl hover:bg-red-600/30 transition-all font-bold group flex items-center gap-3 mx-auto"
-              >
-                Sync again
-              </button>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Search and Filters Section */}
         {!loading && !error && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="glass-card p-6 md:p-10 rounded-[2rem] md:rounded-[2.5rem] mb-12 md:mb-20 shadow-2xl border-white/5 relative overflow-hidden"
+            className="bg-[#0a0a0a] border border-white/5 p-6 rounded-[2rem] mb-12 shadow-xl"
           >
-            <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-500 opacity-50" />
-
-            {/* Search Bar */}
-            <div className="relative mb-8 md:mb-12">
+            <div className="relative mb-6">
               <input
                 type="text"
-                placeholder="Search name, occupation..."
+                placeholder="Search name, occupation, personality..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-6 md:px-10 py-4 md:py-6 text-lg md:text-xl glass-card rounded-2xl md:rounded-3xl focus:border-blue-500/50 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 bg-white/5 text-white placeholder-gray-500"
+                className="w-full pl-11 pr-5 py-3.5 bg-white/[0.02] border border-white/10 rounded-xl focus:border-trae-green/50 transition-all text-[12px] font-medium placeholder-gray-700"
               />
-              <svg className="absolute right-6 md:right-10 top-1/2 transform -translate-y-1/2 w-6 h-6 md:w-8 md:h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-700" />
             </div>
 
-            {/* Filter Toggle */}
-            <div className="flex justify-between items-center mb-6 md:mb-8 px-2">
-              <h2 className="text-xl md:text-3xl font-black text-white tracking-tight flex items-center gap-4">
-                Advanced <span className="text-gradient hidden sm:inline">Filters</span>
-              </h2>
+            <div className="flex justify-between items-center mb-6 px-1">
+              <h3 className="text-[8px] font-mono uppercase tracking-[0.2em] text-gray-700 font-black">Filter Results</h3>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="group flex items-center gap-3 px-4 md:px-6 py-2 md:py-3 glass-card rounded-xl md:rounded-2xl text-blue-400 hover:text-blue-300 transition-all border-none"
+                className="flex items-center gap-2 text-trae-green font-black text-[9px] uppercase tracking-widest hover:text-emerald-400 transition-colors"
               >
-                <span className="font-bold uppercase tracking-widest text-[10px] md:text-xs">{showFilters ? "Collapse" : "Expand"}</span>
-                <svg className={`w-4 h-4 md:w-5 md:h-5 transform transition-transform duration-500 ${showFilters ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                <Filter className="w-3 h-3" />
+                {showFilters ? "Show Less" : "Show More Filters"}
               </button>
             </div>
 
-            {/* Filters */}
             <AnimatePresence>
               {showFilters && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-8 md:mb-10 overflow-hidden"
+                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8"
                 >
                   {[
                     { label: 'Age Range', key: 'ageRange', opts: ['any', '18-25', '26-35', '36+'] },
-                    { label: 'Gender', key: 'gender', opts: ['any', 'male', 'female', 'other', 'prefer-not-to-say'] },
-                    { label: 'Lifestyle', key: 'lifestyle', opts: ['any', 'Quiet', 'Social', 'Active', 'Creative', 'Clean'] },
-                    { label: 'Budget Range', key: 'budget', opts: ['any', '₹15,000', '₹20,000', '₹22,000'] },
-                    { label: 'Location', key: 'location', opts: ['any', 'Koramangala', 'Indiranagar', 'Whitefield', 'MG Road'] }
+                    { label: 'Gender', key: 'gender', opts: ['any', 'male', 'female', 'other'] },
+                    { label: 'Lifestyle', key: 'lifestyle', opts: ['any', 'Quiet', 'Social', 'Active', 'Creative'] },
+                    { label: 'Budget', key: 'budget', opts: ['any', '₹15k', '₹20k', '₹25k'] },
+                    { label: 'Location', key: 'location', opts: ['any', 'Koramangala', 'Indiranagar', 'Whitefield'] }
                   ].map((filter) => (
-                    <div key={`filter-${filter.key}`} className="space-y-2 md:space-y-3">
-                      <label className="text-[10px] font-black text-gray-500 ml-1 uppercase tracking-widest">{filter.label}</label>
+                    <div key={filter.key} className="space-y-2">
+                      <label className="text-[8px] font-black uppercase tracking-widest text-gray-700 ml-1">{filter.label}</label>
                       <select
                         value={activeFilters[filter.key as keyof typeof activeFilters]}
                         onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                        className="w-full px-4 md:px-5 py-3 md:py-4 glass-card rounded-xl md:rounded-2xl focus:border-blue-500/50 focus:outline-none transition-all bg-[#1a1a3a] text-white border-white/5 appearance-none cursor-pointer text-sm"
+                        className="w-full px-3 py-2.5 bg-white/[0.02] border border-white/10 rounded-xl focus:border-trae-green/50 transition-all appearance-none cursor-pointer text-[11px] font-bold"
                       >
                         {filter.opts.map(opt => (
-                          <option key={`${filter.key}-${opt}`} value={opt} className="bg-[#0c0c1d]">{opt}</option>
+                          <option key={opt} value={opt} className="bg-[#0a0a0a]">{opt}</option>
                         ))}
                       </select>
                     </div>
@@ -330,358 +255,210 @@ const FindRoommate = () => {
               )}
             </AnimatePresence>
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-4 justify-center">
-              <button
-                onClick={clearFilters}
-                className="px-10 py-4 glass-card rounded-2xl text-gray-400 font-bold tracking-widest uppercase text-xs hover:bg-white/10 transition-all border-none"
-              >
-                Clear All
+            <div className="flex flex-wrap gap-3 mt-2">
+              <button onClick={() => fetchRoommates(0)} className="px-6 h-14 sm:h-12 bg-trae-green text-black font-black uppercase tracking-widest text-[11px] sm:text-[9px] rounded-xl hover:bg-emerald-400 transition-all flex items-center gap-2">
+                <RefreshCw className="w-5 h-5 sm:w-4 sm:h-4" /> Refresh List
               </button>
-              <button
-                onClick={handleFindRoommates}
-                className="px-12 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:from-blue-500 hover:to-purple-500 transition-all shadow-xl shadow-blue-900/40 active:scale-95 flex items-center gap-3"
-              >
-                Find Roommates
+              <button onClick={clearFilters} className="px-6 h-14 sm:h-12 bg-white/5 border border-white/10 text-gray-500 font-black uppercase tracking-widest text-[11px] sm:text-[9px] rounded-xl hover:text-white transition-all">
+                Clear Filters
               </button>
             </div>
           </motion.div>
         )}
 
-        {/* Results Section */}
-        {!loading && !error && (
-          <div className="mb-24 px-2">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-12">
-              <div>
-                <h3 className="text-xl md:text-4xl font-black text-white tracking-tight">
-                  <span className="text-gradient">{pagination.totalElements}</span> Roommates
-                </h3>
-                <p className="text-xs md:text-base text-gray-500 font-medium">Page {pagination.page + 1} of {pagination.totalPages}</p>
-              </div>
-            </div>
-
-            {/* Roommate Cards Grid */}
-            {filteredProfiles.length > 0 ? (
-              <>
-                <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-10">
-                  {filteredProfiles.map((profile) => (
-                    <motion.div
-                      key={`profile-${profile.id}`}
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="glass-card rounded-2xl md:rounded-[2.5rem] hover:shadow-[0_20px_60px_-15px_rgba(37,99,235,0.1)] transition-all duration-700 transform hover:-translate-y-2 border-white/5 overflow-hidden group flex flex-col"
-                    >
-                      {/* Profile Header */}
-                      <div className="relative p-3 md:p-10 bg-white/[0.03] border-b border-white/5">
-                        <div className="absolute top-0 right-0 p-2 md:p-8">
-                          <div className={`px-2 md:px-4 py-1 md:py-2 glass-card rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-widest ${getCompatibilityColor(profile.compatibility)} shadow-xl border-none`}>
-                            {profile.compatibility}%
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col items-center text-center">
-                          <div className="relative flex-shrink-0 mb-2 md:mb-0">
-                            <img
-                              src={profile.avatar || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"}
-                              alt={profile.name}
-                              className="w-16 h-16 md:w-28 md:h-28 rounded-2xl md:rounded-[2rem] object-cover border-2 border-white/10 shadow-2xl group-hover:scale-105 transition-transform duration-500"
-                            />
-                            <div className={`absolute -bottom-1 -right-1 w-3 h-3 md:w-8 md:h-8 rounded-full md:rounded-2xl border-2 md:border-4 border-[#0c0c1d] shadow-xl ${profile.isOnline ? 'bg-green-500 bg-gradient-to-br from-green-400 to-green-600' : 'bg-gray-600'
-                              }`}></div>
-                          </div>
-                          <div className="w-full">
-                            <h3 className="text-xs md:text-3xl font-black text-white group-hover:text-blue-400 transition-colors tracking-tight truncate w-full">
-                              {profile.name}, {profile.age}
-                            </h3>
-                            <p className="text-purple-400 font-black uppercase tracking-widest text-[7px] md:text-[10px] my-0.5 md:my-2 truncate">{profile.occupation}</p>
-                            <div className="flex items-center justify-center gap-1 md:gap-2 text-gray-500">
-                              <MapPin className="w-2.5 h-2.5 md:w-4 md:h-4 text-pink-500" />
-                              <span className="text-[7px] md:text-sm font-bold uppercase tracking-wider truncate max-w-[80px] md:max-w-none">{profile.location}</span>
-                            </div>
-                            <div className="mt-1 md:mt-3 flex justify-center">
-                              <span className="px-2 md:px-3 py-0.5 md:py-1 glass-card bg-white/5 border-white/10 text-[7px] md:text-[10px] font-black uppercase tracking-widest text-blue-300 rounded-full">
-                                {getHousingLabel(profile.housingStatus)}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
+        {loading ? (
+          <div className="text-center py-32">
+            <div className="w-10 h-10 border-2 border-trae-green border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+            <p className="text-[10px] text-gray-600 font-mono uppercase tracking-[0.3em] font-bold animate-pulse">Finding Roommates...</p>
+          </div>
+        ) : (
+          <div className="pb-20">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {roommateProfiles.map((profile, i) => (
+                <motion.div
+                  key={profile.id}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden group hover:border-trae-green/30 transition-all duration-500 shadow-xl flex flex-col"
+                >
+                  <div className="relative h-32 bg-white/[0.02] flex items-center justify-center border-b border-white/5">
+                    <div className="relative group/avatar">
+                      <div className="w-20 h-20 rounded-2xl bg-[#050505] border-2 border-white/10 shadow-xl overflow-hidden flex items-center justify-center transition-all group-hover/avatar:scale-105">
+                        {profile.avatar ? (
+                          <img
+                            src={profile.avatar}
+                            alt={profile.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-3xl font-black text-trae-green uppercase">{profile.name.charAt(0)}</span>
+                        )}
                       </div>
+                      <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-[#0a0a0a] ${profile.isOnline ? 'bg-trae-green shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gray-700 animate-pulse'}`}></div>
+                    </div>
+                    <div className={`absolute top-3 right-3 px-2 py-0.5 border rounded-md text-[7px] font-black uppercase tracking-widest ${getCompatibilityColor(profile.compatibility)}`}>
+                      {profile.compatibility}% Match
+                    </div>
+                  </div>
 
-                      {/* Profile Content */}
-                      <div className="p-3 md:p-10 flex-grow flex flex-col justify-between">
-                        <div className="hidden md:block space-y-6 md:space-y-10">
-                          <p className="text-gray-400 text-base md:text-lg font-light leading-relaxed line-clamp-3">"{profile.bio}"</p>
+                  <div className="p-5 flex-grow flex flex-col">
+                    <div className="mb-4">
+                      <h3 className="text-lg font-black text-white leading-tight tracking-tight group-hover:text-trae-green transition-colors truncate">
+                        {profile.name}, {profile.age}
+                      </h3>
+                      <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest">{profile.occupation || 'Member'}</p>
+                    </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
-                            <div>
-                              <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Lifestyle</h4>
-                              <div className="flex flex-wrap gap-2">
-                                {profile.lifestyle.slice(0, 3).map((trait, idx) => (
-                                  <span key={`lifestyle-${profile.id}-${idx}`} className="px-3 py-1.5 glass-card bg-white/5 border-white/5 text-blue-300 rounded-xl text-[10px] font-black uppercase tracking-wider">
-                                    {trait}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                            <div>
-                              <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Interests</h4>
-                              <div className="flex flex-wrap gap-2">
-                                {profile.interests.slice(0, 3).map((interest, idx) => (
-                                  <span key={`interest-${profile.id}-${idx}`} className="px-3 py-1.5 glass-card bg-white/5 border-white/5 text-purple-300 rounded-xl text-[10px] font-black uppercase tracking-wider">
-                                    {interest}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
+                    <div className="flex items-center gap-2 text-gray-600 text-[9px] mb-4 font-black uppercase tracking-widest">
+                      <MapPin className="w-3 h-3 text-trae-green opacity-50" />
+                      <span className="truncate">{profile.location}</span>
+                    </div>
 
-                          <div className="flex items-center justify-between p-6 glass-card border-none bg-white/5 rounded-3xl">
-                            <div>
-                              <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Max Budget</h4>
-                              <p className="text-2xl font-black text-white">{profile.budget}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Last Active</p>
-                              <p className="text-sm font-bold text-gray-400">{profile.lastActive}</p>
-                            </div>
-                          </div>
-                        </div>
+                    <p className="text-gray-500 font-regular text-[11px] mb-6 line-clamp-2 italic leading-relaxed">"{profile.bio}"</p>
 
-                        {/* Mobile Only Content - Minimized */}
-                        <div className="block md:hidden mb-2">
-                          <div className="flex justify-center flex-wrap gap-1 mb-2">
-                            {profile.lifestyle.slice(0, 2).map((trait, idx) => (
-                              <span key={`mob-lifestyle-${profile.id}-${idx}`} className="px-1.5 py-0.5 glass-card bg-white/5 border-white/5 text-blue-300 rounded-md text-[6px] font-bold uppercase tracking-wider">
-                                {trait}
-                              </span>
-                            ))}
-                          </div>
-                          <div className="text-center">
-                            <p className="text-[9px] font-bold text-white">{profile.budget}</p>
-                            <p className="text-[7px] text-gray-500 font-bold uppercase tracking-widest mt-1">
-                              {getHousingLabel(profile.housingStatus)}
-                            </p>
-                          </div>
-                        </div>
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {profile.lifestyle.slice(0, 2).map((trait, idx) => (
+                        <span key={idx} className="px-2 py-0.5 bg-white/5 border border-white/5 text-gray-600 rounded text-[7px] font-black uppercase tracking-widest">
+                          {trait}
+                        </span>
+                      ))}
+                    </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex gap-2 md:gap-4 mt-auto">
+                    <div className="flex gap-2.5 mt-auto">
+                      {(() => {
+                        const status = getConnectionStatus(profile.userId);
+                        if (status === 'CONNECTED') {
+                          return (
+                            <button
+                              onClick={() => navigate('/messages')}
+                              className="flex-1 h-13 sm:h-11 bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-[11px] sm:text-[9px] rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+                            >
+                              <Zap className="w-4 h-4 text-trae-green" /> Chat
+                            </button>
+                          );
+                        }
+                        if (status === 'SENT') {
+                          return (
+                            <button
+                              disabled
+                              className="flex-1 h-13 sm:h-11 bg-white/5 border border-white/5 text-gray-600 font-black uppercase tracking-widest text-[11px] sm:text-[9px] rounded-xl flex items-center justify-center gap-2 opacity-50 cursor-not-allowed"
+                            >
+                              <RefreshCw className="w-4 h-4 animate-spin-slow" /> Pending
+                            </button>
+                          );
+                        }
+                        if (status === 'INCOMING') {
+                          return (
+                            <button
+                              onClick={() => navigate('/connections')}
+                              className="flex-1 h-13 sm:h-11 bg-trae-green/20 border border-trae-green/30 text-trae-green font-black uppercase tracking-widest text-[11px] sm:text-[9px] rounded-xl hover:bg-trae-green/30 transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+                            >
+                              <UserPlus className="w-5 h-5 sm:w-4 sm:h-4" /> Respond
+                            </button>
+                          );
+                        }
+                        return (
                           <button
                             onClick={() => handleConnect(profile)}
-                            className="flex-1 py-2 md:py-5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg md:rounded-2xl font-black uppercase tracking-widest text-[8px] md:text-xs hover:from-blue-500 hover:to-purple-500 transition-all shadow-xl shadow-blue-900/40 active:scale-95"
+                            className="flex-1 h-13 sm:h-11 bg-trae-green text-black font-black uppercase tracking-widest text-[11px] sm:text-[9px] rounded-xl hover:bg-emerald-400 transition-all active:scale-95 flex items-center justify-center gap-2"
                           >
-                            Connect
+                            <UserPlus className="w-5 h-5 sm:w-4 sm:h-4" /> Connect
                           </button>
-                          <button
-                            onClick={() => {
-                              if (!canViewDetails(profile)) {
-                                setToast({
-                                  isVisible: true,
-                                  message: 'Connect first to view full profile details.',
-                                  type: 'error'
-                                });
-                              }
-                              setSelectedProfile(profile);
-                            }}
-                            className="px-3 md:px-6 py-2 md:py-5 glass-card text-gray-400 hover:text-white rounded-lg md:rounded-2xl border-none hover:bg-white/10 transition-all font-bold group/eye"
-                          >
-                            <Eye className="w-4 h-4 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-                {/* Pagination Controls */}
-                {pagination.totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-4 mt-12 pb-12">
-                    <button
-                      onClick={() => handlePageChange(pagination.page - 1)}
-                      disabled={pagination.page === 0}
-                      className="px-6 py-3 glass-card rounded-xl text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-all font-bold uppercase tracking-wider text-sm"
-                    >
-                      Previous
-                    </button>
-                    <div className="text-white font-black text-lg">
-                      {pagination.page + 1} <span className="text-gray-500 text-sm font-medium">/ {pagination.totalPages}</span>
+                        );
+                      })()}
+                      <button
+                        onClick={() => {
+                          if (!canViewDetails(profile)) {
+                            setToast({ isVisible: true, message: 'Please connect to view profile details', type: 'error' });
+                          }
+                          setSelectedProfile(profile);
+                        }}
+                        className="w-13 h-13 sm:w-11 sm:h-11 bg-white/5 border border-white/10 text-gray-600 rounded-xl flex items-center justify-center hover:text-white transition-all active:scale-95"
+                      >
+                        <Eye className="w-5 h-5 sm:w-4 sm:h-4" />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => handlePageChange(pagination.page + 1)}
-                      disabled={pagination.page === pagination.totalPages - 1}
-                      className="px-6 py-3 glass-card rounded-xl text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition-all font-bold uppercase tracking-wider text-sm"
-                    >
-                      Next
-                    </button>
                   </div>
-                )}
-              </>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-32"
-              >
-                <div className="w-24 h-24 glass-card rounded-[2rem] flex items-center justify-center mx-auto mb-10">
-                  <span className="text-4xl">🔎</span>
-                </div>
-                <h3 className="text-3xl font-black text-white mb-4">No explorers found</h3>
-                <p className="text-xl text-gray-500 font-light mb-12">Try expanding your search parameters to find new matches.</p>
-                <button
-                  onClick={clearFilters}
-                  className="px-12 py-5 bg-white text-midnight font-black uppercase tracking-widest rounded-2xl transition-all hover:scale-105 active:scale-95"
-                >
-                  Clear Filters
-                </button>
-              </motion.div>
-            )}
-
-          </div>
-        )}
-
-        {/* CTA Section */}
-        {!loading && !error && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            className="glass-card mb-24 p-16 rounded-[3rem] text-center border-white/10 relative overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-premium opacity-[0.05]" />
-            <div className="absolute -top-[50%] -right-[20%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen" />
-
-            <h3 className="text-5xl font-black text-white mb-6 relative">Ready to <span className="text-gradient">Co-live?</span></h3>
-            <p className="text-2xl text-gray-400 mb-12 max-w-2xl mx-auto font-light leading-relaxed relative">
-              Join the most exclusive roommate community and <br />redefine your living experience.
-            </p>
-            <div className="flex flex-wrap gap-6 justify-center relative">
-              <button
-                onClick={() => navigate('/find-room')}
-                className="px-12 py-5 bg-white text-midnight rounded-2xl font-black uppercase tracking-widest text-xs hover:scale-105 transition-all shadow-2xl"
-              >
-                Browse Rooms
-              </button>
-              <button
-                onClick={() => navigate('/profile')}
-                className="px-12 py-5 glass-card text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-white/10 transition-all border-white/20"
-              >
-                {hasRoommateProfile ? 'Edit Profile' : 'Create Profile'}
-              </button>
+                </motion.div>
+              ))}
             </div>
-          </motion.div>
+
+            {pagination.totalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-12 pb-10">
+                <button onClick={() => handlePageChange(pagination.page - 1)} disabled={pagination.page === 0} className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-gray-600 disabled:opacity-20 hover:text-white transition-all"><ChevronLeft className="w-4 h-4" /></button>
+                <span className="text-[10px] font-black text-gray-700 uppercase tracking-widest">{pagination.page + 1} / {pagination.totalPages}</span>
+                <button onClick={() => handlePageChange(pagination.page + 1)} disabled={pagination.page === pagination.totalPages - 1} className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-gray-600 disabled:opacity-20 hover:text-white transition-all"><ChevronRight className="w-4 h-4" /></button>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
-      {/* Profile Detail Modal */}
-      {selectedProfile && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-midnight/95 backdrop-blur-2xl flex items-center justify-center p-4 md:p-6 z-[100]"
-          onClick={() => setSelectedProfile(null)}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            className="glass-card rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border-white/10 relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setSelectedProfile(null)}
-              className="absolute top-4 right-4 md:top-8 md:right-8 w-10 h-10 md:w-12 md:h-12 glass-card rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 hover:text-white transition-all border-none"
-            >
-              <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+      <AnimatePresence>
+        {selectedProfile && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-[#050505]/95 backdrop-blur-xl" onClick={() => setSelectedProfile(null)} />
+            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.98, opacity: 0 }} className="bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] p-8 sm:p-10 max-w-lg w-full relative shadow-2xl overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-trae-green/20 to-transparent" />
+              <button onClick={() => setSelectedProfile(null)} className="absolute top-6 right-6 text-gray-700 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
 
-            <div className="space-y-8 md:space-y-12">
-              <div className="flex flex-col items-center gap-6 md:gap-10">
-                <img
-                  src={selectedProfile.avatar}
-                  alt={selectedProfile.name}
-                  className="w-32 h-32 md:w-40 md:h-40 rounded-[2rem] md:rounded-[2.5rem] object-cover border-4 border-white/10 shadow-2xl"
-                />
-                <div className="text-center">
-                  <h3 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-2">{selectedProfile.name}, {selectedProfile.age}</h3>
-                  <p className="text-gradient font-black uppercase tracking-[0.2em] text-[10px] md:text-sm mb-4">{selectedProfile.occupation}</p>
-                  <div className="flex items-center justify-center gap-3 text-gray-400">
-                    <MapPin className="text-pink-500 w-4 h-4 md:w-5 md:h-5" />
-                    <span className="text-base md:text-lg font-bold uppercase tracking-widest">{selectedProfile.location}</span>
-                  </div>
-                  <div className="mt-3 flex justify-center">
-                    <span className="px-4 py-2 glass-card bg-white/5 border-white/10 text-blue-300 rounded-full text-[9px] md:text-[11px] font-black uppercase tracking-widest">
-                      {getHousingLabel(selectedProfile.housingStatus)}
-                    </span>
-                  </div>
+              <div className="flex flex-col items-center text-center space-y-6">
+                <div className="w-24 h-24 rounded-3xl bg-[#050505] border-2 border-white/10 shadow-2xl flex items-center justify-center overflow-hidden">
+                  {selectedProfile.avatar ? (
+                    <img src={selectedProfile.avatar} alt={selectedProfile.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-4xl font-black text-trae-green uppercase">{selectedProfile.name.charAt(0)}</span>
+                  )}
                 </div>
+                <div>
+                  <h3 className="text-3xl font-black text-white tracking-tighter uppercase">{selectedProfile.name}, {selectedProfile.age}</h3>
+                  <p className="text-trae-green font-mono text-[9px] uppercase tracking-widest font-black mt-1">{selectedProfile.occupation}</p>
+                </div>
+
+                {canViewDetails(selectedProfile) ? (
+                  <div className="w-full space-y-6 text-left">
+                    <div className="p-5 bg-white/[0.02] border border-white/5 rounded-2xl italic text-[13px] text-gray-400 leading-relaxed font-medium">"{selectedProfile.bio}"</div>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest ml-1">Lifestyle</p>
+                        <div className="flex flex-wrap gap-2">{selectedProfile.lifestyle.map(s => <span key={s} className="px-2 py-1 bg-trae-green/5 text-trae-green text-[7px] font-black uppercase rounded border border-trae-green/10">{s}</span>)}</div>
+                      </div>
+                      <div className="space-y-3">
+                        <p className="text-[8px] font-black text-gray-700 uppercase tracking-widest ml-1">Interests</p>
+                        <div className="flex flex-wrap gap-2">{selectedProfile.interests.map(s => <span key={s} className="px-2 py-1 bg-blue-500/5 text-blue-400 text-[7px] font-black uppercase rounded border border-blue-500/10">{s}</span>)}</div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-10">
+                    <div className="w-12 h-12 bg-trae-green/5 border border-trae-green/10 rounded-2xl flex items-center justify-center mx-auto mb-6"><Zap className="w-6 h-6 text-trae-green opacity-40" /></div>
+                    <p className="text-[10px] text-gray-600 font-black uppercase tracking-widest max-w-[200px] mx-auto leading-relaxed">Profile details are private. Connect with them to view more.</p>
+                    {(() => {
+                      const status = getConnectionStatus(selectedProfile!.userId);
+                      if (status === 'SENT') {
+                        return (
+                          <button disabled className="mt-8 px-10 py-4 bg-white/5 border border-white/5 text-gray-600 font-black uppercase tracking-widest text-[10px] rounded-xl opacity-50 cursor-not-allowed">Request Pending</button>
+                        );
+                      }
+                      if (status === 'INCOMING') {
+                        return (
+                          <button onClick={() => navigate('/connections')} className="mt-8 px-10 py-4 bg-trae-green/20 border border-trae-green/30 text-trae-green font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-trae-green/30 transition-all">Respond to Request</button>
+                        );
+                      }
+                      return (
+                        <button onClick={() => handleConnect(selectedProfile!)} className="mt-8 px-10 py-4 bg-trae-green text-black font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-emerald-400 transition-all shadow-xl">Connect Now</button>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
-              {canViewDetails(selectedProfile) ? (
-                <>
-                  <div className="p-6 md:p-10 glass-card bg-white/5 border-none rounded-[1.5rem] md:rounded-[2.5rem]">
-                    <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-4 md:mb-6">Manifesto</h4>
-                    <p className="text-lg md:text-2xl text-white font-light leading-relaxed">"{selectedProfile.bio}"</p>
-                  </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-10">
-                    <div className="space-y-6">
-                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-1">Lifestyles</h4>
-                      <div className="flex flex-wrap gap-3">
-                        {selectedProfile.lifestyle.map((trait, idx) => (
-                          <span key={`modal-lifestyle-${selectedProfile.id}-${idx}`} className="px-6 py-3 glass-card bg-blue-500/10 border-blue-500/20 text-blue-300 rounded-2xl text-sm font-black uppercase tracking-widest">
-                            {trait}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-6">
-                      <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] ml-1">Interests</h4>
-                      <div className="flex flex-wrap gap-3">
-                        {selectedProfile.interests.map((interest, idx) => (
-                          <span key={`modal-interest-${selectedProfile.id}-${idx}`} className="px-6 py-3 glass-card bg-purple-500/10 border-purple-500/20 text-purple-300 rounded-2xl text-sm font-black uppercase tracking-widest">
-                            {interest}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="p-6 md:p-10 glass-card bg-white/5 border-none rounded-[1.5rem] md:rounded-[2.5rem] text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mx-auto mb-4">
-                    <Eye className="w-6 h-6 text-blue-400" />
-                  </div>
-                  <h4 className="text-lg md:text-2xl font-black text-white uppercase tracking-widest mb-2">Profile Locked</h4>
-                  <p className="text-sm md:text-base text-gray-400 font-medium">
-                    Full details unlock after your connection request is accepted.
-                  </p>
-                  <div className="mt-6 flex gap-4 justify-center">
-                    <button
-                      onClick={() => handleConnect(selectedProfile)}
-                      className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:from-blue-500 hover:to-purple-500 transition-all shadow-xl shadow-blue-900/40"
-                    >
-                      Send Request
-                    </button>
-                    <button
-                      onClick={() => setSelectedProfile(null)}
-                      className="px-8 py-3 glass-card text-gray-400 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all border-none"
-                    >
-                      Close
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-      {/* Toast Notification */}
-      <Toast
-        isVisible={toast.isVisible}
-        message={toast.message}
-        type={toast.type}
-        onClose={() => setToast(prev => ({ ...prev, isVisible: false }))}
-      />
+      <Toast isVisible={toast.isVisible} message={toast.message} type={toast.type} onClose={() => setToast(prev => ({ ...prev, isVisible: false }))} />
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { createPortal } from "react-dom";
 
 type GalleryModalProps = {
   images: string[];
@@ -23,7 +24,7 @@ const GalleryModal = ({ images, startIndex = 0, onClose }: GalleryModalProps) =>
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm"
@@ -83,7 +84,8 @@ const GalleryModal = ({ images, startIndex = 0, onClose }: GalleryModalProps) =>
           </div>
         </div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 
