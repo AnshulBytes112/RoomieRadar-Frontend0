@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MapPin, Zap, MessageSquare, ChevronLeft, Shield, User, Mail, Briefcase, Calendar } from "lucide-react";
-import { getProfileByUserId, fetchRoomsByUserId, sendConnectionRequest, getConversations } from "../api";
+import { MapPin, Zap, MessageSquare, ChevronLeft, Shield, User, Mail, Briefcase, Calendar, X } from "lucide-react";
+import { getProfileByUserId, fetchRoomsByUserId, sendConnectionRequest, getConversations, getSentRequests, cancelConnectionRequest } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 import Toast from "../components/ui/Toast";
 import type { ToastType } from "../components/ui/Toast";
-import { PixelGrid } from "../components/ui";
+import { PixelGrid, ConfirmationModal } from "../components/ui";
 import RoomCard from "../components/RoomCard";
 
 interface UserProfileData {
@@ -25,6 +25,7 @@ interface UserProfileData {
     interests?: string[];
     housingStatus?: string;
     hasRoommateProfile: boolean;
+    deleted: boolean;
 }
 
 const UserProfile = () => {
@@ -35,7 +36,9 @@ const UserProfile = () => {
     const [rooms, setRooms] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isConnected, setIsConnected] = useState(false);
+    const [connectionStatus, setConnectionStatus] = useState<'NONE' | 'PENDING' | 'CONNECTED'>('NONE');
+    const [pendingRequestId, setPendingRequestId] = useState<number | null>(null);
+    const [showConfirm, setShowConfirm] = useState(false);
     const [toast, setToast] = useState<{ isVisible: boolean; message: string; type: ToastType }>({
         isVisible: false,
         message: "",
@@ -54,12 +57,27 @@ const UserProfile = () => {
                 setProfile(profileData);
                 setRooms(roomsData);
 
-                // Check connection
-                const conversations = await getConversations();
+                // Check connection status
+                const [conversations, sentRequests] = await Promise.all([
+                    getConversations(),
+                    getSentRequests()
+                ]);
+
                 const connected = conversations.some((convo: any) =>
                     convo.otherParticipant?.id === Number(userId)
                 );
-                setIsConnected(connected);
+
+                if (connected) {
+                    setConnectionStatus('CONNECTED');
+                } else {
+                    const pending = sentRequests.find((req: any) => req.toUserId === Number(userId));
+                    if (pending) {
+                        setConnectionStatus('PENDING');
+                        setPendingRequestId(pending.id);
+                    } else {
+                        setConnectionStatus('NONE');
+                    }
+                }
 
             } catch (err: any) {
                 setError(err.message || "Couldn't load profile details.");
@@ -74,10 +92,24 @@ const UserProfile = () => {
         if (!currentUser) { navigate("/login"); return; }
         if (!profile) return;
         try {
-            await sendConnectionRequest(profile.userId, "Hi! I saw your room listing and would like to connect.");
+            const res = await sendConnectionRequest(profile.userId, "Hi! I saw your room listing and would like to connect.");
             setToast({ isVisible: true, message: `Request sent to ${profile.name.toUpperCase()}`, type: "success" });
+            setConnectionStatus('PENDING');
+            setPendingRequestId(res.id);
         } catch (err: any) {
             setToast({ isVisible: true, message: err.message || "Connection failed", type: "error" });
+        }
+    };
+
+    const handleCancel = async () => {
+        if (!pendingRequestId) return;
+        try {
+            await cancelConnectionRequest(pendingRequestId);
+            setToast({ isVisible: true, message: "Connection request cancelled", type: "success" });
+            setConnectionStatus('NONE');
+            setPendingRequestId(null);
+        } catch (err: any) {
+            setToast({ isVisible: true, message: err.message || "Cancellation failed", type: "error" });
         }
     };
 
@@ -102,9 +134,48 @@ const UserProfile = () => {
         );
     }
 
+    if (profile.deleted) {
+        return (
+            <div className="min-h-screen bg-[#050505] pt-16 sm:pt-28 pb-20 px-6 relative overflow-hidden font-sans text-white">
+                <PixelGrid />
+                <div className="max-w-[800px] mx-auto relative z-10 text-center">
+                    <button onClick={() => navigate(-1)} className="flex items-center gap-2.5 text-gray-700 hover:text-trae-green mb-12 transition-all group font-black uppercase tracking-widest text-[9px] mx-auto">
+                        <ChevronLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
+                        Back
+                    </button>
+
+                    <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mx-auto mb-8">
+                        <User className="w-10 h-10 text-gray-700" />
+                    </div>
+
+                    <h1 className="text-5xl font-black mb-4 tracking-tighter uppercase tabular-nums">Account <span className="text-red-500">Deactivated.</span></h1>
+                    <p className="text-[11px] text-gray-500 font-medium max-w-sm mx-auto mb-12 leading-relaxed uppercase tracking-widest italic">
+                        The user "@" + profile.username + " has chosen to deactivate their account. Their listings and profile details are no longer available to protect their privacy.
+                    </p>
+
+                    <div className="p-8 bg-white/[0.02] border border-white/5 rounded-3xl inline-block">
+                        <p className="text-[9px] font-black text-trae-green uppercase tracking-[0.3em]">Privacy & Safety First</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-[#050505] pt-16 sm:pt-28 pb-20 px-6 relative overflow-hidden font-sans text-white">
             <PixelGrid />
+
+            <ConfirmationModal
+                isOpen={showConfirm}
+                onClose={() => setShowConfirm(false)}
+                onConfirm={() => {
+                    handleCancel();
+                    setShowConfirm(false);
+                }}
+                title="Cancel Request?"
+                message={`Are you sure you want to cancel your connection request to ${profile.name.toUpperCase()}? This action cannot be undone.`}
+                confirmText="Cancel Request"
+            />
 
             <div className="max-w-[1000px] mx-auto relative z-10">
                 <motion.div
@@ -154,7 +225,7 @@ const UserProfile = () => {
                                         <MapPin className="w-4 h-4 text-blue-400 opacity-70" />
                                         <span className="text-[10px] font-bold uppercase tracking-widest truncate">{profile.location || 'Location Not Set'}</span>
                                     </div>
-                                    {isConnected && (
+                                    {connectionStatus === 'CONNECTED' && (
                                         <div className="flex items-center gap-3 text-gray-400">
                                             <Mail className="w-4 h-4 text-purple-400 opacity-70" />
                                             <span className="text-[10px] font-bold tracking-widest truncate">{profile.email || 'Visible to contacts'}</span>
@@ -163,9 +234,13 @@ const UserProfile = () => {
                                 </div>
 
                                 <div className="mt-8 space-y-3">
-                                    {!isConnected ? (
+                                    {connectionStatus === 'NONE' ? (
                                         <button onClick={handleConnect} className="w-full py-4 bg-trae-green text-black rounded-xl font-black uppercase tracking-widest text-[9px] hover:bg-emerald-400 transition-all shadow-xl shadow-trae-green/10 active:scale-95">
                                             Connect to View Details
+                                        </button>
+                                    ) : connectionStatus === 'PENDING' ? (
+                                        <button onClick={() => setShowConfirm(true)} className="w-full py-4 bg-white/5 border border-red-500/20 text-red-500 rounded-xl font-black uppercase tracking-widest text-[9px] hover:bg-red-500 hover:text-white transition-all active:scale-95">
+                                            <X className="w-4 h-4 inline-block mr-2" /> Cancel Request
                                         </button>
                                     ) : (
                                         <button onClick={() => navigate("/messages")} className="w-full py-4 bg-white/5 border border-white/10 text-white rounded-xl font-black uppercase tracking-widest text-[9px] hover:bg-white/10 transition-all active:scale-95">

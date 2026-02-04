@@ -19,6 +19,7 @@ interface RoomCardProps {
       id: number;
       name: string;
       avatar?: string;
+      deleted?: boolean;
     };
   };
   onOpenGallery?: (id: number) => void;
@@ -70,8 +71,12 @@ const RoomCard: React.FC<RoomCardProps> = ({
             </div>
           )}
           <div className="flex flex-col">
-            <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest leading-none mb-0.5">Posted by</span>
-            <span className="text-[11px] font-black text-white uppercase tracking-tighter group-hover:text-trae-green transition-colors">{room.postedBy.name}</span>
+            <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest leading-none mb-0.5">
+              {room.postedBy.deleted ? 'Account Deactivated' : 'Posted by'}
+            </span>
+            <span className="text-[11px] font-black text-white uppercase tracking-tighter group-hover:text-trae-green transition-colors">
+              {room.postedBy.deleted ? 'Deleted User' : room.postedBy.name}
+            </span>
           </div>
         </div>
       )}
@@ -101,8 +106,8 @@ const RoomCard: React.FC<RoomCardProps> = ({
               onFavorite(room.id);
             }}
             className={`absolute top-3 right-3 p-2.5 backdrop-blur-md border border-white/10 rounded-xl transition-all group/fav active:scale-90 ${isFavorited
-                ? 'bg-trae-green text-black border-trae-green'
-                : 'bg-black/40 text-white hover:bg-trae-green hover:text-black hover:border-trae-green'
+              ? 'bg-trae-green text-black border-trae-green'
+              : 'bg-black/40 text-white hover:bg-trae-green hover:text-black hover:border-trae-green'
               }`}
           >
             <Heart className={`w-4 h-4 ${isFavorited ? 'fill-current' : 'group-hover/fav:fill-current'}`} />

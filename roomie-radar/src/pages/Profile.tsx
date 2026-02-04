@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Mail, Phone, Edit2, Save, LogOut, Heart, Zap, Camera, Trash2, Settings, Layout } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-import { getCurrentUser, updateUserProfile, uploadImage, updateRoommateProfile, createRoommateProfile, deleteRoommateProfile } from "../api";
+import { getCurrentUser, updateUserProfile, uploadImage, updateRoommateProfile, createRoommateProfile, deleteRoommateProfile, deactivateAccount } from "../api";
 import { PixelGrid } from "../components/ui";
 
 const Profile = () => {
@@ -13,6 +13,7 @@ const Profile = () => {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showDeactivateModal, setShowDeactivateModal] = useState(false);
     const [isProfileDisabled, setIsProfileDisabled] = useState(false);
 
     useEffect(() => {
@@ -169,6 +170,21 @@ const Profile = () => {
         }
     };
 
+    const handleDeactivateAccount = async () => {
+        try {
+            setLoading(true);
+            await deactivateAccount();
+            setSuccess("Account deactivated. Logging out...");
+            setTimeout(() => {
+                logout();
+            }, 2000);
+        } catch (err: any) {
+            setError(err.message || "Deactivation failed.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (loading && !formData.name) {
         return (
             <div className="min-h-screen pt-16 flex flex-col items-center justify-center bg-[#050505]">
@@ -269,9 +285,14 @@ const Profile = () => {
                                 <button className="w-full h-12 bg-white/5 text-gray-600 rounded-xl font-black uppercase tracking-widest text-[8px] flex items-center justify-center gap-2 hover:bg-white/10 hover:text-white transition-all">
                                     <Settings className="w-3.5 h-3.5" /> Security
                                 </button>
-                                <button onClick={() => logout()} className="w-full h-12 bg-red-500/10 text-red-500 rounded-xl font-black uppercase tracking-widest text-[8px] flex items-center justify-center gap-2 hover:bg-red-500 hover:text-white transition-all">
-                                    <LogOut className="w-3.5 h-3.5" /> Log Out
+                                <button onClick={() => setShowDeactivateModal(true)} className="w-full h-12 border border-red-500/20 text-red-500/60 rounded-xl font-black uppercase tracking-widest text-[8px] flex items-center justify-center gap-2 hover:bg-red-500 hover:text-white transition-all">
+                                    <Trash2 className="w-3.5 h-3.5" /> Deactivate Account
                                 </button>
+                                <div className="pt-2">
+                                    <button onClick={() => logout()} className="w-full h-12 bg-red-500/10 text-red-500 rounded-xl font-black uppercase tracking-widest text-[8px] flex items-center justify-center gap-2 hover:bg-red-500 hover:text-white transition-all">
+                                        <LogOut className="w-3.5 h-3.5" /> Log Out
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -463,11 +484,54 @@ const Profile = () => {
                             onClick={(e) => e.stopPropagation()}
                         >
                             <Trash2 className="w-12 h-12 text-red-500 mx-auto mb-6" />
-                            <h3 className="text-2xl font-black text-white mb-3 uppercase tracking-tighter">Delete Profile?</h3>
-                            <p className="text-[13px] text-gray-600 font-medium mb-10 leading-relaxed">This action will permanently delete your roommate profile and remove you from searches.</p>
+                            <h3 className="text-2xl font-black text-white mb-3 uppercase tracking-tighter">Deactivate Profile?</h3>
+                            <p className="text-[13px] text-gray-600 font-medium mb-10 leading-relaxed">This action will hide your roommate profile from searches and other users.</p>
                             <div className="flex gap-3">
                                 <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-4 bg-white/5 text-gray-700 rounded-xl font-black uppercase tracking-widest text-[9px] hover:text-white transition-all">Cancel</button>
-                                <button onClick={handleDeleteProfile} className="flex-1 py-4 bg-red-500 text-white rounded-xl font-black uppercase tracking-widest text-[9px] hover:bg-red-600 transition-all">Delete Profile</button>
+                                <button onClick={handleDeleteProfile} className="flex-1 py-4 bg-red-500 text-white rounded-xl font-black uppercase tracking-widest text-[9px] hover:bg-red-600 transition-all">Deactivate</button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {showDeactivateModal && (
+                    <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-red-950/20 backdrop-blur-xl"
+                            onClick={() => setShowDeactivateModal(false)}
+                        />
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            className="bg-[#0a0a0a] border border-red-500/20 p-10 rounded-[2.5rem] max-w-sm w-full shadow-2xl relative text-center ring-1 ring-red-500/10"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-red-500/20">
+                                <Settings className="w-10 h-10 text-red-500 animate-pulse" />
+                            </div>
+                            <h3 className="text-2xl font-black text-white mb-3 uppercase tracking-tighter">Deactivate account?</h3>
+                            <p className="text-[11px] text-gray-500 font-medium mb-10 leading-relaxed uppercase tracking-widest">
+                                Your listings and profile will be hidden. Your messages will be preserved as <span className="text-white">Deleted User</span>.
+                            </p>
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={handleDeactivateAccount}
+                                    className="w-full py-4 bg-red-600 text-white rounded-xl font-black uppercase tracking-widest text-[9px] hover:bg-red-500 transition-all shadow-xl shadow-red-500/20 active:scale-95"
+                                >
+                                    Confirm Deactivation
+                                </button>
+                                <button
+                                    onClick={() => setShowDeactivateModal(false)}
+                                    className="w-full py-4 bg-white/5 text-gray-700 rounded-xl font-black uppercase tracking-widest text-[9px] hover:text-white transition-all"
+                                >
+                                    Stay Active
+                                </button>
                             </div>
                         </motion.div>
                     </div>

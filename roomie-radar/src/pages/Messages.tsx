@@ -150,7 +150,7 @@ const Messages = () => {
                                                 <span className="text-[7px] text-gray-600 font-mono">{convo.lastMessageAt ? new Date(convo.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
                                             </div>
                                             <p className="text-[9px] text-trae-green font-mono font-black tracking-widest mb-1 opacity-60 truncate">
-                                                {convo.otherParticipant?.isActive ? 'Online Now' : formatLastSeen(convo.otherParticipant?.lastActive)}
+                                                {convo.otherParticipant?.deleted ? 'DEACTIVATED' : (convo.otherParticipant?.isActive ? 'Online Now' : formatLastSeen(convo.otherParticipant?.lastActive))}
                                             </p>
                                         </div>
                                     </div>
@@ -184,8 +184,8 @@ const Messages = () => {
                                     <div>
                                         <h3 className="text-xs font-black text-white uppercase tracking-widest">{selectedConvo.otherParticipant?.name}</h3>
                                         <div className="flex items-center gap-2">
-                                            <div className={`w-1.5 h-1.5 rounded-full ${selectedConvo.otherParticipant?.isActive ? 'bg-trae-green shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gray-700'}`} />
-                                            <span className="text-[8px] font-black text-gray-500 uppercase tracking-[0.2em]">{selectedConvo.otherParticipant?.isActive ? 'Active Now' : 'Away'}</span>
+                                            <div className={`w-1.5 h-1.5 rounded-full ${selectedConvo.otherParticipant?.deleted ? 'bg-red-500' : (selectedConvo.otherParticipant?.isActive ? 'bg-trae-green shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-gray-700')}`} />
+                                            <span className="text-[8px] font-black text-gray-500 uppercase tracking-[0.2em]">{selectedConvo.otherParticipant?.deleted ? 'Deactivated' : (selectedConvo.otherParticipant?.isActive ? 'Active Now' : 'Away')}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -241,12 +241,13 @@ const Messages = () => {
                                     type="text"
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
-                                    placeholder="Type your message here..."
-                                    className="w-full h-16 bg-white/5 border border-white/10 rounded-xl px-6 pr-20 outline-none focus:border-trae-green/50 transition-all font-bold text-white text-[13px] tracking-widest placeholder:text-gray-700"
+                                    placeholder={selectedConvo.otherParticipant?.deleted ? "Cannot reply to a deactivated account" : "Type your message here..."}
+                                    disabled={selectedConvo.otherParticipant?.deleted}
+                                    className="w-full h-16 bg-white/5 border border-white/10 rounded-xl px-6 pr-20 outline-none focus:border-trae-green/50 transition-all font-bold text-white text-[13px] tracking-widest placeholder:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                 />
                                 <button
                                     type="submit"
-                                    disabled={!newMessage.trim() || isSending}
+                                    disabled={!newMessage.trim() || isSending || selectedConvo.otherParticipant?.deleted}
                                     className="absolute right-2.5 top-2.5 w-11 h-11 bg-trae-green rounded-lg flex items-center justify-center text-black hover:bg-emerald-400 transition-all active:scale-95 disabled:opacity-30 disabled:hover:bg-trae-green"
                                 >
                                     <Send className="w-5 h-5" />

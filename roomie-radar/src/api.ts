@@ -177,11 +177,12 @@ export interface Room {
   contactEmail?: string;
   houseRules?: string;
   houseDetails?: string;
+  deleted: boolean;
   postedBy?: {
     id: number;
     name: string;
     email: string;
-    // other user fields...
+    deleted: boolean;
   };
 }
 
@@ -223,6 +224,22 @@ export async function fetchRoomsByUserId(userId: number) {
     throw new Error('Failed to fetch rooms by user ID');
   }
   return response.json();
+}
+
+export interface RoommateProfile {
+  id: number;
+  userId: number;
+  name: string;
+  age: number;
+  occupation: string;
+  lifestyle: string[];
+  budget: string;
+  location: string;
+  bio: string;
+  interests: string[];
+  avatar?: string;
+  housingStatus?: string;
+  deleted: boolean;
 }
 
 // ===== ROOMMATE MANAGEMENT =====
@@ -416,6 +433,13 @@ export async function updateUserProfile(userData: any) {
   }).then(res => res.json());
 }
 
+export async function deactivateAccount() {
+  // POST /api/users/profile/deactivate
+  return authFetch('/api/users/profile/deactivate', {
+    method: 'POST'
+  }).then(res => res.json());
+}
+
 // ===== FAVORITES & WISHLIST =====
 export async function addToFavorites(roomId: number) {
   // POST /api/favorites
@@ -520,6 +544,13 @@ export async function rejectConnectionRequest(requestId: number) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ accept: false })
+  }).then(res => res.json());
+}
+
+export async function cancelConnectionRequest(requestId: number) {
+  // DELETE /api/message-requests/{id}
+  return authFetch(`/api/message-requests/${requestId}`, {
+    method: 'DELETE'
   }).then(res => res.json());
 }
 

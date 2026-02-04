@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getPendingConnections, getSentRequests, acceptConnectionRequest, rejectConnectionRequest } from '../api';
-import { PixelGrid } from '../components/ui';
+import { getPendingConnections, getSentRequests, acceptConnectionRequest, rejectConnectionRequest, cancelConnectionRequest } from '../api';
+import { PixelGrid, ConfirmationModal } from '../components/ui';
 import { Radio, Send, Check, X, Clock, Wifi } from 'lucide-react';
 
 const Connections = () => {
@@ -10,6 +10,7 @@ const Connections = () => {
     const [sentRequests, setSentRequests] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState<number | null>(null);
+    const [requestToCancel, setRequestToCancel] = useState<any | null>(null);
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
     const fetchData = async (isBackground = false) => {
@@ -58,6 +59,18 @@ const Connections = () => {
         }
     };
 
+    const handleCancel = async (id: number) => {
+        try {
+            setActionLoading(id);
+            await cancelConnectionRequest(id);
+            await fetchData();
+        } catch (error) {
+            console.error('Failed to cancel request:', error);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
     const tabs = [
         { id: 'inbox', label: 'Incoming Requests', count: inboxRequests.length, icon: Radio },
         { id: 'sent', label: 'Sent Requests', count: sentRequests.length, icon: Send },
@@ -66,6 +79,21 @@ const Connections = () => {
     return (
         <div className="min-h-screen bg-[#050505] pt-16 sm:pt-28 pb-20 px-6 relative overflow-hidden font-sans text-white">
             <PixelGrid />
+
+            <ConfirmationModal
+                isOpen={!!requestToCancel}
+                onClose={() => setRequestToCancel(null)}
+                onConfirm={() => {
+                    if (requestToCancel) {
+                        handleCancel(requestToCancel.id);
+                        setRequestToCancel(null);
+                    }
+                }}
+                title="Cancel Request?"
+                message={`Are you sure you want to cancel your connection request to ${requestToCancel?.toName || requestToCancel?.toUsername}? This action cannot be undone.`}
+                confirmText="Cancel Request"
+                isLoading={actionLoading === requestToCancel?.id}
+            />
 
             <div className="max-w-[900px] mx-auto relative z-10">
                 <motion.div
@@ -158,7 +186,7 @@ const Connections = () => {
                                             </div>
                                         </div>
 
-                                        {activeTab === 'inbox' && (
+                                        {activeTab === 'inbox' ? (
                                             <div className="flex gap-3 w-full sm:w-auto mt-4 sm:mt-0">
                                                 <button
                                                     onClick={() => handleReject(request.id)}
@@ -174,6 +202,22 @@ const Connections = () => {
                                                 >
                                                     <Check className="w-3.5 h-3.5" /> Accept Request
                                                 </button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex gap-3 w-full sm:w-auto mt-4 sm:mt-0">
+                                                {request.status === 'PENDING' && (
+                                                    <button
+                                                        onClick={() => setRequestToCancel(request)}
+                                                        disabled={actionLoading === request.id}
+                                                        className="h-12 px-6 rounded-xl bg-white/5 border border-white/10 text-gray-500 hover:text-red-500 hover:border-red-500/30 font-black uppercase tracking-widest text-[8px] transition-all flex items-center justify-center gap-2 flex-1 sm:flex-none"
+                                                    >
+                                                        {actionLoading === request.id ? 'Cancelling...' : (
+                                                            <>
+                                                                <X className="w-3.5 h-3.5" /> Cancel Request
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                )}
                                             </div>
                                         )}
                                     </motion.div>

@@ -266,9 +266,9 @@ const MyListings = () => {
 
                 <ConfirmDialog
                     isOpen={confirmDialog.isOpen}
-                    title="Delete Listing"
-                    message={`Are you sure you want to delete "${confirmDialog.roomTitle}"? This action cannot be undone.`}
-                    confirmText="Delete Listing"
+                    title="Deactivate Listing"
+                    message={`Are you sure you want to deactivate "${confirmDialog.roomTitle}"? It will no longer be visible to other users.`}
+                    confirmText="Deactivate"
                     cancelText="Cancel"
                     type="danger"
                     onConfirm={confirmDelete}
