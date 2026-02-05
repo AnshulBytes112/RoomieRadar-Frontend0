@@ -27,7 +27,6 @@ const Profile = () => {
         name: "",
         email: "",
         phone: "",
-        username: "",
         role: "",
         avatar: "",
         roommateProfileId: null as number | null,
@@ -58,7 +57,6 @@ const Profile = () => {
                     name: userData.name || "",
                     email: userData.email || "",
                     phone: userData.phone || "",
-                    username: userData.username || "",
                     role: userData.role || "",
                     avatar: userData.roomateProfile?.avatar || "",
                     roommateProfileId: userData.roomateProfile?.id || null,
@@ -120,8 +118,7 @@ const Profile = () => {
             await updateUserProfile({
                 name: formData.name,
                 email: formData.email,
-                phone: formData.phone,
-                username: formData.username
+                phone: formData.phone
             });
 
             const roommateData = {
@@ -272,7 +269,7 @@ const Profile = () => {
                             </div>
 
                             <h3 className="text-2xl font-black text-white tracking-tighter mb-1 uppercase truncate">{formData.name}</h3>
-                            <p className="text-trae-green font-mono text-[9px] font-bold uppercase tracking-[0.2em] mb-6">@{formData.username}</p>
+                            <p className="text-trae-green font-mono text-[9px] font-bold uppercase tracking-[0.2em] mb-6">{formData.email}</p>
 
                             <div className="flex flex-wrap justify-center gap-2 mb-8">
                                 <span className="px-2.5 py-1 bg-white/5 border border-white/5 rounded-lg text-[8px] font-black uppercase tracking-widest text-blue-400">{formData.role}</span>

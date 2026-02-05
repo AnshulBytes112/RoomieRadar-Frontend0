@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { userRegister } from "../api";
+import { userRegister, verifyOtp, resendOtp } from "../api";
 import { useAuth } from "../contexts/AuthContext";
-import { FiUser, FiLock, FiMail, FiPhone, FiArrowRight, FiUsers, FiShield, FiMapPin } from "react-icons/fi";
+import { FiUser, FiLock, FiMail, FiPhone, FiArrowRight, FiUsers, FiShield, FiMapPin, FiCheckCircle } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { PixelGrid } from "../components/ui";
 import { Rocket } from "lucide-react";
@@ -10,31 +10,59 @@ import { Rocket } from "lucide-react";
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [showOtp, setShowOtp] = useState(false);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   useAuth();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
     try {
       const result = await userRegister({
-        username,
         name,
         email,
         password,
         phone
       });
-      if (result && (result.success || result.user)) {
-        navigate("/login");
+      if (result && (result.success || result.message?.includes("OTP"))) {
+        setShowOtp(true);
       } else {
         setError(result?.message || "Registration failed.");
       }
     } catch (err: any) {
       setError(err.message || "Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+    try {
+      await verifyOtp(email, otp);
+      navigate("/login");
+    } catch (err: any) {
+      setError(err.message || "Verification failed. Please check the OTP.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setError("");
+    try {
+      await resendOtp(email);
+      // Optional: show a success message
+    } catch (err: any) {
+      setError(err.message || "Failed to resend OTP.");
     }
   };
 
@@ -144,115 +172,176 @@ const Register = () => {
           <div className="bg-[#0a0a0a] border border-white/5 p-8 sm:p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-trae-green/20 via-teal-400/40 to-blue-500/20" />
 
-            <div className="mb-6 text-left">
-              <h2 className="text-3xl font-black text-white mb-2 tracking-tighter uppercase">Join Us</h2>
-              <p className="text-xs text-gray-600 font-medium">Create your RoomieRadar identity</p>
-            </div>
+            {!showOtp ? (
+              <>
+                <div className="mb-6 text-left">
+                  <h2 className="text-3xl font-black text-white mb-2 tracking-tighter uppercase">Join Us</h2>
+                  <p className="text-xs text-gray-600 font-medium">Create your RoomieRadar identity</p>
+                </div>
 
-            <motion.form
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="space-y-4"
-              onSubmit={handleRegister}
-            >
-              {error && (
-                <motion.div
-                  className="bg-red-500/5 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                <motion.form
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-4"
+                  onSubmit={handleRegister}
                 >
-                  {error}
-                </motion.div>
-              )}
+                  {error && (
+                    <motion.div
+                      className="bg-red-500/5 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      {error}
+                    </motion.div>
+                  )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black ml-1">Username</label>
-                  <div className="relative group/input">
-                    <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-trae-green transition-colors w-4 h-4" />
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      className="w-full pl-10 pr-3 py-3 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white text-[13px] placeholder-gray-700 font-medium"
-                      placeholder="Username"
-                      required
-                    />
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black ml-1">Full Name</label>
+                    <div className="relative group/input">
+                      <FiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-trae-green transition-colors w-4 h-4" />
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white text-[13px] placeholder-gray-700 font-medium"
+                        placeholder="Full Name"
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black ml-1">Full Name</label>
-                  <div className="relative group/input">
-                    <FiUser className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-trae-green transition-colors w-4 h-4" />
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-10 pr-3 py-3 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white text-[13px] placeholder-gray-700 font-medium"
-                      placeholder="Full Name"
-                      required
-                    />
+
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black ml-1">Email Address</label>
+                    <div className="relative group/input">
+                      <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-blue-400 transition-colors w-4 h-4" />
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white placeholder-gray-700 text-[13px] font-medium"
+                        placeholder="Enter email"
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black ml-1">Email Address</label>
-                <div className="relative group/input">
-                  <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-blue-400 transition-colors w-4 h-4" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white placeholder-gray-700 text-[13px] font-medium"
-                    placeholder="Enter email"
-                    required
-                  />
-                </div>
-              </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black ml-1">Phone Number (Optional)</label>
+                    <div className="relative group/input">
+                      <FiPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-orange-400 transition-colors w-4 h-4" />
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white placeholder-gray-700 text-[13px] font-medium"
+                        placeholder="Enter phone"
+                      />
+                    </div>
+                  </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black ml-1">Phone Number</label>
-                <div className="relative group/input">
-                  <FiPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-orange-400 transition-colors w-4 h-4" />
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white placeholder-gray-700 text-[13px] font-medium"
-                    placeholder="Enter phone"
-                  />
-                </div>
-              </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black ml-1">Password</label>
+                    <div className="relative group/input">
+                      <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-trae-green transition-colors w-4 h-4" />
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white placeholder-gray-700 text-[13px] font-medium"
+                        placeholder="Create password"
+                        required
+                      />
+                    </div>
+                  </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black ml-1">Password</label>
-                <div className="relative group/input">
-                  <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-trae-green transition-colors w-4 h-4" />
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white placeholder-gray-700 text-[13px] font-medium"
-                    placeholder="Create password"
-                    required
-                  />
+                  <div className="pt-4">
+                    <motion.button
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full h-14 rounded-xl bg-trae-green text-black font-black uppercase tracking-widest text-[11px] shadow-xl shadow-trae-green/5 hover:bg-emerald-400 transition-all duration-300 flex items-center justify-center gap-2 group/btn disabled:opacity-50 disabled:cursor-not-allowed"
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                    >
+                      <span>{isLoading ? "Processing..." : "Sign Up"}</span>
+                      <FiArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+                    </motion.button>
+                  </div>
+                </motion.form>
+              </>
+            ) : (
+              <>
+                <div className="mb-6 text-left">
+                  <div className="w-12 h-12 bg-trae-green/10 rounded-2xl flex items-center justify-center mb-4">
+                    <FiMail className="text-trae-green text-2xl" />
+                  </div>
+                  <h2 className="text-3xl font-black text-white mb-2 tracking-tighter uppercase">Verify Email</h2>
+                  <p className="text-xs text-gray-600 font-medium">We've sent a 6-digit code to <span className="text-white font-bold">{email}</span></p>
                 </div>
-              </div>
 
-              <div className="pt-4">
-                <motion.button
-                  type="submit"
-                  className="w-full h-14 rounded-xl bg-trae-green text-black font-black uppercase tracking-widest text-[11px] shadow-xl shadow-trae-green/5 hover:bg-emerald-400 transition-all duration-300 flex items-center justify-center gap-2 group/btn"
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
+                <motion.form
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="space-y-6"
+                  onSubmit={handleVerifyOtp}
                 >
-                  <span>Sign Up</span>
-                  <FiArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
-                </motion.button>
-              </div>
-            </motion.form>
+                  {error && (
+                    <motion.div
+                      className="bg-red-500/5 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      {error}
+                    </motion.div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black ml-1">Verification Code</label>
+                    <div className="relative group/input">
+                      <FiShield className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-trae-green transition-colors w-4 h-4" />
+                      <input
+                        type="text"
+                        maxLength={6}
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                        className="w-full pl-11 pr-4 py-4 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white text-2xl tracking-[0.5em] font-black placeholder-gray-800 text-center"
+                        placeholder="000000"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <motion.button
+                      type="submit"
+                      disabled={isLoading || otp.length !== 6}
+                      className="w-full h-14 rounded-xl bg-trae-green text-black font-black uppercase tracking-widest text-[11px] shadow-xl shadow-trae-green/5 hover:bg-emerald-400 transition-all duration-300 flex items-center justify-center gap-2 group/btn disabled:opacity-50 disabled:cursor-not-allowed"
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                    >
+                      <span>{isLoading ? "Verifying..." : "Verify & Complete"}</span>
+                      <FiCheckCircle className="w-4 h-4" />
+                    </motion.button>
+
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      className="w-full text-[10px] font-bold text-gray-600 hover:text-white transition-colors uppercase tracking-widest text-center"
+                    >
+                      Didn't receive the code? <span className="text-trae-green">Resend</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowOtp(false)}
+                      className="w-full text-[9px] font-medium text-gray-700 hover:text-gray-400 transition-colors uppercase tracking-[0.2em] text-center"
+                    >
+                      ← Back to details
+                    </button>
+                  </div>
+                </motion.form>
+              </>
+            )}
 
             <div className="mt-8 text-center border-t border-white/5 pt-6">
               <p className="text-gray-600 font-medium text-[11px] uppercase tracking-wider">

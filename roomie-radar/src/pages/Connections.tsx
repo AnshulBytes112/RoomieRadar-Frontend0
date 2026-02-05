@@ -90,7 +90,7 @@ const Connections = () => {
                     }
                 }}
                 title="Cancel Request?"
-                message={`Are you sure you want to cancel your connection request to ${requestToCancel?.toName || requestToCancel?.toUsername}? This action cannot be undone.`}
+                message={`Are you sure you want to cancel your connection request to ${requestToCancel?.toName || requestToCancel?.toEmail}? This action cannot be undone.`}
                 confirmText="Cancel Request"
                 isLoading={actionLoading === requestToCancel?.id}
             />
@@ -161,14 +161,14 @@ const Connections = () => {
                                                 />
                                             ) : (
                                                 <span className="text-xl font-black text-white uppercase group-hover:text-trae-green transition-colors">
-                                                    {(activeTab === 'inbox' ? (request.fromName || request.fromUsername) : (request.toName || request.toUsername))?.[0]?.toUpperCase()}
+                                                    {(activeTab === 'inbox' ? (request.fromName || request.fromEmail) : (request.toName || request.toEmail))?.[0]?.toUpperCase()}
                                                 </span>
                                             )}
                                         </div>
 
                                         <div className="flex-1 text-center sm:text-left min-w-0">
                                             <h3 className="text-xl font-black text-white uppercase tracking-tight mb-1 group-hover:text-trae-green transition-colors truncate">
-                                                {activeTab === 'inbox' ? (request.fromName || request.fromUsername) : (request.toName || request.toUsername)}
+                                                {activeTab === 'inbox' ? (request.fromName || request.fromEmail) : (request.toName || request.toEmail)}
                                             </h3>
                                             <p className="text-gray-500 text-[13px] font-medium leading-relaxed italic truncate">
                                                 "{request.message || 'Wants to connect with you.'}"

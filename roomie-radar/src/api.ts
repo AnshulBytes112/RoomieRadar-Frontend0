@@ -333,7 +333,7 @@ export async function deleteRoommateProfile(profileId: number) {
 }
 
 // ===== USER AUTHENTICATION =====
-export async function userLogin(credentials: { username: string; password: string }) {
+export async function userLogin(credentials: { identifier: string; password: string }) {
   // POST /api/auth/login
   console.log('Logging in with credentials:', credentials);
   console.log('Sending request to:', `${API_BASE_URL}/api/auth/login`);
@@ -369,10 +369,8 @@ export async function userLogin(credentials: { username: string; password: strin
 }
 
 export async function userRegister(userData: {
-
   name: string;
   email: string;
-  username: string;
   password: string;
   phone?: string;
 }) {
@@ -411,6 +409,34 @@ export async function userRegister(userData: {
   return result;
 }
 
+export async function verifyOtp(email: string, otp: string) {
+  const response = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, otp })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Verification failed');
+  }
+
+  return response.json();
+}
+
+export async function resendOtp(email: string) {
+  const response = await fetch(`${API_BASE_URL}/api/auth/resend-otp?email=${encodeURIComponent(email)}`, {
+    method: 'POST'
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to resend OTP');
+  }
+
+  return response.json();
+}
+
 export async function userLogout() {
   // POST /api/auth/logout
   return authFetch('/api/auth/logout', {
@@ -425,7 +451,6 @@ export async function getCurrentUser() {
 
 export async function updateUserProfile(userData: any) {
   // PUT /api/auth/profile
-  // Accepts username as part of userData
   return authFetch('/api/auth/profile', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },

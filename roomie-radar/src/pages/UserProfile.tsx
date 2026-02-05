@@ -13,7 +13,6 @@ interface UserProfileData {
     userId: number;
     name: string;
     email: string;
-    username: string;
     phone?: string;
     avatar?: string;
     age?: number;
@@ -150,7 +149,7 @@ const UserProfile = () => {
 
                     <h1 className="text-5xl font-black mb-4 tracking-tighter uppercase tabular-nums">Account <span className="text-red-500">Deactivated.</span></h1>
                     <p className="text-[11px] text-gray-500 font-medium max-w-sm mx-auto mb-12 leading-relaxed uppercase tracking-widest italic">
-                        The user "@" + profile.username + " has chosen to deactivate their account. Their listings and profile details are no longer available to protect their privacy.
+                        The user with email "{profile.email}" has chosen to deactivate their account. Their listings and profile details are no longer available to protect their privacy.
                     </p>
 
                     <div className="p-8 bg-white/[0.02] border border-white/5 rounded-3xl inline-block">

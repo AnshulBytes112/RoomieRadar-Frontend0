@@ -8,7 +8,7 @@ import { PixelGrid } from "../components/ui";
 import { Rocket } from "lucide-react";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ const Login = () => {
     e.preventDefault();
     setError("");
     try {
-      const result = await userLogin({ username, password });
+      const result = await userLogin({ identifier, password });
       if (result && result.token && result.user) {
         login(result.token, result.user);
         navigate("/");
@@ -147,15 +147,15 @@ const Login = () => {
               )}
 
               <motion.div variants={itemVariants} className="space-y-2">
-                <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black ml-1">Username</label>
+                <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black ml-1">Email or Phone</label>
                 <div className="relative group/input">
                   <FiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-trae-green transition-colors w-4.5 h-4.5" />
                   <input
                     type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
                     className="w-full pl-11 pr-4 py-3.5 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white placeholder-gray-700 text-[13px] font-medium"
-                    placeholder="Enter your username"
+                    placeholder="Enter your email or phone number"
                     required
                   />
                 </div>
