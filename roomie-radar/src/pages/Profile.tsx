@@ -38,7 +38,9 @@ const Profile = () => {
         bio: "",
         interests: [] as string[],
         gender: "",
-        housingStatus: ""
+        instagram: "",
+        housingStatus: "",
+        deleted: false
     });
 
     useEffect(() => {
@@ -50,8 +52,8 @@ const Profile = () => {
             setLoading(true);
             const userData = await getCurrentUser();
             if (userData) {
-                const isDisabled = userData.roomateProfile?.occupation === "[DISABLED]";
-                setIsProfileDisabled(isDisabled || false);
+                const isDeleted = userData.roomateProfile?.deleted || false;
+                setIsProfileDisabled(isDeleted);
 
                 setFormData({
                     name: userData.name || "",
@@ -68,7 +70,9 @@ const Profile = () => {
                     bio: userData.roomateProfile?.bio || "",
                     interests: userData.roomateProfile?.interests || [],
                     gender: userData.roomateProfile?.gender || "",
-                    housingStatus: userData.roomateProfile?.housingStatus || ""
+                    instagram: userData.roomateProfile?.instagram || "",
+                    housingStatus: userData.roomateProfile?.housingStatus || "",
+                    deleted: isDeleted
                 });
             }
         } catch (err) {
@@ -132,7 +136,9 @@ const Profile = () => {
                 interests: formData.interests,
                 avatar: formData.avatar,
                 gender: formData.gender,
-                housingStatus: formData.housingStatus
+                instagram: formData.instagram,
+                housingStatus: formData.housingStatus,
+                deleted: formData.deleted
             };
 
             if (formData.roommateProfileId) {
@@ -149,6 +155,40 @@ const Profile = () => {
             setError(err.message || "Failed to update profile.");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleToggleProfileStatus = async () => {
+        if (!formData.roommateProfileId) {
+            setError("Please create a roommate profile first.");
+            return;
+        }
+
+        try {
+            const newDeletedStatus = !formData.deleted;
+            setFormData(prev => ({ ...prev, deleted: newDeletedStatus }));
+
+            const roommateData = {
+                name: formData.name,
+                age: formData.age,
+                occupation: formData.occupation,
+                lifestyle: formData.lifestyle,
+                budget: formData.budget,
+                location: formData.location,
+                bio: formData.bio,
+                interests: formData.interests,
+                avatar: formData.avatar,
+                gender: formData.gender,
+                instagram: formData.instagram,
+                housingStatus: formData.housingStatus,
+                deleted: newDeletedStatus
+            };
+
+            await updateRoommateProfile(formData.roommateProfileId, roommateData);
+            setSuccess(newDeletedStatus ? "Profile hidden from search" : "Profile is now visible");
+        } catch (err: any) {
+            setFormData(prev => ({ ...prev, deleted: !formData.deleted })); // Revert on error
+            setError(err.message || "Failed to update profile status.");
         }
     };
 
@@ -337,7 +377,7 @@ const Profile = () => {
                                                 name={field.name}
                                                 value={field.val}
                                                 onChange={handleInputChange}
-                                                disabled={!isEditing}
+                                                disabled={!isEditing || field.name === 'email'}
                                                 className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-trae-green/50 outline-none transition-all font-bold text-white tracking-widest text-[13px]"
                                             />
                                         </div>
@@ -358,6 +398,26 @@ const Profile = () => {
                                 <div className="w-1.5 h-1.5 rounded-full bg-trae-green shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
                                 Roommate Profile
                             </h4>
+
+                            {/* Status Toggle */}
+                            <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 mb-8 flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-white font-black uppercase tracking-tighter text-lg">Profile Status</h3>
+                                    <p className="text-gray-600 text-[11px] font-medium mt-1">
+                                        {formData.deleted ? "Your profile is hidden from search." : "Your profile is visible to others."}
+                                    </p>
+                                </div>
+                                <div
+                                    onClick={handleToggleProfileStatus}
+                                    className={`w-14 h-8 rounded-full p-1 cursor-pointer transition-colors duration-300 ${!formData.deleted ? 'bg-trae-green' : 'bg-gray-800'}`}
+                                >
+                                    <motion.div
+                                        className="w-6 h-6 bg-black rounded-full shadow-lg"
+                                        animate={{ x: !formData.deleted ? 24 : 0 }}
+                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                    />
+                                </div>
+                            </div>
 
                             <div className="grid grid-cols-2 md:grid-cols-2 gap-6 mb-8">
                                 <div className="space-y-2">
@@ -407,6 +467,21 @@ const Profile = () => {
                                         className="w-full px-4.5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-trae-green/50 outline-none transition-all font-bold text-white tracking-widest uppercase text-[12px]"
                                     />
                                 </div>
+                                <div className="space-y-2">
+                                    <label className="text-[9px] font-mono text-gray-700 font-black uppercase tracking-widest ml-1">Gender</label>
+                                    <select
+                                        name="gender"
+                                        value={formData.gender}
+                                        onChange={handleInputChange}
+                                        disabled={!isEditing}
+                                        className="w-full px-4.5 py-3.5 bg-white/5 border border-white/10 rounded-xl focus:border-trae-green/50 outline-none transition-all font-bold text-white appearance-none text-[12px]"
+                                    >
+                                        <option value="" className="bg-[#0a0a0a]">Select Gender</option>
+                                        <option value="Male" className="bg-[#0a0a0a]">Male</option>
+                                        <option value="Female" className="bg-[#0a0a0a]">Female</option>
+                                        <option value="Other" className="bg-[#0a0a0a]">Other</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <div className="space-y-2 mb-8">
@@ -420,6 +495,7 @@ const Profile = () => {
                                     className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl focus:border-trae-green/50 outline-none transition-all font-medium text-gray-300 leading-relaxed resize-none text-[13px] italic"
                                 />
                             </div>
+
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
@@ -534,7 +610,7 @@ const Profile = () => {
                     </div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 };
 

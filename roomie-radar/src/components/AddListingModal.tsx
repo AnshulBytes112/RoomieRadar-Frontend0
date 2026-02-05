@@ -18,14 +18,18 @@ export type NewListingInput = {
   availableFrom?: string;
   deposit?: string;
   maintenance?: string;
+  mapLink?: string;
+  contactEmail?: string;
+  houseRules?: string;
   parking?: boolean;
   petFriendly?: boolean;
   furnished?: boolean;
   contactNumber?: string;
-  contactEmail?: string;
-  houseRules?: string;
   houseDetails?: string;
   id?: number;
+  genderPreference?: string;
+  totalOccupancy?: number;
+  occupiedCount?: number;
 };
 
 type AddListingModalProps = {
@@ -58,8 +62,12 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
   const [furnished, setFurnished] = useState<boolean>(false);
   const [contactNumber, setContactNumber] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const [mapLink, setMapLink] = useState(""); // Map Link State
   const [houseRules, setHouseRules] = useState("");
   const [houseDetails, setHouseDetails] = useState("");
+  const [genderPreference, setGenderPreference] = useState("Any");
+  const [totalOccupancy, setTotalOccupancy] = useState<string>("1");
+  const [occupiedCount, setOccupiedCount] = useState<string>("0");
 
   useEffect(() => {
     if (isOpen) {
@@ -84,8 +92,12 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
         setFurnished(initialData.furnished || false);
         setContactNumber(initialData.contactNumber || "");
         setContactEmail(initialData.contactEmail || "");
+        setMapLink(initialData.mapLink || "");
         setHouseRules(initialData.houseRules || "");
         setHouseDetails(initialData.houseDetails || "");
+        setGenderPreference(initialData.genderPreference || "Any");
+        setTotalOccupancy(initialData.totalOccupancy?.toString() || "1");
+        setOccupiedCount(initialData.occupiedCount?.toString() || "0");
       } else {
         resetForm();
       }
@@ -136,8 +148,8 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
     setTitle(""); setLocation(""); setPrice(""); setArea(""); setBedrooms("1"); setBathrooms("1");
     setImageUrls(""); setTags(""); setType("Private"); setUploadedImages([]); setDescription("");
     setAmenities(""); setAvailableFrom(""); setDeposit(""); setMaintenance(""); setParking(false);
-    setPetFriendly(false); setFurnished(false); setContactNumber(""); setContactEmail("");
-    setHouseRules(""); setHouseDetails("");
+    setPetFriendly(false); setFurnished(false); setContactNumber(""); setContactEmail(""); setMapLink("");
+    setHouseRules(""); setHouseDetails(""); setGenderPreference("Any");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -158,10 +170,13 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
         tags: tagList, type, parking, petFriendly, furnished,
         deposit: deposit.trim() || undefined,
         maintenance: maintenance.trim() || undefined,
-        contactNumber: contactNumber.trim() || undefined,
         contactEmail: contactEmail.trim() || undefined,
+        mapLink: mapLink.trim() || undefined,
         houseRules: houseRules.trim() || undefined,
         houseDetails: houseDetails.trim() || undefined,
+        genderPreference,
+        totalOccupancy: parseInt(totalOccupancy) || 1,
+        occupiedCount: parseInt(occupiedCount) || 0
       };
 
       if (area.trim()) listingData.area = area.trim();
@@ -225,6 +240,35 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
                 <label className={labelClasses}><MapPin className="w-3 h-3" /> Area / Location</label>
                 <input value={location} onChange={(e) => setLocation(e.target.value)} required className={inputClasses} placeholder="e.g. Koramangala, Bangalore" />
               </div>
+
+              <div className="space-y-1.5">
+                <label className={labelClasses}>Map Link (Optional)</label>
+                <div className="relative group/input">
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-trae-green transition-colors w-4 h-4" />
+                  <input
+                    type="url"
+                    value={mapLink}
+                    onChange={(e) => setMapLink(e.target.value)}
+                    className={inputClasses}
+                    placeholder="Paste Google Maps Link"
+                  />
+                </div>
+              </div>
+
+              {/* Map Link - Added */}
+              <div className="space-y-1.5">
+                <label className={labelClasses}>Map Link (Optional)</label>
+                <div className="relative group/input">
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-trae-green transition-colors w-4 h-4" />
+                  <input
+                    type="url"
+                    value={mapLink}
+                    onChange={(e) => setMapLink(e.target.value)}
+                    className={inputClasses}
+                    placeholder="Paste Google Maps Link"
+                  />
+                </div>
+              </div>
               <div className="space-y-1.5">
                 <label className={labelClasses}><DollarSign className="w-3 h-3" /> Monthly Rent (₹)</label>
                 <input type="number" value={price} onChange={(e) => setPrice(e.target.value)} required className={inputClasses} placeholder="25000" />
@@ -253,6 +297,22 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
                   )}
                 </div>
               ))}
+              <div className="space-y-1.5">
+                <label className={labelClasses}>Gender Preference</label>
+                <select value={genderPreference} onChange={(e) => setGenderPreference(e.target.value)} className={inputClasses}>
+                  <option value="Any" className="bg-[#0a0a0a]">ANY</option>
+                  <option value="Male" className="bg-[#0a0a0a]">MALE</option>
+                  <option value="Female" className="bg-[#0a0a0a]">FEMALE</option>
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className={labelClasses}>Total Occupancy</label>
+                <input type="number" value={totalOccupancy} onChange={(e) => setTotalOccupancy(e.target.value)} className={inputClasses} placeholder="1" min="1" />
+              </div>
+              <div className="space-y-1.5">
+                <label className={labelClasses}>Currently Occupied</label>
+                <input type="number" value={occupiedCount} onChange={(e) => setOccupiedCount(e.target.value)} className={inputClasses} placeholder="0" min="0" />
+              </div>
             </div>
 
             {/* Advanced Logistics */}
@@ -292,15 +352,36 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
             <div className="space-y-7">
               <div className="space-y-3">
                 <label className={labelClasses}>About this Property (Description)</label>
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={`${inputClasses} min-h-[100px] resize-none pt-3`} placeholder="Enter a detailed description of your room..." />
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  onInput={(e) => { e.currentTarget.style.height = 'auto'; e.currentTarget.style.height = e.currentTarget.scrollHeight + 'px'; }}
+                  rows={3}
+                  className={`${inputClasses} min-h-[100px] resize-none pt-3 overflow-hidden`}
+                  placeholder="Enter a detailed description of your room..."
+                />
               </div>
               <div className="space-y-3">
                 <label className={labelClasses}>Detailed Property Info</label>
-                <textarea value={houseDetails} onChange={(e) => setHouseDetails(e.target.value)} rows={3} className={`${inputClasses} min-h-[100px] resize-none pt-3`} placeholder="Add any specific details about the house..." />
+                <textarea
+                  value={houseDetails}
+                  onChange={(e) => setHouseDetails(e.target.value)}
+                  onInput={(e) => { e.currentTarget.style.height = 'auto'; e.currentTarget.style.height = e.currentTarget.scrollHeight + 'px'; }}
+                  rows={3}
+                  className={`${inputClasses} min-h-[100px] resize-none pt-3 overflow-hidden`}
+                  placeholder="Add any specific details about the house..."
+                />
               </div>
               <div className="space-y-3">
                 <label className={labelClasses}>House Rules</label>
-                <textarea value={houseRules} onChange={(e) => setHouseRules(e.target.value)} rows={3} className={`${inputClasses} min-h-[100px] resize-none pt-3`} placeholder="e.g. No smoking, no loud music..." />
+                <textarea
+                  value={houseRules}
+                  onChange={(e) => setHouseRules(e.target.value)}
+                  onInput={(e) => { e.currentTarget.style.height = 'auto'; e.currentTarget.style.height = e.currentTarget.scrollHeight + 'px'; }}
+                  rows={3}
+                  className={`${inputClasses} min-h-[100px] resize-none pt-3 overflow-hidden`}
+                  placeholder="e.g. No smoking, no loud music..."
+                />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">

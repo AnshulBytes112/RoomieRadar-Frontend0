@@ -85,11 +85,11 @@ const MyBookings: React.FC = () => {
           ? { ...booking, status: 'CANCELLED' }
           : booking
       ));
-      setConfirmDialog({ isOpen: false, bookingId: null, bookingTitle: '' });
     } catch (err) {
       alert('Failed to cancel booking.');
     } finally {
       setCancelling(null);
+      setConfirmDialog({ isOpen: false, bookingId: null, bookingTitle: '' });
     }
   };
 

@@ -15,6 +15,7 @@ interface RoomCardProps {
     images: string[];
     tags: string[];
     type: string;
+    genderPreference?: string;
     postedBy?: {
       id: number;
       name: string;
@@ -93,10 +94,15 @@ const RoomCard: React.FC<RoomCardProps> = ({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/80 via-transparent to-transparent pointer-events-none" />
 
-        <div className="absolute top-3 left-3">
+        <div className="absolute top-3 left-3 flex items-center">
           <span className="px-3 py-1.5 bg-trae-green rounded-lg text-black text-[10px] font-black uppercase tracking-widest shadow-lg">
             {room.type}
           </span>
+          {room.genderPreference && (
+            <span className="ml-2 px-3 py-1.5 bg-pink-500 rounded-lg text-white text-[10px] font-black uppercase tracking-widest shadow-lg">
+              {room.genderPreference === 'Any' ? 'Any Gender' : `${room.genderPreference} Only`}
+            </span>
+          )}
         </div>
 
         {onFavorite && (
@@ -158,7 +164,7 @@ const RoomCard: React.FC<RoomCardProps> = ({
           View Details
         </button>
       </div>
-    </motion.div>
+    </motion.div >
   );
 };
 

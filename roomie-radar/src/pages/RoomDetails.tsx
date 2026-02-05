@@ -30,6 +30,7 @@ type RoomListing = {
   furnished?: boolean;
   contactNumber?: string;
   contactEmail?: string;
+  mapLink?: string;
   totalOccupancy?: number;
   occupiedCount?: number;
   houseRules?: string;
@@ -45,6 +46,7 @@ type RoomListing = {
       occupation?: string;
     }
   };
+  genderPreference?: string;
 };
 
 const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
@@ -151,7 +153,19 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
               <h1 className="text-3xl md:text-5xl font-black mb-3 tracking-tighter leading-tight uppercase">
                 {room.title}
               </h1>
-              <div className="flex items-center gap-2 text-gray-600 mb-6 font-bold uppercase tracking-widest text-[11px]">
+              {room.mapLink && (
+                <a
+                  href={room.mapLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-[11px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/10 transition-colors mb-4"
+                >
+                  <MapPin className="w-4 h-4" />
+                  <span>View on Map</span>
+                </a>
+              )}
+
+              <div className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-widest text-gray-500 mb-6">
                 <MapPin className="w-4 h-4 text-trae-green" />
                 {room.location}
               </div>
@@ -166,6 +180,11 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
                     <item.icon className="w-4 h-4" /> {item.val}
                   </span>
                 ))}
+                {room.genderPreference && (
+                  <span className={`px-3 py-1.5 bg-pink-500/10 border border-pink-500/20 rounded-lg text-[10px] font-black uppercase tracking-widest text-pink-400`}>
+                    Prefers: {room.genderPreference}
+                  </span>
+                )}
                 <span className="px-3 py-1.5 bg-trae-green/10 border border-trae-green/20 rounded-lg text-[10px] font-black uppercase tracking-widest text-trae-green">{room.type}</span>
                 {room.totalOccupancy && (
                   <span className="px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg text-[10px] font-black uppercase tracking-widest text-blue-400">
@@ -208,7 +227,7 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
             </motion.div>
 
             {/* Details Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-8">
               {/* Description & House Details */}
               <div className="space-y-8">
                 <div className="bg-[#0a0a0a] border border-white/5 p-8 rounded-[2rem] shadow-xl relative overflow-hidden group">
@@ -225,7 +244,7 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
                       <h5 className="text-[10px] font-black text-trae-green uppercase tracking-widest mb-3 flex items-center gap-2">
                         <FileText className="w-3.5 h-3.5" /> Detailed Description
                       </h5>
-                      <p className="text-[14px] text-gray-400 leading-relaxed font-medium">
+                      <p className="text-[14px] text-gray-400 leading-relaxed font-medium whitespace-pre-line">
                         {room.houseDetails}
                       </p>
                     </div>
@@ -245,7 +264,7 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
                   </div>
                 </div>
 
-                {/* House Rules Card - Updated to match System_Overview style */}
+                {/* House Rules Card */}
                 <div className="bg-[#0a0a0a] border border-white/5 p-8 rounded-[2rem] shadow-xl relative overflow-hidden group">
                   <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-trae-green/20 to-transparent" />
                   <h4 className="text-[11px] font-mono text-gray-700 font-black uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
@@ -253,7 +272,7 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
                   </h4>
                   {room.houseRules ? (
                     <div className="space-y-4">
-                      <p className="text-[15px] text-gray-400 font-medium leading-relaxed italic">
+                      <p className="text-[15px] text-gray-400 font-medium leading-relaxed italic whitespace-pre-line">
                         "{room.houseRules}"
                       </p>
                       <div className="pt-4 border-t border-white/5 flex items-center gap-2 text-[9px] font-black text-trae-green uppercase tracking-widest">
@@ -266,27 +285,6 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
                 </div>
               </div>
 
-              {/* Infrastructure & Amenities */}
-              <div className="space-y-8">
-                <div className="bg-[#0a0a0a] border border-white/5 p-8 rounded-[2rem] shadow-xl relative overflow-hidden group">
-                  <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/10 to-transparent" />
-                  <h4 className="text-[11px] font-mono text-gray-700 font-black uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-trae-green" /> Amenities
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {room.amenities && room.amenities.length > 0 ? (
-                      room.amenities.map((am, i) => (
-                        <div key={i} className="flex items-center gap-3 p-3 bg-white/[0.02] border border-white/5 rounded-xl group hover:border-trae-green/20 transition-all">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-trae-green opacity-40 group-hover:opacity-100 transition-opacity" />
-                          <span className="text-white font-bold uppercase tracking-widest text-[10px] truncate">{am}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <span className="text-[10px] text-gray-700 uppercase font-black tracking-widest">Basic Amenities</span>
-                    )}
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -328,9 +326,15 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
                   </div>
                 </div>
 
-                <button onClick={handleBookNow} className="w-full h-16 bg-trae-green text-black rounded-xl font-black uppercase tracking-widest text-[11px] hover:bg-emerald-400 transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2.5">
-                  <Zap className="w-4 h-4" /> Book This Room
-                </button>
+                {user?.id === room.postedBy?.id ? (
+                  <button disabled className="w-full h-16 bg-white/10 text-gray-400 rounded-xl font-black uppercase tracking-widest text-[11px] cursor-not-allowed flex items-center justify-center gap-2.5">
+                    <ShieldCheck className="w-4 h-4" /> Your Listing
+                  </button>
+                ) : (
+                  <button onClick={handleBookNow} className="w-full h-16 bg-trae-green text-black rounded-xl font-black uppercase tracking-widest text-[11px] hover:bg-emerald-400 transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2.5">
+                    <Zap className="w-4 h-4" /> Book This Room
+                  </button>
+                )}
               </div>
 
               <div className="bg-[#0a0a0a] border border-white/5 p-6 rounded-[2rem] shadow-xl">
@@ -394,6 +398,26 @@ const RoomDetails = ({ room: initialRoom }: { room?: RoomListing }) => {
                       <p className="text-xs font-bold text-white group-hover/item:text-blue-400 transition-colors truncate max-w-[150px]">{room.contactEmail || 'Not Provided'}</p>
                     </div>
                   </a>
+                </div>
+              </div>
+
+              {/* Amenities - Moved to Sidebar */}
+              <div className="bg-[#0a0a0a] border border-white/5 p-6 rounded-[2rem] shadow-xl relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/10 to-transparent" />
+                <h4 className="text-[11px] font-mono text-gray-700 font-black uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-trae-green" /> Amenities
+                </h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {room.amenities && room.amenities.length > 0 ? (
+                    room.amenities.map((am, i) => (
+                      <div key={i} className="flex items-center gap-2 p-2.5 bg-white/[0.02] border border-white/5 rounded-xl group hover:border-trae-green/20 transition-all">
+                        <CheckCircle2 className="w-3 h-3 text-trae-green opacity-40 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                        <span className="text-white font-bold uppercase tracking-widest text-[9px] truncate">{am}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <span className="text-[10px] text-gray-700 uppercase font-black tracking-widest">Basic Amenities</span>
+                  )}
                 </div>
               </div>
 

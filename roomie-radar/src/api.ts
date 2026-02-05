@@ -103,6 +103,7 @@ export async function searchRooms(filters: {
   roomType?: string;
   bedrooms?: string | number;
   bathrooms?: string | number;
+  genderPreference?: string;
   page?: number;
   size?: number;
 }) {
@@ -141,6 +142,7 @@ export async function createRoomListing(roomData: {
   contactEmail?: string;
   houseRules?: string;
   houseDetails?: string;
+  genderPreference?: string;
 }) {
   // POST /api/rooms
   return authFetch('/api/rooms', {
@@ -165,6 +167,9 @@ export interface Room {
   images: string[];
   tags: string[];
   type: "Private" | "Shared" | "Studio" | "Hostel";
+  genderPreference?: string;
+  totalOccupancy?: number;
+  occupiedCount?: number;
   description?: string;
   amenities?: string[];
   availaibleFrom?: string;
@@ -238,6 +243,7 @@ export interface RoommateProfile {
   bio: string;
   interests: string[];
   avatar?: string;
+  gender?: string;
   housingStatus?: string;
   deleted: boolean;
 }
@@ -373,6 +379,8 @@ export async function userRegister(userData: {
   email: string;
   password: string;
   phone?: string;
+  gender: string;
+  age?: number;
 }) {
   // POST /api/auth/register
   console.log('Registering user with data:', userData);

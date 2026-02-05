@@ -12,6 +12,8 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [age, setAge] = useState("");
+  const [gender, setGender] = useState("");
   const [otp, setOtp] = useState("");
   const [showOtp, setShowOtp] = useState(false);
   const [error, setError] = useState("");
@@ -28,7 +30,9 @@ const Register = () => {
         name,
         email,
         password,
-        phone
+        phone,
+        age: parseInt(age),
+        gender
       });
       if (result && (result.success || result.message?.includes("OTP"))) {
         setShowOtp(true);
@@ -237,6 +241,43 @@ const Register = () => {
                         className="w-full pl-11 pr-4 py-3 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white placeholder-gray-700 text-[13px] font-medium"
                         placeholder="Enter phone"
                       />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <div className="space-y-1.5 flex-1">
+                      <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black ml-1">Age</label>
+                      <div className="relative group/input">
+                        <FiUsers className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-trae-green transition-colors w-4 h-4" />
+                        <input
+                          type="number"
+                          value={age}
+                          onChange={(e) => setAge(e.target.value)}
+                          className="w-full pl-11 pr-4 py-3 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white placeholder-gray-700 text-[13px] font-medium"
+                          placeholder="Age"
+                          min="18"
+                          max="99"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 flex-1">
+                      <label className="text-[9px] font-mono uppercase tracking-[0.2em] text-trae-green/60 font-black ml-1">Gender</label>
+                      <div className="relative group/input">
+                        <FiUsers className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within/input:text-trae-green transition-colors w-4 h-4" />
+                        <select
+                          value={gender}
+                          onChange={(e) => setGender(e.target.value)}
+                          className="w-full pl-11 pr-4 py-3 bg-white/[0.02] border border-white/10 rounded-xl focus:outline-none focus:border-trae-green/50 transition-all text-white text-[13px] font-medium appearance-none cursor-pointer"
+                          required
+                        >
+                          <option value="" className="text-gray-500 bg-[#0a0a0a]">Select Gender</option>
+                          <option value="Male" className="bg-[#0a0a0a]">Male</option>
+                          <option value="Female" className="bg-[#0a0a0a]">Female</option>
+                          <option value="Other" className="bg-[#0a0a0a]">Other</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
 

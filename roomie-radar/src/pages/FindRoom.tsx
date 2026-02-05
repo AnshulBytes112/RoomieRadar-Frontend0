@@ -62,6 +62,7 @@ const FindRoom = () => {
     roomType: "",
     bedrooms: "",
     bathrooms: "",
+    genderPreference: "",
   });
 
   const fetchRooms = async (page = 0) => {
@@ -75,6 +76,7 @@ const FindRoom = () => {
         roomType: searchFilters.roomType || undefined,
         bedrooms: searchFilters.bedrooms || undefined,
         bathrooms: searchFilters.bathrooms || undefined,
+        genderPreference: searchFilters.genderPreference || undefined,
         page,
         size: pagination.size,
       };
@@ -143,6 +145,7 @@ const FindRoom = () => {
       roomType: "",
       bedrooms: "",
       bathrooms: "",
+      genderPreference: "",
     });
     setLoading(true);
     getAllRooms(0, 9).then(response => {
@@ -188,6 +191,7 @@ const FindRoom = () => {
         ...(listing.contactEmail && { contactEmail: listing.contactEmail }),
         ...(listing.houseRules && { houseRules: listing.houseRules }),
         ...(listing.houseDetails && { houseDetails: listing.houseDetails }),
+        ...(listing.genderPreference && { genderPreference: listing.genderPreference }),
       };
 
       const newRoom = await createRoomListing(roomPayload);

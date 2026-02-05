@@ -25,6 +25,8 @@ interface UserProfileData {
     housingStatus?: string;
     hasRoommateProfile: boolean;
     deleted: boolean;
+    gender?: string;
+    instagram?: string;
 }
 
 const UserProfile = () => {
@@ -213,6 +215,11 @@ const UserProfile = () => {
                                     <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[8px] font-black text-gray-500 uppercase tracking-widest">
                                         Verified
                                     </span>
+                                    {profile.gender && (
+                                        <span className="px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-lg text-[8px] font-black text-purple-400 uppercase tracking-widest">
+                                            {profile.gender}
+                                        </span>
+                                    )}
                                 </div>
 
                                 <div className="space-y-3 pt-6 border-t border-white/5">

@@ -2,26 +2,12 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Plus, Edit2, Trash2, MapPin, Home, BedDouble, Bath, Maximize, Eye } from "lucide-react";
-import { deleteRoomListing, fetchUserListings, createRoomListing, updateRoomListing } from "../api";
+import { deleteRoomListing, fetchUserListings, createRoomListing, updateRoomListing, type Room } from "../api";
 import AddListingModal, { type NewListingInput } from "../components/AddListingModal";
 import Toast from "../components/Toast";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useToast } from "../hooks/useToast";
 import { PixelGrid } from "../components/ui";
-
-interface Room {
-    id: number;
-    title: string;
-    location: string;
-    price: number;
-    images: string[];
-    type: string;
-    bedrooms: number;
-    bathrooms: number;
-    area: string;
-    houseRules?: string;
-    houseDetails?: string;
-}
 
 const MyListings = () => {
     const [listings, setListings] = useState<Room[]>([]);
@@ -195,6 +181,11 @@ const MyListings = () => {
                                     <div className="absolute bottom-3 left-3 px-2 py-0.5 bg-white/5 border border-white/10 rounded-lg text-gray-400 text-[8px] font-black uppercase tracking-[0.2em]">
                                         {room.type}
                                     </div>
+                                    {room.genderPreference && (
+                                        <div className="absolute bottom-3 right-3 px-2 py-0.5 bg-pink-500/20 border border-pink-500/30 text-pink-400 rounded-lg text-[8px] font-black uppercase tracking-[0.2em]">
+                                            {room.genderPreference === 'Any' ? 'Any Gender' : `${room.genderPreference} Only`}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="p-6 flex-grow flex flex-col">

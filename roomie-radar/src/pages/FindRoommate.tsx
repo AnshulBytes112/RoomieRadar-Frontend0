@@ -233,7 +233,7 @@ const FindRoommate = () => {
                 >
                   {[
                     { label: 'Age Range', key: 'ageRange', opts: ['any', '18-25', '26-35', '36+'] },
-                    { label: 'Gender', key: 'gender', opts: ['any', 'male', 'female', 'other'] },
+                    { label: 'Gender', key: 'gender', opts: ['any', 'Male', 'Female', 'Other'] },
                     { label: 'Lifestyle', key: 'lifestyle', opts: ['any', 'Quiet', 'Social', 'Active', 'Creative'] },
                     { label: 'Budget', key: 'budget', opts: ['any', '₹15k', '₹20k', '₹25k'] },
                     { label: 'Location', key: 'location', opts: ['any', 'Koramangala', 'Indiranagar', 'Whitefield'] }
