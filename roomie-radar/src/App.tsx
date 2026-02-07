@@ -15,6 +15,7 @@ import AdminDashboard from "./pages/AdminDashboard"
 import Unauthorized from "./pages/Unauthorized"
 import AddListingModal, { type NewListingInput } from "./components/AddListingModal"
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import CreateProfile from "./pages/CreateProfile"
 import MyBookings from "./pages/MyBookings"
 import MyListings from "./pages/MyListings"
@@ -44,6 +45,7 @@ function App() {
             <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
             <Route path="/unauthorized" element={<PageWrapper><Unauthorized /></PageWrapper>} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/create-profile" element={<ProtectedRoute requiredRoles={['student', 'admin']}><PageWrapper><CreateProfile /></PageWrapper></ProtectedRoute>} />
             <Route path="/my-bookings" element={<ProtectedRoute requiredRoles={['student', 'admin']}><PageWrapper><MyBookings /></PageWrapper></ProtectedRoute>} />
             <Route path="/profile" element={

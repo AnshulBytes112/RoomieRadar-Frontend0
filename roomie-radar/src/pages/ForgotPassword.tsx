@@ -155,6 +155,13 @@ const ForgotPassword = () => {
                 </button>
 
                 <button
+                  onClick={() => navigate(`/reset-password?email=${encodeURIComponent(email)}`)}
+                  className="h-12 rounded-xl bg-trae-green text-black font-black uppercase tracking-widest text-[9px] transition-all duration-200"
+                >
+                  Enter Recovery Code
+                </button>
+
+                <button
                   onClick={handleBackToLogin}
                   className="h-12 rounded-xl border border-white/10 text-gray-700 hover:text-white font-black uppercase tracking-widest text-[9px] transition-all duration-200"
                 >

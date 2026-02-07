@@ -91,6 +91,29 @@ export const forgotPassword = async (email: string) => {
   }
 };
 
+export const resetPassword = async (payload: { email: string; otp: string; newPassword: string }) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to reset password');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Reset password error:', error);
+    throw error;
+  }
+};
+
 // ===== ROOM MANAGEMENT =====
 export async function fetchRoomDetails(roomId: number) {
   // GET /api/rooms/{id}

@@ -8,23 +8,24 @@ interface ConfirmDialogProps {
   confirmText?: string;
   cancelText?: string;
   type?: 'danger' | 'warning' | 'info';
+  isLoading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-const ConfirmDialog = ({ 
-  isOpen, 
-  title, 
-  message, 
-  confirmText = "Confirm", 
+const ConfirmDialog = ({
+  isOpen,
+  title,
+  message,
+  confirmText = "Confirm",
   cancelText = "Cancel",
   type = 'danger',
-  onConfirm, 
-  onCancel 
+  isLoading = false,
+  onConfirm,
+  onCancel
 }: ConfirmDialogProps) => {
   useEffect(() => {
     if (isOpen) {
-      // Prevent body scroll when modal is open
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -37,11 +38,11 @@ const ConfirmDialog = ({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCancel();
+      if (e.key === "Escape" && !isLoading) onCancel();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onCancel]);
+  }, [onCancel, isLoading]);
 
   const getStyles = () => {
     switch (type) {
@@ -97,25 +98,23 @@ const ConfirmDialog = ({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-            onClick={onCancel}
+            onClick={() => !isLoading && onCancel()}
           />
 
-          {/* Modal */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ 
-                type: "spring", 
-                stiffness: 300, 
+              transition={{
+                type: "spring",
+                stiffness: 300,
                 damping: 30,
                 duration: 0.2
               }}
@@ -126,12 +125,10 @@ const ConfirmDialog = ({
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Icon */}
               <div className="flex justify-center mb-6">
                 {styles.icon}
               </div>
 
-              {/* Content */}
               <div className="text-center mb-8">
                 <h3 className="text-xl font-bold text-white mb-3">
                   {title}
@@ -141,19 +138,27 @@ const ConfirmDialog = ({
                 </p>
               </div>
 
-              {/* Buttons */}
               <div className="flex gap-3">
                 <button
                   onClick={onCancel}
-                  className="flex-1 px-4 py-3 glass-card bg-white/5 border border-white/10 text-white rounded-xl font-medium transition-all hover:bg-white/10"
+                  disabled={isLoading}
+                  className="flex-1 px-4 py-3 glass-card bg-white/5 border border-white/10 text-white rounded-xl font-medium transition-all hover:bg-white/10 disabled:opacity-50"
                 >
                   {cancelText}
                 </button>
                 <button
                   onClick={onConfirm}
-                  className={`flex-1 px-4 py-3 text-white rounded-xl font-medium transition-all shadow-lg ${styles.confirmBg} ${styles.confirmBorder} border`}
+                  disabled={isLoading}
+                  className={`flex-1 px-4 py-3 text-white rounded-xl font-medium transition-all shadow-lg ${styles.confirmBg} ${styles.confirmBorder} border flex items-center justify-center gap-2 disabled:opacity-70`}
                 >
-                  {confirmText}
+                  {isLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    confirmText
+                  )}
                 </button>
               </div>
             </motion.div>

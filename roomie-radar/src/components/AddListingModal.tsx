@@ -176,7 +176,8 @@ const AddListingModal = ({ isOpen, onClose, onSubmit, initialData, isEditing = f
         houseDetails: houseDetails.trim() || undefined,
         genderPreference,
         totalOccupancy: parseInt(totalOccupancy) || 1,
-        occupiedCount: parseInt(occupiedCount) || 0
+        occupiedCount: parseInt(occupiedCount) || 0,
+        contactNumber: contactNumber.trim() || undefined
       };
 
       if (area.trim()) listingData.area = area.trim();

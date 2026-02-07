@@ -233,6 +233,7 @@ const MyBookings: React.FC = () => {
         confirmText="Cancel Booking"
         cancelText="Keep Booking"
         type="danger"
+        isLoading={cancelling === confirmDialog.bookingId}
         onConfirm={confirmCancelBooking}
         onCancel={cancelConfirmDialog}
       />
