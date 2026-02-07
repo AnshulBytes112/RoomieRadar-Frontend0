@@ -1,13 +1,8 @@
 import { Button, Input } from "@/components/ui"
 import {
-    Facebook,
     Twitter,
     Instagram,
     Linkedin,
-    Mail,
-    Phone,
-    MapPin,
-    ArrowRight,
     Rocket
 } from "lucide-react"
 import { Link } from "react-router-dom"
